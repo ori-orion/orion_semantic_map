@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="object_location_service" type="object_location_server.py" name="object_location_server" output="screen"></node>
+</launch>
