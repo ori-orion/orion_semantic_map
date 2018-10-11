@@ -1,7 +1,7 @@
-# Object Location Service	
+# Object Database Manager	
 
 ## Launch
-`roslaunch object_location_service object_location_service_server.launch`
+`roslaunch object_database_manager object_database_manager_node.launch`
 
 ## Services                                                                                                                                                                                                                                                                 
 * `/object_query_server`
