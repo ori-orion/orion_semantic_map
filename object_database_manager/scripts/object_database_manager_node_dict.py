@@ -23,7 +23,6 @@ class ObjectDatabaseManager(object):
 
         self.top_map_sub = rospy.Subscriber('/topological_map', TopologicalMap, self.update_nodes_cb)
         self.current_node_sub = rospy.Subscriber('/current_node', String, self.update_current_node_cb)
-
         self.msg_store = MessageStoreProxy()
 
     def update_nodes_cb(self, msg):
@@ -53,10 +52,13 @@ class ObjectDatabaseManager(object):
     
     def object_insertion_cb(self, request):
         self.currentNode = request.waypoint # for testing
+        self.db = rospy.get_param("object_locations", {})
 
         if request.object in self.db:
             self.db[request.object][int(self.currentNode[-1:])] = True
             
+            print(self.db)
+            rospy.set_param("object_locations", self.db)
             response = EmptyResponse()
             return response
         else:
@@ -65,6 +67,10 @@ class ObjectDatabaseManager(object):
 
             self.db[request.object] = sightings
            
+            print(self.db)
+
+            rospy.set_param("object_locations", self.db)
+
             rospy.loginfo('Object: "%s" was inserted into the database at waypoint "%s".' % (request.object, request.waypoint))
             response = EmptyResponse()
             return response
