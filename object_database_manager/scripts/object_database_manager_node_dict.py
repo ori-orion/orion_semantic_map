@@ -1,30 +1,28 @@
 #! /usr/bin/env python
 
 import rospy
-from object_database_manager.srv import ObjectLocation, ObjectLocationResponse, InsertObject
-from object_database_manager.msg import ObjectLocationProbability, ObjectLocations
+from object_database_manager.srv import ObjectLocation, ObjectLocationResponse
 from strands_navigation_msgs.msg import TopologicalMap
-from mongodb_store.message_store import MessageStoreProxy
+from orion_object_recognition.msg import ObjectDetection, ObjectDetections
 from std_srvs.srv import EmptyResponse
-from std_msgs.msg import Float32, String
+from std_msgs.msg import String
 
 
 class ObjectDatabaseManager(object):
     def __init__(self):
         self.numNodes = 0
         self.waypoints = []
-        self.currentNode = "Waypoint0"
+        self.currentNode = ""
         self.db = {}
 
         self.object_query_srv = rospy.Service('/object_query_server', ObjectLocation, self.object_query_cb)
         rospy.loginfo('Ready to be queried for an object location!')
 
-        self.object_insertion_srv = rospy.Service('/object_insertion_server', InsertObject, self.object_insertion_cb)
-        rospy.loginfo('Ready for objects to be inserted into the database!')
+        self.object_recognition_sub = rospy.Subscriber('/yolo2_object_position_node/result', ObjectDetections, self.object_insertion_cb)
+        rospy.loginfo('Listening on topic /yolo2_object_position_node/result now for recognized objects.')
 
         self.top_map_sub = rospy.Subscriber('/topological_map', TopologicalMap, self.update_nodes_cb)
         self.current_node_sub = rospy.Subscriber('/current_node', String, self.update_current_node_cb)
-        self.msg_store = MessageStoreProxy()
 
     def update_nodes_cb(self, msg):
         waypoints = [] 
@@ -38,7 +36,7 @@ class ObjectDatabaseManager(object):
     def update_current_node_cb(self, msg):
         if self.currentNode != msg:
             rospy.loginfo('CurrentNode has changed from %s to %s!' % (self.currentNode, msg))
-            # self.currentNode = msg
+            self.currentNode = msg
 
     def object_query_cb(self, request):
         self.db = rospy.get_param("object_locations", {})
@@ -69,30 +67,26 @@ class ObjectDatabaseManager(object):
         
         return response
     
-    def object_insertion_cb(self, request):
-        self.currentNode = request.waypoint # for testing
+    def object_insertion_cb(self, msg):
         self.db = rospy.get_param("object_locations", {})
 
-        if request.object in self.db:
-            self.db[request.object][self.currentNode] = True 
-            rospy.set_param("object_locations", self.db)
+        for obj in msg.object_detections:                                                                                                       obj_name = obj.object_name.split("-")[0]
 
-            return EmptyResponse()
-        else:
-            sightings = {}
+            if obj_name in self.db:
+                self.db[obj_name][self.currentNode] = True 
 
-            for waypoint in rospy.get_param("waypoints").values():
-                sightings[waypoint] = False
+            else:
+                sightings = {}
 
-            sightings[self.currentNode] = True 
+                for waypoint in rospy.get_param("waypoints").values():
+                    sightings[waypoint] = False
 
-            self.db[request.object] = sightings
-           
-            rospy.set_param("object_locations", self.db)
+                sightings[self.currentNode] = True 
 
-            rospy.loginfo('Object: "%s" was inserted into the database at waypoint "%s".' % (request.object, request.waypoint))
-            
-            return EmptyResponse()
+                self.db[obj_name] = sightings
+                rospy.loginfo('Object: "%s" was inserted into the database at waypoint "%s".' % (obj_name, request.waypoint))
+
+        rospy.set_param("object_locations", self.db)
 
     def main(self):
         # Run the program until ctrl-c is sent
