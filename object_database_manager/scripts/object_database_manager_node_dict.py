@@ -36,15 +36,20 @@ class ObjectDatabaseManager(object):
             # self.currentNode = msg
 
     def object_query_cb(self, request):
-        sightings = self.db[request.object]
-        amountTrue = sightings.count(True)
-        prob = [0] * self.numNodes
+        self.db = rospy.get_param("object_locations", {})
 
-        for idx, val in enumerate(sightings):
-            if val:
-                prob[idx] = 0.8 / amountTrue
-            else:
-                prob[idx] = 0.2 / (self.numNodes - amountTrue)
+        if request.object in self.db:
+            prob = [0] * self.numNodes
+            sightings = self.db[request.object]
+            amountTrue = sightings.count(True)
+
+            for idx, val in enumerate(sightings):
+                if val:
+                    prob[idx] = 0.8 / amountTrue
+                else:
+                    prob[idx] = 0.2 / (self.numNodes - amountTrue)
+        else: 
+            prob = [(1.0 / self.numNodes) for i in range(self.numNodes)]
         
         response = ObjectLocationResponse()
         response.probabilities = prob
