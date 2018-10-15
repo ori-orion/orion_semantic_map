@@ -12,6 +12,7 @@ from std_msgs.msg import Float32, String
 class ObjectDatabaseManager(object):
     def __init__(self):
         self.numNodes = 0
+        self.waypoints = []
         self.currentNode = "Waypoint0"
         self.db = {}
 
@@ -26,8 +27,12 @@ class ObjectDatabaseManager(object):
         self.msg_store = MessageStoreProxy()
 
     def update_nodes_cb(self, msg):
-        if self.numNodes != len(msg.nodes):
-            rospy.loginfo('Number of nodes in the Topological Map was updated from %d to %d!' % (self.numNodes, len(msg.nodes)))
+        waypoints = [] 
+        for node in msg.nodes:
+            waypoints.append(str(node.name))
+        if self.waypoints == []:
+            self.waypoints = waypoints
+            rospy.loginfo("The following waypoints are being used: " + ', '.join(waypoints))
             self.numNodes = len(msg.nodes)
 
     def update_current_node_cb(self, msg):
@@ -37,22 +42,31 @@ class ObjectDatabaseManager(object):
 
     def object_query_cb(self, request):
         self.db = rospy.get_param("object_locations", {})
-
-        if request.object in self.db:
-            prob = [0] * self.numNodes
-            sightings = self.db[request.object]
-            amountTrue = sightings.count(True)
-
-            for idx, val in enumerate(sightings):
-                if val:
-                    prob[idx] = 0.8 / amountTrue
-                else:
-                    prob[idx] = 0.2 / (self.numNodes - amountTrue)
-        else: 
-            prob = [(1.0 / self.numNodes) for i in range(self.numNodes)]
-        
         response = ObjectLocationResponse()
-        response.probabilities = prob
+        
+        if request.object in self.db:
+            # if the object has been seen before (e.g. only at Table2) it is in the db and based on the amount of sightings 
+            # we can calculate the probabilities and return them together with the waypoints in the following form 
+            # probabilities: [0.800, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025]
+            # waypoints: [Table2, Table1, Waypoint2, Waypoint3, Waypoint1, Shelf2, Shelf1, Fridge, Kitchen] 
+
+            sightings = self.db[request.object]
+            amountTrue = sum(value == True for value in self.db[request.object].values())
+
+            for waypoint, val in sightings.iteritems():
+                if val:
+                    response.probabilities.append(0.8 / amountTrue)
+                    response.waypoints.append(waypoint)
+                else:
+                    response.probabilities.append(0.2 / (self.numNodes - amountTrue))
+                    response.waypoints.append(waypoint)
+        else:
+            # because the object is not in the db yet just spread the probability evenly over all waypoints
+
+            response.probabilities = [(1.0 / self.numNodes) for i in range(self.numNodes)]
+            for waypoint in rospy.get_param("waypoints").values():
+                response.waypoints.append(waypoint)
+        
         return response
     
     def object_insertion_cb(self, request):
@@ -60,25 +74,25 @@ class ObjectDatabaseManager(object):
         self.db = rospy.get_param("object_locations", {})
 
         if request.object in self.db:
-            self.db[request.object][int(self.currentNode[-1:])] = True
-            
-            print(self.db)
+            self.db[request.object][self.currentNode] = True 
             rospy.set_param("object_locations", self.db)
-            response = EmptyResponse()
-            return response
+
+            return EmptyResponse()
         else:
-            sightings = [False for i in range(self.numNodes)]
-            sightings[int(self.currentNode[-1:])] = True
+            sightings = {}
+
+            for waypoint in rospy.get_param("waypoints").values():
+                sightings[waypoint] = False
+
+            sightings[self.currentNode] = True 
 
             self.db[request.object] = sightings
            
-            print(self.db)
-
             rospy.set_param("object_locations", self.db)
 
             rospy.loginfo('Object: "%s" was inserted into the database at waypoint "%s".' % (request.object, request.waypoint))
-            response = EmptyResponse()
-            return response
+            
+            return EmptyResponse()
 
     def main(self):
         # Run the program until ctrl-c is sent
