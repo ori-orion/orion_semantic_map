@@ -1,4 +1,5 @@
 <launch>
-	<node pkg="object_database_manager" type="object_database_manager_node.py" name="object_database_manager" output="screen">
+	<rosparam command="load" file="$(find object_database_manager)/waypoints.yaml" />
+	<node pkg="object_database_manager" type="object_database_manager_node_dict.py" name="object_database_manager" output="screen">
 	</node>
 </launch>
