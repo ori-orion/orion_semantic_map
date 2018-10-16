@@ -70,8 +70,9 @@ class ObjectDatabaseManager(object):
     def object_insertion_cb(self, msg):
         self.db = rospy.get_param("object_locations", {})
 
-        for obj in msg.object_detections:                                                                                                       obj_name = obj.object_name.split("-")[0]
-
+        for obj in msg.object_detections:                                                                                                       
+            obj_name = obj.object_name.split("-")[0]
+            
             if obj_name in self.db:
                 self.db[obj_name][self.currentNode] = True 
 
