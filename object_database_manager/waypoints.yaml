@@ -1,10 +1,11 @@
 waypoints: 
-  '0': Waypoint1
-  '1': Kitchen
-  '2': Table1
-  '3': Fridge
-  '4': Shelf1
-  '5': Shelf2
-  '6': Table2
-  '7': Waypoint2
-  '8': Waypoint3
+  '0': WayPoint1
+  '1': WayPoint2
+  '2': WayPoint3
+  '3': WayPoint4
+  '4': WayPoint5
+  '5': WayPoint6
+  '6': WayPoint7
+  '7': WayPoint8
+  '8': WayPoint9
+  '9': WayPoint10
