@@ -3,9 +3,10 @@
 import rospy
 from object_database_manager.srv import ObjectLocation, ObjectLocationResponse
 from strands_navigation_msgs.msg import TopologicalMap
-from orion_object_recognition.msg import ObjectDetection, ObjectDetections
+#from orion_object_recognition.msg import ObjectDetection, ObjectDetections
 from std_srvs.srv import EmptyResponse
 from std_msgs.msg import String
+from tmc_vision_msgs.msg import DetectionArray
 
 
 class ObjectDatabaseManager(object):
@@ -18,8 +19,13 @@ class ObjectDatabaseManager(object):
         self.object_query_srv = rospy.Service('/object_query_server', ObjectLocation, self.object_query_cb)
         rospy.loginfo('Ready to be queried for an object location!')
 
-        self.object_recognition_sub = rospy.Subscriber('/yolo2_object_position_node/result', ObjectDetections, self.object_insertion_cb)
-        rospy.loginfo('Listening on topic /yolo2_object_position_node/result now for recognized objects.')
+        #self.object_recognition_sub = rospy.Subscriber('/yolo2_object_position_node/result', ObjectDetections, self.object_insertion_cb)
+        #rospy.loginfo('Listening on topic /yolo2_object_position_node/result now for recognized objects.')
+
+	self.object_recognition_sub = rospy.Subscriber('/yolo2_node/detections', DetectionArray, self.object_insertion_cb)
+        rospy.loginfo('Listening on topic /yolo2_node/detections now for recognized objects.')
+
+
 
         self.top_map_sub = rospy.Subscriber('/topological_map', TopologicalMap, self.update_nodes_cb)
         self.current_node_sub = rospy.Subscriber('/current_node', String, self.update_current_node_cb)
@@ -34,9 +40,9 @@ class ObjectDatabaseManager(object):
             self.numNodes = len(msg.nodes)
 
     def update_current_node_cb(self, msg):
-        if self.currentNode != msg:
-            rospy.loginfo('CurrentNode has changed from %s to %s!' % (self.currentNode, msg))
-            self.currentNode = msg
+        if self.currentNode != msg.data:
+            rospy.loginfo('CurrentNode has changed from %s to %s!' % (self.currentNode, msg.data))
+            self.currentNode = msg.data
 
     def object_query_cb(self, request):
         self.db = rospy.get_param("object_locations", {})
@@ -69,9 +75,9 @@ class ObjectDatabaseManager(object):
     
     def object_insertion_cb(self, msg):
         self.db = rospy.get_param("object_locations", {})
-
-        for obj in msg.object_detections:                                                                                                       
-            obj_name = obj.object_name.split("-")[0]
+ 
+        for obj in msg.detections:                                                                                                       
+            obj_name = obj.label.name.split("-")[0]
             
             if obj_name in self.db:
                 self.db[obj_name][self.currentNode] = True 
@@ -80,13 +86,16 @@ class ObjectDatabaseManager(object):
                 sightings = {}
 
                 for waypoint in rospy.get_param("waypoints").values():
-                    sightings[waypoint] = False
+		    #print waypoint                    
+		    sightings[waypoint] = False
 
                 sightings[self.currentNode] = True 
-
+		
+		print self.currentNode
+		#print type(obj_name)
                 self.db[obj_name] = sightings
-                rospy.loginfo('Object: "%s" was inserted into the database at waypoint "%s".' % (obj_name, request.waypoint))
-
+                #rospy.loginfo('Object: "%s" was inserted into the database at waypoint "%s".' % (obj_name, request.waypoint))
+	
         rospy.set_param("object_locations", self.db)
 
     def main(self):
