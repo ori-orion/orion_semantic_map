@@ -23,6 +23,7 @@ class ObjectDatabaseManager(object):
         rospy.loginfo('Listening on topic /yolo2_node/detections now for recognized objects.')
 
         self.obj_waypoints = rospy.get_param('/bring_me/object_waypoints')
+        self.object_waypoint_map = rospy.get_param('/bring_me/object_waypoint_map')
         self.num_nodes = len(self.obj_waypoints)
         rospy.loginfo("The following waypoints are being used: " + ', '.join(self.obj_waypoints))
         
@@ -55,19 +56,34 @@ class ObjectDatabaseManager(object):
             sightings = self.db[request.object]
             amount_seen = sum(value == 1 for value in self.db[request.object].values())
             
+            
             for waypoint, val in sightings.iteritems():
-                if val == 1:
-                    response.probabilities.append(0.8)
-                    response.waypoints.append(waypoint)
-                elif val == -1 and amount_seen > 0:
-                    response.probabilities.append(0.3)
-                    response.waypoints.append(waypoint)
-                elif val == -1 and amount_seen == 0:
-                    response.probabilities.append(0.5)
-                    response.waypoints.append(waypoint)
-                elif val == 0:
-                    response.probabilities.append(0.1)
-                    response.waypoints.append(waypoint)
+                if request.object in self.object_waypoint_map[waypoint]:
+                    if val == 1:
+                        response.probabilities.append(0.99)
+                        response.waypoints.append(waypoint)
+                    elif val == -1 and amount_seen > 0:
+                        response.probabilities.append(0.8)
+                        response.waypoints.append(waypoint)
+                    elif val == -1 and amount_seen == 0:
+                        response.probabilities.append(0.9)
+                        response.waypoints.append(waypoint)
+                    elif val == 0:
+                        response.probabilities.append(0.1)
+                        response.waypoints.append(waypoint)
+                else:
+                    if val == 1:
+                        response.probabilities.append(0.6)
+                        response.waypoints.append(waypoint)
+                    elif val == -1 and amount_seen > 0:
+                        response.probabilities.append(0.2)
+                        response.waypoints.append(waypoint)
+                    elif val == -1 and amount_seen == 0:
+                        response.probabilities.append(0.1)
+                        response.waypoints.append(waypoint)
+                    elif val == 0:
+                        response.probabilities.append(0.01)
+                        response.waypoints.append(waypoint)
         else:
             # because the object is not in the db yet just spread the probability evenly over all waypoints
 
