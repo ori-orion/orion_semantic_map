@@ -1,0 +1,6 @@
+
+string id   ### object id that will be queried with or statement
+
+---
+
+SOMObject object ### returned object

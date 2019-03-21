@@ -1,0 +1,5 @@
+string db_id    ### Unique mongodb id
+SOMObject object
+---
+bool result
+
