@@ -61,8 +61,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
-   SOMDeleteObjs.srv
-   SOMObserveObjs.srv
+   SOMDelete.srv
+   SOMObserve.srv
    SOMQuery.srv
    SOMLookup.srv
  )

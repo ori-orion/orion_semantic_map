@@ -7,32 +7,29 @@ from geometry_msgs.msg import Pose, Point
 from geometry_msgs.msg import PoseArray
 from threading import Timer
 from mongodb_store.message_store import MessageStoreProxy
-from semantic_mapping.msg import SOMROIObject, SOMObject
+from semantic_mapping.msg import SOMObservation, SOMObject
 from semantic_mapping.srv import *
 from std_msgs.msg import String
 
 def test_database():
-    rospy.wait_for_service('som/insert_objects')
-    rospy.wait_for_service('som/query_object')
+    rospy.wait_for_service('som/observe')
+    rospy.wait_for_service('som/lookup')
 
-    insert_objs_srv = rospy.ServiceProxy('som/insert_objects', SOMInsertObjs)
-    query_object_srv = rospy.ServiceProxy('som/query_object', SOMQueryObject)
+    observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
+    lookup_object_srv = rospy.ServiceProxy('som/lookup', SOMLookup)
 
-    my_first_object = SOMObject()
-    my_second_object = SOMObject()
+    my_first_observation = SOMObservation()
+    my_second_observation = SOMObservation()
 
-    my_first_object.pose.position = Point(1.0, 2.0, 0.5)
-    my_second_object.pose.position = Point(1.5, 2.5, 200.0)
+    my_first_observation.pose_observation.position = Point(1.0, 2.0, 0.5)
+    my_second_observation.pose_observation.position = Point(1.5, 2.5, 200.0)
 
     mydir = os.path.dirname(__file__)
     robocup_onto_path = os.path.join(mydir, '../config/robocupontology.owl')
-    ont = pronto.Ontology('http://purl.obolibrary.org/obo/ms.obo')
-    print(ont.terms)
-    print("\n\n")
 
-    resp = insert_objs_srv([my_first_object, my_second_object])
+    resp = observe_objs_srv([my_first_observation, my_second_observation])
     print(resp.db_ids[0])
-    returned_object = query_object_srv(resp.db_ids[0])
+    returned_object = lookup_object_srv(resp.db_ids[0])
 
     print(returned_object)
 

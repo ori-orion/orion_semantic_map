@@ -7,7 +7,7 @@ from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseArray
 from threading import Timer
 from mongodb_store.message_store import MessageStoreProxy
-from semantic_mapping.msg import SOMROIObject, SOMObject
+from semantic_mapping.msg import SOMObservation, SOMObject
 from semantic_mapping.srv import *
 from std_msgs.msg import String
 
@@ -24,41 +24,45 @@ class SOMDataManager():
         # Initialize the mongodb proxy
         self._message_store = MessageStoreProxy(database=db_name, collection=collection_name)
 
-        inss = rospy.Service('som/insert_objects', SOMInsertObjs, self.handle_insert_request)
-        dels = rospy.Service('som/delete_objects', SOMDeleteObjs, self.handle_delete_request)
-        upts = rospy.Service('som/update_object', SOMUpdateObject, self.handle_update_request)
-        qrys = rospy.Service('som/query_object', SOMQueryObject, self.handle_query_request)
+        inss = rospy.Service('som/observe', SOMObserve, self.handle_observe_request)
+        dels = rospy.Service('som/delete', SOMDelete, self.handle_delete_request)
+        upts = rospy.Service('som/query', SOMQuery, self.handle_query_request)
+        qrys = rospy.Service('som/lookup', SOMLookup, self.handle_lookup_request)
 
         rospy.spin()
 
     # Handles the soma2 objects to be inserted
-    def handle_insert_request(self,req):
+    def handle_observe_request(self,req):
         _ids = list()
         for obj in req.objects:
 
-          if(obj.logtimestamp == 0):
-            obj.logtimestamp = rospy.Time.now().secs
+            # add timestamp and frame headers
+            obj.timestamp = rospy.Time.now().secs
 
-          d = datetime.datetime.utcfromtimestamp(obj.logtimestamp)
-          obj.loghour = d.hour
-          obj.logminute = d.minute
-          obj.logday = d.isoweekday()
-          obj.logtimeminutes = obj.loghour*60 + obj.logminute
+            if (obj.header.frame_id == ""):
+                obj.header.frame_id = "/map"
 
-          if (obj.header.frame_id == ""):
-              obj.header.frame_id = "/map"
+            if(obj.cloud.header.frame_id == ""):
+                obj.cloud.header.frame_id = "/map"
 
-          if(obj.cloud.header.frame_id == ""):
-              obj.cloud.header.frame_id = "/map"
+            ## if no object id is supplied insert new object
+            if obj.id == "":
+                try:
+                    _id = self._message_store.insert(obj)
+                    _ids.append(_id)
 
-          try:
-                _id = self._message_store.insert(obj)
-                _ids.append(_id)
+                except:
+                    return SOMObserveResponse(False,_ids)
 
-          except:
-                return SOMInsertObjsResponse(False,_ids)
+            ## if the object id is supplied then update existing
+            else:
+                try:
+                    self._message_store.update_id(req.db_id, obj)
+                    _ids.append(req.db_id)
+                except:
+                    return SOMObserveResponse(False,_ids)
 
-        return SOMInsertObjsResponse(True,_ids)
+        return SOMObserveResponse(True,_ids)
 
 
     # Handles the delete request of soma2 objs
@@ -66,47 +70,23 @@ class SOMDataManager():
 
         for oid in req.ids:
             res = self._message_store.query(SOMObject._type,message_query={"id": oid})
-            #print len(res)
+
             for o,om in res:
                 try:
                     self._message_store.delete(str(om['_id']))
                 except:
-                      return SOMDeleteObjsResponse(False)
+                      return SOMDeleteResponse(False)
 
-        return SOMDeleteObjsResponse(True)
+        return SOMDeleteResponse(True)
 
     # Handles the soma2 objects to be inserted
-    def handle_update_request(self,req):
+    def handle_query_request(self,req):
 
-        obj = req.object
+        dostuff = 5
 
-
-        if(obj.logtimestamp == 0):
-            obj.logtimestamp = rospy.Time.now().secs
-
-        d = datetime.datetime.utcfromtimestamp(obj.logtimestamp)
-        obj.loghour = d.hour
-        obj.logminute = d.minute
-        obj.logday = d.isoweekday()
-        obj.logtimeminutes = obj.loghour*60 + obj.logminute
-
-        if (obj.header.frame_id == ""):
-            obj.header.frame_id = "/map"
-
-        if(obj.cloud.header.frame_id == ""):
-            obj.cloud.header.frame_id = "/map"
-
+    def handle_lookup_request(self, req):
         try:
-            self._message_store.update_id(req.db_id, obj)
-        except:
-            return SOMUpdateObjectResponse(False)
-
-        return SOMUpdateObjectResponse(True)
-
-
-    def handle_query_request(self, req):
-        try:
-            stored_object, meta = self._message_store.query_id(req.id, SOMObject._type)
+            stored_object, meta = self._message_store.query_id(req.id, SOMObservation._type)
 
         except rospy.ServiceException, e:
             stored_object = None
