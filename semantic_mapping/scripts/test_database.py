@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib, rospy, json, argparse, random
+import roslib, rospy, json, argparse, random, os, pronto
 import copy, sys, datetime, time, math
 
 from geometry_msgs.msg import Pose, Point
@@ -23,6 +23,12 @@ def test_database():
 
     my_first_object.pose.position = Point(1.0, 2.0, 0.5)
     my_second_object.pose.position = Point(1.5, 2.5, 200.0)
+
+    mydir = os.path.dirname(__file__)
+    robocup_onto_path = os.path.join(mydir, '../config/robocupontology.owl')
+    ont = pronto.Ontology('http://purl.obolibrary.org/obo/ms.obo')
+    print(ont.terms)
+    print("\n\n")
 
     resp = insert_objs_srv([my_first_object, my_second_object])
     print(resp.db_ids[0])

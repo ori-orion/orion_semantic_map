@@ -53,16 +53,18 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
    SOMObject.msg
+   SOMObservation.msg
    SOMROIObject.msg
+   PoseEstimate.msg
  )
 
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
    SOMDeleteObjs.srv
-   SOMInsertObjs.srv
-   SOMQueryObject.srv
-   SOMUpdateObject.srv
+   SOMObserveObjs.srv
+   SOMQuery.srv
+   SOMLookup.srv
  )
 
 ## Generate actions in the 'action' folder

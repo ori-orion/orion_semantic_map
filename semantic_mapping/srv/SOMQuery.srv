@@ -1,0 +1,10 @@
+
+SOMObservation x
+uint32 relation
+SOMObservation y
+geometry_msgs/Pose current_robot_pose
+
+
+---
+
+SOMObject object ### returned object
