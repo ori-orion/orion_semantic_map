@@ -4,8 +4,6 @@ string id  		#### id of the object that is inserted. Useful for identifying obje
 
 string map_name 	#### the global map that the object belongs. Automatically filled.
 
-string map_unique_id 	#### the unique db id of the map.
-
 string meta_properties 		#### arbitrary string of data
 
 string type 		#### type of the object
