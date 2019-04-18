@@ -67,8 +67,6 @@ class SOMDataManager():
             ## if no object id is supplied insert new object
             if obs.obj_id == "":
                 try:
-
-                    print("Hello")
                     obj_id = self._object_store.insert(obj)
                     obj_ids.append(obj_id)
 
@@ -113,7 +111,11 @@ class SOMDataManager():
     # Handles the soma2 objects to be inserted
     def handle_query_request(self,req):
 
-        dostuff = 5
+        my_query = {"type": "shirt", "colour":"red"}
+        print self._object_store.query(SOMObject._type, my_query)
+
+        return SOMQueryResponse([])
+
 
     def handle_lookup_request(self, req):
         try:

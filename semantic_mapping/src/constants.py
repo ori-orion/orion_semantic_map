@@ -16,14 +16,16 @@ class HumanPose(enum.Enum):
 
 
 
-class Relation(enum.Enum):
-    """An enum of relations between objects."""
-    LEFT = 1    # One item is to the left of another (w.r.t. robot)
-    RIGHT = 2   # One item is to the right of another (w.r.t. robot)
-    ABOVE = 3   # One item is above another if on shelf above (w.r.t. robot)
-    BELOW = 4   # One item is below another if on shelf below (w.r.t. robot)
-    AT = 5      # A person can be at a table/node
-    ONTOP = 6   # An item can be ontop of another (e.g. table)
+class Relation():
+    """Specifies relationships between two objects."""
+    left = False    # One item is to the left of another (w.r.t. robot)
+    right = False   # One item is to the right of another (w.r.t. robot)
+    above = False   # One item is above another if on shelf above (w.r.t. robot)
+    below = False   # One item is below another if on shelf below (w.r.t. robot)
+    at = False      # A person can be at a table/node
+    ontop = False   # An item can be ontop of another (e.g. table)
+    behind = False
+    frontof = False
 
 
 
