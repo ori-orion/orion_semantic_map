@@ -1,10 +1,8 @@
 Header header
 
-string id  		#### If this is existing object, fill with existing id, otherwise leave empty to create new object
+string obj_id  		#### If this is existing object, fill with existing id, otherwise leave empty to create new object
 
 string map_name 	#### the global map that the object belongs. Automatically filled.
-
-string map_unique_id 	#### the unique db id of the map.
 
 string meta_properties 		#### arbitrary string of data
 
@@ -25,6 +23,12 @@ geometry_msgs/Pose robot_pose 	#### The pose of the robot during observation
 sensor_msgs/PointCloud2 cloud 	#### The 3D cloud of the object
 
 string colour   #### colour of object
+
+string room_name 
+
+uint32 waypoint #### waypoint associated with this object
+
+geometry_msgs/Polygon room_geometry
 
 
 #### human specific

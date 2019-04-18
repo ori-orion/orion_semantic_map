@@ -15,14 +15,12 @@ from std_msgs.msg import String
 # Soma2 Data Manager For storing and deleting data
 class SOMDataManager():
 
-    def __init__(self, db_name="som_data", collection_name="som"):
+    def __init__(self):
 
-       # self.soma_map_name = soma_map_name
-        self._db_name = db_name
-        self._collection_name = collection_name
 
         # Initialize the mongodb proxy
-        self._message_store = MessageStoreProxy(database=db_name, collection=collection_name)
+        self._object_store = MessageStoreProxy(database="som_objects", collection="objects")
+        self._observation_store = MessageStoreProxy(database="som_observations", collection="observations")
 
         inss = rospy.Service('som/observe', SOMObserve, self.handle_observe_request)
         dels = rospy.Service('som/delete', SOMDelete, self.handle_delete_request)
@@ -33,11 +31,14 @@ class SOMDataManager():
 
     # Handles the soma2 objects to be inserted
     def handle_observe_request(self,req):
-        _ids = list()
-        for obj in req.objects:
+        obj_ids = list()
 
-            # add timestamp and frame headers
-            obj.timestamp = rospy.Time.now().secs
+        for obs in req.observations:
+
+            # create a SOM object from the SOM observation
+            time_now = rospy.Time.now().secs
+            #obs.timestamp = time_now
+            obj = SOMObject()
 
             if (obj.header.frame_id == ""):
                 obj.header.frame_id = "/map"
@@ -45,35 +46,65 @@ class SOMDataManager():
             if(obj.cloud.header.frame_id == ""):
                 obj.cloud.header.frame_id = "/map"
 
-            ## if no object id is supplied insert new object
-            if obj.id == "":
-                try:
-                    _id = self._message_store.insert(obj)
-                    _ids.append(_id)
+            obj.map_name = obs.map_name
+            obj.meta_properties = obs.meta_properties
+            obj.type = obs.type
+            obj.size = obs.size
+            obj.weight = obs.weight
+            obj.task_role = obs.task_role
+            obj.robot_pose = obs.robot_pose
+            obj.cloud = obs.cloud
+            obj.colour = obs.colour
+            obj.room_name = obs.room_name
+            obj.waypoint = obs.waypoint
+            obj.room_geometry = obs.room_geometry
+            obj.name = obs.name
+            obj.age = obs.age
+            obj.posture = obs.posture
+            obj.gender = obs.gender
+            obj.shirt_colour = obs.shirt_colour
 
-                except:
-                    return SOMObserveResponse(False,_ids)
+            ## if no object id is supplied insert new object
+            if obs.obj_id == "":
+                try:
+
+                    print("Hello")
+                    obj_id = self._object_store.insert(obj)
+                    obj_ids.append(obj_id)
+
+                    # add new observation to observation store
+                    obs.obj_id = obj_id
+                    obs_id = self._observation_store.insert(obs)
+
+                except rospy.ServiceException, e:
+                    print("Service call failed: %s"%(e))
+                    return SOMObserveResponse(False, obj_ids)
 
             ## if the object id is supplied then update existing
             else:
                 try:
-                    self._message_store.update_id(req.db_id, obj)
-                    _ids.append(req.db_id)
-                except:
-                    return SOMObserveResponse(False,_ids)
 
-        return SOMObserveResponse(True,_ids)
+                    self._object_store.update_id(obs.obj_id, obj)
+                    obj_ids.append(obs.obj_id)
+
+                    obs.obj_id = obs.obj_id
+                    obs_id = self._observation_store.insert(obs)
+
+                except:
+                    return SOMObserveResponse(False, obj_ids)
+
+        return SOMObserveResponse(True, obj_ids)
 
 
     # Handles the delete request of soma2 objs
     def handle_delete_request(self,req):
 
-        for oid in req.ids:
-            res = self._message_store.query(SOMObject._type,message_query={"id": oid})
+        for oid in req.obj_ids:
+            res = self._object_store.query(SOMObject._type,message_query={"obj_id": oid})
 
             for o,om in res:
                 try:
-                    self._message_store.delete(str(om['_id']))
+                    self._object_store.delete(str(om['_id']))
                 except:
                       return SOMDeleteResponse(False)
 
@@ -86,30 +117,14 @@ class SOMDataManager():
 
     def handle_lookup_request(self, req):
         try:
-            stored_object, meta = self._message_store.query_id(req.id, SOMObservation._type)
+            obj, meta = self._object_store.query_id(req.obj_id, SOMObject._type)
 
         except rospy.ServiceException, e:
-            stored_object = None
+            obj = None
             print("Service call failed: %s" % (e))
 
-        return stored_object
+        return obj
 
 if __name__=="__main__":
-
-    parser = argparse.ArgumentParser(prog='data_manager.py')
-    parser.add_argument("db_name", nargs='?', help='Name of the database')
-    parser.add_argument('collection_name', nargs='?', help='Name of the collection')
-
-    args = parser.parse_args(rospy.myargv(argv=sys.argv)[1:])
-
     rospy.init_node("soma_data_manager")
-    if args.db_name is not None:
-    	if args.collection_name is not None:
-            rospy.loginfo("Running SOM data manager (dbname: %s, collection_name: %s)", args.db_name, args.collection_name)
-            SOMDataManager(args.db_name,args.collection_name)
-    	else:
-            rospy.loginfo("Running SOM data manager (dbname: %s, collection_name: soma)", args.db_name)
-            SOMDataManager(args.db_name)
-    else:
-        rospy.loginfo("Running SOM data manager (dbname: somdata, collection_name: soma)")
-        SOMDataManager()
+    SOMDataManager()
