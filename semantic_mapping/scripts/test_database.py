@@ -14,6 +14,7 @@ from std_msgs.msg import String
 def test_database():
     rospy.wait_for_service('som/observe')
     rospy.wait_for_service('som/lookup')
+    rospy.wait_for_service('som/query')
 
     observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
     lookup_object_srv = rospy.ServiceProxy('som/lookup', SOMLookup)

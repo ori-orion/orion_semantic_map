@@ -1,5 +1,6 @@
 from .constants import Relation
 import numpy as np
+from som_object import InSOMObject
 
 def _get_all_relations():
     """Returns a list of all possible Relation enum values."""
@@ -11,7 +12,7 @@ def _get_all_relations():
     		Relation.ONTOP]
 
 
-def query(som_template_one, relation, som_template_two, cur_robot_pose):
+def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_object_store):
     """
     Performs a query to the semantic object database. This function uses
     SOMObject objects as templates. Meaning that any fields specified in
@@ -37,24 +38,25 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose):
             -> []
 
     Args:
-        som_obj_one: A SOMObject to be used as a template to look up
+        som_obj_one: A SOMObservation to be used as a template to look up
             objects in the mongodb.
         relation: A Relation enum type specifying the relation
             required between objects, or, None, if we want to consider
             all possible relations.
-        som_obj_two: A SOMObject to be used as a template to look up
+        som_obj_two: A SOMObservation to be used as a template to look up
             objects in the mongodb.
         cur_robot_pos: The pose of the current robot, used to compute
             spatial relations. (These change depending on where the
             robot is facing).
+        mongo_object_store: ...
 
     Returns:
         All valid (o1, ~, o2) tuples, for which o1 ~ o2 is true and
         o1 matches the template of 'som_obj_one' and o2 matches the
         template of 'som_obj_two'.
     """
-    o1_matches = _mongo_som_objects_matching_template(som_template_one)
-    o2_matches = _mongo_som_objects_matching_template(som_template_two)
+    o1_matches = _mongo_som_objects_matching_template(som_template_one, mongo_object_store)
+    o2_matches = _mongo_som_objects_matching_template(som_template_two, mongo_object_store)
     relations = [relation] if relation is not None else _get_all_relations()
 
     tuples = []
@@ -67,24 +69,26 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose):
 
     return tuples
 
-def _mongo_som_objects_matching_template(som_obj):
+def _mongo_som_objects_matching_template(som_obs, mongo_object_store):
     """
-    Treats the SOMObject 'som_ojb' as a template to match in mongo db.
+    Treats the SOMObservation 'som_obs' as a template to match in mongo db.
     This returns a list of SOMObjects in the database matching the
     template.
 
     Args:
-        som_obj: The SOMObject (template) specified to make a query
+        som_obj: The SOMObservation (template) specified to make a query
+        mongo_object_store: A mongodb store for SomObject instances
     Returns:
         A list of objects matching the template.
     """
-    som_observation_msg = som_obj.to_som_observation_message()
-    # todo: make a dictionary from observation method (use an iterator? over the observation message? in SOMObject class)
-    # todo: query to get a list of observations (?objects?) from the mongodb
-    # todo: convert to som objects
-    # todo: return list
-    # use: http://wiki.ros.org/mongodb_store
-    # use: https://www.w3schools.com/python/python_mongodb_query.asp
+    # Get queries for the mongo store (easiest way is currently to convert to 
+    # InSOMObject and back)
+    som_obj = InSOMObject.from_som_observation_message(som_obs)
+    query_dict = som_obj.to_som_object_mongo_db_query()
+
+    # Perform the query (return a list of SOMObject's)
+    result = mongo_object_store.query(SOMObject._type, message_query=query_dict)
+    return result
 
 def _spatial_relation(cur_robot_pose, som_obj_one, som_obj_two):
     """
@@ -107,8 +111,8 @@ def _spatial_relation(cur_robot_pose, som_obj_one, som_obj_two):
     Args:
         cur_robot_pose: The current pose of the robot, used as a
                         reference frame to work out spatial relations.
-        som_obj_one: The first SOMObject to consider the relation for.
-        som_obj_two: The second SOMObject to consider the relation for.
+        som_obj_one: The first InSOMObject to consider the relation for.
+        som_obj_two: The second InSOMObject to consider the relation for.
     """
 
     # specifies the maximum distance in metres between objects for relations to exist.

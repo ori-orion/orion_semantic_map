@@ -3,6 +3,8 @@
 import roslib, rospy, json, argparse, random
 import copy, sys, datetime, time, math
 
+import message_conversion
+
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseArray
 from threading import Timer
@@ -10,6 +12,8 @@ from mongodb_store.message_store import MessageStoreProxy
 from semantic_mapping.msg import SOMObservation, SOMObject
 from semantic_mapping.srv import *
 from std_msgs.msg import String
+
+from queries import query
 
 
 # Soma2 Data Manager For storing and deleting data
@@ -38,31 +42,8 @@ class SOMDataManager():
             # create a SOM object from the SOM observation
             time_now = rospy.Time.now().secs
             #obs.timestamp = time_now
-            obj = SOMObject()
 
-            if (obj.header.frame_id == ""):
-                obj.header.frame_id = "/map"
-
-            if(obj.cloud.header.frame_id == ""):
-                obj.cloud.header.frame_id = "/map"
-
-            obj.map_name = obs.map_name
-            obj.meta_properties = obs.meta_properties
-            obj.type = obs.type
-            obj.size = obs.size
-            obj.weight = obs.weight
-            obj.task_role = obs.task_role
-            obj.robot_pose = obs.robot_pose
-            obj.cloud = obs.cloud
-            obj.colour = obs.colour
-            obj.room_name = obs.room_name
-            obj.waypoint = obs.waypoint
-            obj.room_geometry = obs.room_geometry
-            obj.name = obs.name
-            obj.age = obs.age
-            obj.posture = obs.posture
-            obj.gender = obs.gender
-            obj.shirt_colour = obs.shirt_colour
+            obj = message_convesion.observation_to_object(obs, default_frame_id="/map")
 
             ## if no object id is supplied insert new object
             if obs.obj_id == "":
@@ -110,12 +91,12 @@ class SOMDataManager():
 
     # Handles the soma2 objects to be inserted
     def handle_query_request(self,req):
-
-        my_query = {"type": "shirt", "colour":"red"}
-        print self._object_store.query(SOMObject._type, my_query)
-
-        return SOMQueryResponse([])
-
+        som_template_one = req.x
+        relation = req.relation
+        som_template_two = req.y
+        cur_robot_pose = req.current_robot_pose
+        result_tuples = query(som_template_one, relation, som_template_two, cur_robot_pose, self._object_store)
+        raise Exception("We need to make SOMQueryResponse properly?")
 
     def handle_lookup_request(self, req):
         try:
