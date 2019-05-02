@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib, rospy, json, argparse, random, os, pronto
+import roslib, rospy, json, argparse, random, os
 import copy, sys, datetime, time, math
 
 from geometry_msgs.msg import Pose, Point
@@ -37,7 +37,8 @@ def test_database():
 
     resp = observe_objs_srv([my_first_observation, my_second_observation])
 
-    resp = query_object_srv(SOMObservation(), 10, SOMObservation(), Pose())
+    resp = query_object_srv(my_first_observation, 10, SOMObservation(), Pose())
+    print(resp)
     #print(resp)
     #returned_object = lookup_object_srv(resp.obj_ids[0])
     #print(returned_object)

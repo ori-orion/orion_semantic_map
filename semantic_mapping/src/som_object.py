@@ -4,30 +4,30 @@ Defines the barebones API for InSOMObjects.
 
 
 
-from semantic_mapping.msg import SOMObservation
+from semantic_mapping.msg import SOMObservation, SOMObject
 
 
 
 
 class InSOMObject(object):
-    """A class that templates information that we might want to store about an 
+    """A class that templates information that we might want to store about an
     object
-    
+
     Attributes (all optional):
-        _id: A unique id for this object, that 
+        _id: A unique id for this object, that
         _map_name: <TODO>
         _map_unique_id: <TODO>
         _type: <TODO>
-        # _ontology_concept: A concept from our ontology. This concept should be 
-        #                    the most specific possible (i.e. if we can detect 
-        #                    that something is a 'bottle of coke', we shouldn't be 
+        # _ontology_concept: A concept from our ontology. This concept should be
+        #                    the most specific possible (i.e. if we can detect
+        #                    that something is a 'bottle of coke', we shouldn't be
         #                    storing the concept as 'drink'.)
-        # _ontology_properties: A dictionary mapping from string names to values, 
-        #                       representing values for the properties associated 
+        # _ontology_properties: A dictionary mapping from string names to values,
+        #                       representing values for the properties associated
         #                       with the _ontology_concept
-        _location_observations: A <TODO> object, representing the objects 
+        _location_observations: A <TODO> object, representing the objects
                                 list of poses the object has been observed in
-        _location_estimate: A probability distribution over <TODO> objects, 
+        _location_estimate: A probability distribution over <TODO> objects,
                             representing where we think this InSomObject may be.
         _size: The size of the object
         _weight: The weight of the object
@@ -37,8 +37,8 @@ class InSOMObject(object):
         _pose: A pose for a person
         _gender: The gender of a person
         _shirt_colour: The shirt colour that a person is wearing
-        _meta_properties: A list of arbitrary objects, for additional 
-                          properties that are specific to cirtain types of 
+        _meta_properties: A list of arbitrary objects, for additional
+                          properties that are specific to cirtain types of
                           InSomObject instance
         _room_geometry: ...
         _
@@ -58,7 +58,7 @@ class InSOMObject(object):
         return self._map_name
 
     def set_map_name(self, map_name):
-        self._map_name
+        self._map_name = map_name
 
     # def get_ontology_concept(self):
     #     pass
@@ -79,6 +79,12 @@ class InSOMObject(object):
     def set_pose_estimate(self, pose_estimate):
         self._pose_estimate = pose_estimate
 
+    def get_timestamp(self):
+        return self._pose_estimate
+
+    def set_timestamp(self, timestamp):
+        self._timestamp = timestamp
+
     def get_size(self):
         return self._size
 
@@ -91,23 +97,35 @@ class InSOMObject(object):
     def set_weight(self, weight):
         self._weight = weight
 
+    def get_colour(self):
+        return self._colour
+
+    def set_colour(self, colour):
+        self._colour = colour
+
     def get_task_role(self):
-        return self._task_role 
+        return self._task_role
 
     def set_task_role(self, task_role):
-        self._task_role = task_role 
-        
+        self._task_role = task_role
+
     def get_name(self):
         return self._name
 
     def set_name(self, name):
-        self._name = name 
+        self._name = name
 
     def get_age(self, age):
         return self._age
 
     def set_age(self, age):
         self._age = age
+
+    def get_type(self):
+        return self._type
+
+    def set_type(self, type):
+        self._type = type
 
     def get_posture(self, posture):
         return self._posture
@@ -119,7 +137,7 @@ class InSOMObject(object):
         return self._gender
 
     def set_gender(self, gender):
-        self._gender = gender 
+        self._gender = gender
 
     def get_shirt_colour(self):
         return self._shirt_colour
@@ -149,7 +167,7 @@ class InSOMObject(object):
         return self._waypoint
 
     def set_waypoint(self, waypoint):
-        self._waypoint = waypoint 
+        self._waypoint = waypoint
 
     def get_meta_properties(self):
         return self._meta_properties
@@ -159,7 +177,7 @@ class InSOMObject(object):
 
     def get_room_distribution(self):
     	"""
-		TODO: return a distributuion over waypoints/rooms where we 
+		TODO: return a distributuion over waypoints/rooms where we
 		think this object may actually be.
     	"""
     	pass
@@ -167,9 +185,9 @@ class InSOMObject(object):
 
     @classmethod
     def from_som_observation_message(self, som_observation):
-        obj = InSomObject()
-        
-        obj.set_id(som_observation.id)
+        obj = InSOMObject()
+
+        obj.set_id(som_observation.obj_id)
         obj.set_map_name(som_observation.map_name)
         obj.set_meta_properties(som_observation.meta_properties)
         obj.set_type(som_observation.type)
@@ -180,8 +198,8 @@ class InSOMObject(object):
         # obj.set_pose_estimate(som_observation.pose_estimate)
         # obj.set_robot_pose(som_observation.robot_pose)
         obj.set_cloud(som_observation.cloud)
-        obj.set_room_name(som_observation_mgs.room_name)
-        obj.set_waypoint(som_observation_mgs.waypoint)
+        obj.set_room_name(som_observation.room_name)
+        obj.set_waypoint(som_observation.waypoint)
         obj.set_room_geometry(som_observation.room_geometry)
         obj.set_colour(som_observation.colour)
         obj.set_name(som_observation.name)
@@ -191,7 +209,7 @@ class InSOMObject(object):
         obj.set_shirt_colour(som_observation.shirt_colour)
 
         return obj
-        
+
 
     def to_som_observation_message(self):
         obj = SOMObservation()
@@ -237,7 +255,7 @@ class InSOMObject(object):
     @classmethod
     def from_som_object_message(self, som_observation):
         obj = InSomObject()
-        
+
         obj.set_id(som_observation.id)
         obj.set_map_name(som_observation.map_name)
         obj.set_meta_properties(som_observation.meta_properties)
@@ -249,8 +267,8 @@ class InSOMObject(object):
         obj.set_pose_estimate(som_observation.pose_estimate)
         # obj.set_robot_pose(som_observation.robot_pose)
         obj.set_cloud(som_observation.cloud)
-        obj.set_room_name(som_observation_mgs.room_name)
-        obj.set_waypoint(som_observation_mgs.waypoint)
+        obj.set_room_name(som_observation.room_name)
+        obj.set_waypoint(som_observation.waypoint)
         obj.set_room_geometry(som_observation.room_geometry)
         obj.set_colour(som_observation.colour)
         obj.set_name(som_observation.name)
@@ -260,7 +278,7 @@ class InSOMObject(object):
         obj.set_shirt_colour(som_observation.shirt_colour)
 
         return obj
-        
+
 
     def to_som_object_message(self):
         obj = SOMObject()
@@ -281,8 +299,8 @@ class InSOMObject(object):
             obj.weight = self._weight
         if self._task_role is not None:
             obj.task_role = self._task_role
-        if self._pose_estimate is not None:
-            obj.pose_estimate = self._pose_estimate
+        #if self._pose_estimate is not None:
+        #    obj.pose_estimate = self._pose_estimate
         # if self._robot_pose is not None:
         #     obj.robot_pose = self._robot_pose
         if self._cloud is not None:
@@ -305,8 +323,8 @@ class InSOMObject(object):
 
     def dict_iter(self):
         """
-        Iterates through the non-null values, and returns a (string, value) 
-        pair for each one. THe string is the 
+        Iterates through the non-null values, and returns a (string, value)
+        pair for each one. THe string is the
         """
         if self._id is not None:
             yield "obj_id", self._id
@@ -318,14 +336,14 @@ class InSOMObject(object):
             yield "type", self._type
         if self._timestamp is not None:
             yield "timestamp", self._timestamp
-        if self._size is not None:
-            yield "size", self._size
+        #if self._size is not None:
+        #    yield "size", self._size
         if self._weight is not None:
             yield "weight", self._weight
         if self._task_role is not None:
             yield "task_role", self._task_role
-        if self._pose_estimate is not None:
-            yield "pose_estimate", self._pose_estimate
+        #if self._pose_estimate is not None:
+        #    yield "pose_estimate", self._pose_estimate
         # if self._size is not None:
         #     yield "size", self._size
         # if self._robot_pose is not None:
@@ -357,7 +375,7 @@ class InSOMObject(object):
         Returns a dictionary 'd' to be used as follows:
         msg_store.query(SOMObservation._type, d)
 
-        The objects that match this dictionary in the data store should be 
+        The objects that match this dictionary in the data store should be
         InSOMObject objects.
 
         An example of a mongo db query is:
@@ -367,14 +385,15 @@ class InSOMObject(object):
         https://www.w3schools.com/python/python_mongodb_query.asp
         """
         # First check the things that we don't know how to handle
-        if self._meta_properties is not None or
-           self._size is not None or 
-           self._pose_estimate is not None or
-           self._robot_pose is not None or
-           self._cloud is not None or
-           self._room_geometry is not None:
-            raise Exception("Your query is currently not supported. Come bug "
-                            "the semantic mapping team to fix this.")
+        # TODO: below is giving me a syntax error so needs to be fixed
+        #if self._meta_properties is not None or
+        #   self._size is not None or
+        #   self._pose_estimate is not None or
+        #   self._robot_pose is not None or
+        #   self._cloud is not None or
+        #   self._room_geometry is not None:
+        #    raise Exception("Your query is currently not supported. Come bug "
+        #                    "the semantic mapping team to fix this.")
 
         return {key: value for key, value in self.dict_iter()}
 

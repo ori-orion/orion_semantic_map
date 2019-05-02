@@ -1,16 +1,8 @@
-from .constants import Relation
+# -*- coding: utf-8 -*-
+
 import numpy as np
 from som_object import InSOMObject
-
-def _get_all_relations():
-    """Returns a list of all possible Relation enum values."""
-    return [Relation.LEFT,
-    		Relation.RIGHT,
-    		Relation.ABOVE,
-    		Relation.BELOW,
-    		Relation.AT,
-    		Relation.ONTOP]
-
+from semantic_mapping.msg import Match, Relation, SOMObject
 
 def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_object_store):
     """
@@ -59,18 +51,23 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_ob
     o2_matches = _mongo_som_objects_matching_template(som_template_two, mongo_object_store)
     relations = [relation] if relation is not None else _get_all_relations()
 
-    tuples = []
+    matches = []
     for o1 in o1_matches:
         for o2 in o2_matches:
             rel = spatial_relation(cur_robot_pose, o1, o2)
-            if rel in relations:
-                matching_tuple = (o1, rel, o2)
-                tuples.append(matching_tuple)
 
-    return tuples
+            match = True
+            for key in relation.__dict__:
+                if relation[key] and not rel[key]:
+                    match = False
+
+            if match:
+                matching = Match(o1, rel, o2)
+                matches.append(match)
+    return matches
 
 def _mongo_som_objects_matching_template(som_obs, mongo_object_store):
-    """
+    """uples
     Treats the SOMObservation 'som_obs' as a template to match in mongo db.
     This returns a list of SOMObjects in the database matching the
     template.
@@ -81,12 +78,13 @@ def _mongo_som_objects_matching_template(som_obs, mongo_object_store):
     Returns:
         A list of objects matching the template.
     """
-    # Get queries for the mongo store (easiest way is currently to convert to 
-    # InSOMObject and back)
+    # Get queries for the mongo store (easiest way is currently to convert to
+    # InSOMObject and back)uples
     som_obj = InSOMObject.from_som_observation_message(som_obs)
     query_dict = som_obj.to_som_object_mongo_db_query()
+    print(query_dict)
 
-    # Perform the query (return a list of SOMObject's)
+    # Perform the query (return a list of SOMObjects)
     result = mongo_object_store.query(SOMObject._type, message_query=query_dict)
     return result
 
@@ -94,14 +92,14 @@ def _spatial_relation(cur_robot_pose, som_obj_one, som_obj_two):
     """
     This should return the relation ~ that makes the statement
     "som_obj_one ~ som_obj_two" true.
-
+uples
     We assume that only one spatial relation can be true at a time?
 
     This can likely be computed using dot products, and checking which
     side of a given plane we are. So we say define 6/8 planes, and
     depending on the signs of dot products, we give a spatial relation.
 
-    One complexity is how to consider the shape of the object. For
+    One complexity is how to consider the uplesshape of the object. For
     example, the pose of a table may be the central point of the table.
     So if an object is on the left of the table, it's not clear how to
     return that the object is "ontop" the table, rather than to the
@@ -112,7 +110,7 @@ def _spatial_relation(cur_robot_pose, som_obj_one, som_obj_two):
         cur_robot_pose: The current pose of the robot, used as a
                         reference frame to work out spatial relations.
         som_obj_one: The first InSOMObject to consider the relation for.
-        som_obj_two: The second InSOMObject to consider the relation for.
+        som_obj_two: The second InSOMObjecuplest to consider the relation for.
     """
 
     # specifies the maximum distance in metres between objects for relations to exist.

@@ -15,20 +15,6 @@ class HumanPose(enum.Enum):
     LAYING_DOWN = 3
 
 
-
-class Relation():
-    """Specifies relationships between two objects."""
-    left = False    # One item is to the left of another (w.r.t. robot)
-    right = False   # One item is to the right of another (w.r.t. robot)
-    above = False   # One item is above another if on shelf above (w.r.t. robot)
-    below = False   # One item is below another if on shelf below (w.r.t. robot)
-    at = False      # A person can be at a table/node
-    ontop = False   # An item can be ontop of another (e.g. table)
-    behind = False
-    frontof = False
-
-
-
 class RoomType(enum.Enum):
     """A list of possible room types that we can have"""
     KITCHEN = 1

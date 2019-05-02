@@ -56,6 +56,8 @@ find_package(catkin REQUIRED COMPONENTS
    SOMObservation.msg
    SOMROIObject.msg
    PoseEstimate.msg
+   Relation.msg
+   Match.msg
  )
 
 ## Generate services in the 'srv' folder

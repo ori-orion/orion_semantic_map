@@ -7,4 +7,4 @@ geometry_msgs/Pose current_robot_pose
 
 ---
 
-SOMObject[] objects ### returned object
+Match[] matches

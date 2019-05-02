@@ -38,12 +38,9 @@ class SOMDataManager():
         obj_ids = list()
 
         for obs in req.observations:
-
-            # create a SOM object from the SOM observation
             time_now = rospy.Time.now().secs
-            #obs.timestamp = time_now
-
-            obj = message_convesion.observation_to_object(obs, default_frame_id="/map")
+            obs.timestamp = time_now
+            obj = message_conversion.observation_to_object(obs, default_frame_id="/map")
 
             ## if no object id is supplied insert new object
             if obs.obj_id == "":
@@ -62,13 +59,11 @@ class SOMDataManager():
             ## if the object id is supplied then update existing
             else:
                 try:
-
                     self._object_store.update_id(obs.obj_id, obj)
                     obj_ids.append(obs.obj_id)
 
                     obs.obj_id = obs.obj_id
                     obs_id = self._observation_store.insert(obs)
-
                 except:
                     return SOMObserveResponse(False, obj_ids)
 
@@ -95,13 +90,12 @@ class SOMDataManager():
         relation = req.relation
         som_template_two = req.y
         cur_robot_pose = req.current_robot_pose
-        result_tuples = query(som_template_one, relation, som_template_two, cur_robot_pose, self._object_store)
-        raise Exception("We need to make SOMQueryResponse properly?")
+        matches = query(som_template_one, relation, som_template_two, cur_robot_pose, self._object_store)
+        return SOMQueryResponse(matches)
 
     def handle_lookup_request(self, req):
         try:
             obj, meta = self._object_store.query_id(req.obj_id, SOMObject._type)
-
         except rospy.ServiceException, e:
             obj = None
             print("Service call failed: %s" % (e))
