@@ -10,15 +10,16 @@ import message_conversion
 import object_estimation
 import os
 import pickle
+import visualisation
 
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseArray
+from visualization_msgs.msg import Marker, MarkerArray
 from threading import Timer
 from mongodb_store.message_store import MessageStoreProxy
 from semantic_mapping.msg import SOMObservation, SOMObject
 from semantic_mapping.srv import *
 from std_msgs.msg import String
-from visualisation import *
 from object_estimation import make_observation
 from ontology import Ontology
 from queries import query
@@ -35,20 +36,24 @@ class SOMDataManager():
         dels = rospy.Service('som/delete', SOMDelete, self.handle_delete_request)
         upts = rospy.Service('som/query', SOMQuery, self.handle_query_request)
         qrys = rospy.Service('som/lookup', SOMLookup, self.handle_lookup_request)
+        roi_vis_pub = rospy.Publisher('som/roi_vis', MarkerArray, queue_size=1, latch=True)
+        obj_vis_pub = rospy.Publisher('som/obj_vis', MarkerArray, queue_size=1, latch=True)
 
         dirname = os.path.dirname(__file__)
         fpath = os.path.join(dirname, '../config/' + rois_name)
         roi_load = pickle.load(open(fpath,"rb"))
         self._rois = [i[0] for i in roi_load]
-        self._ontology = Ontology(ontology_name)
-        draw_rois(self._rois)
+        roi_markers = visualisation.rois_to_marker_array(self._rois)
+        roi_vis_pub.publish(roi_markers)
 
+        self._ontology = Ontology(ontology_name)
         rospy.spin()
 
     # Handles the soma2 objects to be inserted
     def handle_observe_request(self,req):
         obs = req.observation
         res, id = make_observation(obs, self._rois, self._object_store, self._observation_store)
+        visualisation.update_objects(self._object_store)
         return SOMObserveResponse(res, id)
 
     # Handles the delete request of soma2 objs
