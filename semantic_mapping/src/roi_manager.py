@@ -10,6 +10,8 @@ import copy
 import sys
 import math
 import pickle
+import os
+import time
 
 from threading import Timer
 
@@ -176,9 +178,13 @@ class SOMAROIManager():
 
         rois = self._msg_store.query(SOMROIObject._type)
         print(rois)
-        fname = "som_rois.pkl"
-        pickle.dump(rois, open(fname, "wb" ) )
-        print("\nROIs saved to %s\n" % (fname))
+
+        dirname = os.path.dirname(__file__)
+        fname = "som_rois_" + time.strftime("%Y-%m-%d-%H-%M") + ".pkl"
+        fpath = os.path.join(dirname, '../config/' + fname)
+
+        pickle.dump(rois, open(fpath, "wb" ) )
+        print("\nROIs saved to %s\n" % (fpath))
 
     # Add a point
     def _add_point_cb(self, feedback):

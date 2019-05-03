@@ -85,8 +85,8 @@ def _mongo_som_objects_matching_template(som_obs, mongo_object_store):
     print(query_dict)
 
     # Perform the query (return a list of SOMObjects)
-    result = mongo_object_store.query(SOMObject._type, message_query=query_dict)
-    return result
+    result = mongo_object_store.query(SOMObject._type, {'colour':'red'})
+    return []
 
 def _spatial_relation(cur_robot_pose, som_obj_one, som_obj_two):
     """

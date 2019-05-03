@@ -35,8 +35,12 @@ def test_database():
     mydir = os.path.dirname(__file__)
     robocup_onto_path = os.path.join(mydir, '../config/robocupontology.owl')
 
-    resp = observe_objs_srv([my_first_observation, my_second_observation])
+    resp = observe_objs_srv(my_first_observation)
+    resp = observe_objs_srv(my_second_observation)
 
+    print(resp.obj_id)
+    my_second_observation.obj_id = resp.obj_id
+    resp = observe_objs_srv(my_second_observation)
     resp = query_object_srv(my_first_observation, 10, SOMObservation(), Pose())
     print(resp)
     #print(resp)

@@ -5,7 +5,7 @@ class Ontology():
     """
     contains definition and convenience methods for semantic ontology
     """
-    def __init__(self, filename = "robocupontology.owl"):
+    def __init__(self, filename):
         dir = os.path.dirname(__file__)
         file_dir = os.path.join(dir, '../config/', filename)
         self.ontology = ontospy.Ontospy(file_dir)
