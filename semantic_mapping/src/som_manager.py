@@ -38,7 +38,8 @@ class SOMDataManager():
 
         dirname = os.path.dirname(__file__)
         fpath = os.path.join(dirname, '../config/' + rois_name)
-        self._rois = pickle.load(open(fpath,"rb"))
+        roi_load = pickle.load(open(fpath,"rb"))
+        self._rois = [i[0] for i in roi_load]
         self._ontology = Ontology(ontology_name)
         draw_rois(self._rois)
 
@@ -47,7 +48,7 @@ class SOMDataManager():
     # Handles the soma2 objects to be inserted
     def handle_observe_request(self,req):
         obs = req.observation
-        res, id = make_observation(obs, self._object_store, self._observation_store)
+        res, id = make_observation(obs, self._rois, self._object_store, self._observation_store)
         return SOMObserveResponse(res, id)
 
     # Handles the delete request of soma2 objs

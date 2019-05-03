@@ -1,8 +1,29 @@
 import message_conversion
 import rospy
+import shapely.geometry as geom
 from semantic_mapping.msg import *
 
-def make_observation(obs, object_store, observation_store):
+def get_room_name(pose_estimate, rois):
+    '''Given a PoseEstimate and a list of SomROIObjects, returns the room
+    name that the PoseEstimate is in, based on the most_likely_pose. If the
+    PoseEstimate is not in a room, returns "NotInRoom"
+    '''
+    obj_pose = pose_estimate.most_likely_pose
+    obj_point = geom.Point(obj_pose.position.x, obj_pose.position.y)
+
+
+    for roi in rois:
+        vertex_poses = roi.posearray.poses
+        vertex_tuples = []
+        for vertex_pose in vertex_poses:
+            vertex_tuples.append((vertex_pose.position.x, vertex_pose.position.y))
+        roi_poly = geom.polygon.Polygon(vertex_tuples)
+
+        if roi_poly.contains(obj_point):
+            return roi.name
+    return "NotInRoom"
+
+def make_observation(obs, rois, object_store, observation_store):
     ''' Receives an observation and updates the object and observation stores
     accordingly.
 
@@ -25,6 +46,7 @@ def make_observation(obs, object_store, observation_store):
 
         # pose estimate based on single observation
         obj.pose_estimate = estimate_pose([obs])
+        obj.room_name = get_room_name(obj.pose_estimate, rois)
         try:
             obj_id = object_store.insert(obj)
             obs.obj_id = obj_id
@@ -46,6 +68,7 @@ def make_observation(obs, object_store, observation_store):
 
             # update object with new pose estimate
             obj.pose_estimate = estimate_pose(all_observations)
+            obj.room_name = get_room_name(obj.pose_estimate, rois)
             object_store.update_id(obj_id, obj)
 
         except rospy.ServiceException, e:
