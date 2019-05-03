@@ -18,12 +18,15 @@ from visualization_msgs.msg import Marker, MarkerArray
 from threading import Timer
 from mongodb_store.message_store import MessageStoreProxy
 from semantic_mapping.msg import SOMObservation, SOMObject
-from semantic_mapping.srv import *
 from std_msgs.msg import String
 from object_estimation import make_observation
 from ontology import Ontology
 from queries import query
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
+from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, InteractiveMarkerFeedback
 
+from semantic_mapping.srv import *
+from interactive_markers.interactive_marker_server import *
 
 # Soma2 Data Manager For storing and deleting data
 class SOMDataManager():
@@ -37,7 +40,7 @@ class SOMDataManager():
         upts = rospy.Service('som/query', SOMQuery, self.handle_query_request)
         qrys = rospy.Service('som/lookup', SOMLookup, self.handle_lookup_request)
         roi_vis_pub = rospy.Publisher('som/roi_vis', MarkerArray, queue_size=1, latch=True)
-        obj_vis_pub = rospy.Publisher('som/obj_vis', MarkerArray, queue_size=1, latch=True)
+        self.server = InteractiveMarkerServer("som/obj_vis")
 
         dirname = os.path.dirname(__file__)
         fpath = os.path.join(dirname, '../config/' + rois_name)
@@ -52,8 +55,9 @@ class SOMDataManager():
     # Handles the soma2 objects to be inserted
     def handle_observe_request(self,req):
         obs = req.observation
-        res, id = make_observation(obs, self._rois, self._object_store, self._observation_store)
-        visualisation.update_objects(self._object_store)
+        res, id, obj = make_observation(obs, self._rois, self._object_store, self._observation_store)
+        if res:
+            visualisation.update_objects(obj, id, self.server)
         return SOMObserveResponse(res, id)
 
     # Handles the delete request of soma2 objs

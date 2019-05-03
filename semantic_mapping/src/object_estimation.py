@@ -55,7 +55,7 @@ def make_observation(obs, rois, object_store, observation_store):
         except rospy.ServiceException, e:
             print("Service call failed: %s"%(e))
             obj_id = ""
-            return (False, obj_id)
+            return (False, obj_id, obj)
 
     ## if the object id is supplied then update existing
     else:
@@ -74,8 +74,8 @@ def make_observation(obs, rois, object_store, observation_store):
         except rospy.ServiceException, e:
             print("Service call failed: %s"%(e))
             obj_id = ""
-            return (False, obj_id)
-    return (True, obj_id)
+            return (False, obj_id, obj)
+    return (True, obj_id, obj)
 
 def estimate_pose(observations):
     ''' Receives a list of observations and returns pose_estimate object

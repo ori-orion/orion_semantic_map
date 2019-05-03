@@ -25,11 +25,13 @@ def test_database():
     my_second_observation = SOMObservation()
 
     my_first_observation.pose_observation.position = Point(1.0, 2.0, 0.5)
+    my_first_observation.size = Point(0.4, 0.5, 0.3)
     my_first_observation.type = "shirt"
     my_first_observation.colour = "red"
 
-    my_second_observation.pose_observation.position = Point(1.5, 2.5, 200.0)
-    my_second_observation.type = "shirt"
+    my_second_observation.pose_observation.position = Point(1.5, 2.5, 0.3)
+    my_second_observation.size = Point(1.0, 0.5, 0.3)
+    my_second_observation.type = "person"
     my_second_observation.colour = "blue"
 
     mydir = os.path.dirname(__file__)

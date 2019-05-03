@@ -1,6 +1,10 @@
 import rospy
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Pose
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
+from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, InteractiveMarkerFeedback
+from mongodb_store.message_store import MessageStoreProxy
+from semantic_mapping.msg import SOMObservation, SOMObject
 
 def rois_to_marker_array(rois):
     markers = []
@@ -53,5 +57,54 @@ def rois_to_marker_array(rois):
         markers.append(marker)
     return markers
 
-def update_objects(object_store):
-    pass
+
+def handle_viz_input(input):
+    if (input.event_type == InteractiveMarkerFeedback.BUTTON_CLICK):
+        object_store = MessageStoreProxy(database="som_objects", collection="objects")
+        obj, meta = object_store.query_id(input.marker_name, SOMObject._type)
+        rospy.loginfo(obj)
+        rospy.loginfo("\n\n\n")
+
+def update_objects(object, id, server):
+
+    # delete marker from object if its already there
+    server.erase(id)
+
+    int_marker = InteractiveMarker()
+    int_marker.header.frame_id = "map"
+    int_marker.name = id
+    int_marker.description = object.type
+    int_marker.pose.position.x = object.pose_estimate.most_likely_pose.position.x
+    int_marker.pose.position.y = object.pose_estimate.most_likely_pose.position.y
+    int_marker.pose.position.z = object.pose_estimate.most_likely_pose.position.z
+    int_marker.pose.orientation.w = 1
+
+    box_marker = Marker()
+    box_marker.type = Marker.CUBE
+    box_marker.pose.orientation.w = 1
+    if object.size.x > 0.05:
+        box_marker.scale.x = object.size.x
+    else:
+        box_marker.scale.x = 0.05
+    if object.size.y > 0.05:
+        box_marker.scale.y = object.size.y
+    else:
+        box_marker.scale.y = 0.05
+    if object.size.z > 0.05:
+        box_marker.scale.z = object.size.z
+    else:
+        box_marker.scale.z = 0.05
+    box_marker.color.r = 0.0
+    box_marker.color.g = 0.2
+    box_marker.color.b = 1.0
+    box_marker.color.a = 0.7
+
+    button_control = InteractiveMarkerControl()
+    button_control.interaction_mode = InteractiveMarkerControl.BUTTON
+    button_control.always_visible = True
+    button_control.markers.append(box_marker)
+    int_marker.controls.append(button_control)
+
+    server.insert(int_marker, handle_viz_input)
+    server.applyChanges()
+    return
