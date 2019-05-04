@@ -9,6 +9,12 @@ from semantic_mapping.msg import SOMObservation, SOMObject
 
 
 
+def _default_value(x):
+    return (x is None or x == 0 or x == "")
+
+
+
+
 class InSOMObject(object):
     """A class that templates information that we might want to store about an
     object
@@ -46,7 +52,21 @@ class InSOMObject(object):
         * Decide on the correct type for a location (a tf?)
     """
     def __init__(self):
-        pass
+        self._id = None
+        self._map_name = None
+        self._meta_properties = None
+        self._type = None
+        self._timestamp = None
+        self._size = None
+        self._weight = None
+        self._task_role = None
+        self._cloud = None
+        self._colour = None
+        self._name = None
+        self._age = None
+        self._posture = None
+        self._gender = None
+        self._shirt_colour = None
 
     def get_id(self):
         return self._id
@@ -214,39 +234,39 @@ class InSOMObject(object):
     def to_som_observation_message(self):
         obj = SOMObservation()
 
-        if self._id is not None:
+        if not _default_value(self._id):
             obj.id = self._id
-        if self._map_name is not None:
+        if not _default_value(self._map_name):
             obj.map_name = self._map_name
-        if self._meta_properties is not None:
+        if not _default_value(self._meta_properties):
             obj.meta_properties = str(self._meta_properties)
-        if self._type is not None:
+        if not _default_value(self._type):
             obj.type = self._type
-        if self._timestamp is not None:
+        if not _default_value(self._timestamp):
             obj.timestamp = self._timestamp
-        if self._size is not None:
+        if not _default_value(self._size):
             obj.size = self._size
-        if self._weight is not None:
+        if not _default_value(self._weight):
             obj.weight = self._weight
-        if self._task_role is not None:
+        if not _default_value(self._task_role):
             obj.task_role = self._task_role
-        # if self._pose_estimate is not None:
-        #     obj.pose_observation = self._pose_estimate
-        # if self._robot_pose is not None:
+        # if not _default_value(self._pose_estimate):
+        #    obj.pose_estimate = self._pose_estimate
+        # if not _default_value(self._robot_pose):
         #     obj.robot_pose = self._robot_pose
-        if self._cloud is not None:
+        if not _default_value(self._cloud):
             obj.cloud = self._cloud
-        if self._colour is not None:
+        if not _default_value(self._colour):
             obj.colour = self._colour
-        if self._name is not None:
+        if not _default_value(self._name):
             obj.name = self._name
-        if self._age is not None:
+        if not _default_value(self._age):
             obj.age = self._age
-        if self._posture is not None:
+        if not _default_value(self._posture):
             obj.posture = self._posture
-        if self._gender is not None:
+        if not _default_value(self._gender):
             obj.gender = self._gender
-        if self._shirt_colour is not None:
+        if not _default_value(self._shirt_colour):
             obj.shirt_colour = self._shirt_colour
 
         return obj
@@ -283,39 +303,39 @@ class InSOMObject(object):
     def to_som_object_message(self):
         obj = SOMObject()
 
-        if self._id is not None:
+        if not _default_value(self._id):
             obj.id = self._id
-        if self._map_name is not None:
+        if not _default_value(self._map_name):
             obj.map_name = self._map_name
-        if self._meta_properties is not None:
+        if not _default_value(self._meta_properties):
             obj.meta_properties = str(self._meta_properties)
-        if self._type is not None:
+        if not _default_value(self._type):
             obj.type = self._type
-        if self._timestamp is not None:
+        if not _default_value(self._timestamp):
             obj.timestamp = self._timestamp
-        if self._size is not None:
+        if not _default_value(self._size):
             obj.size = self._size
-        if self._weight is not None:
+        if not _default_value(self._weight):
             obj.weight = self._weight
-        if self._task_role is not None:
+        if not _default_value(self._task_role):
             obj.task_role = self._task_role
-        #if self._pose_estimate is not None:
+        # if not _default_value(self._pose_estimate):
         #    obj.pose_estimate = self._pose_estimate
-        # if self._robot_pose is not None:
+        # if not _default_value(self._robot_pose):
         #     obj.robot_pose = self._robot_pose
-        if self._cloud is not None:
+        if not _default_value(self._cloud):
             obj.cloud = self._cloud
-        if self._colour is not None:
+        if not _default_value(self._colour):
             obj.colour = self._colour
-        if self._name is not None:
+        if not _default_value(self._name):
             obj.name = self._name
-        if self._age is not None:
+        if not _default_value(self._age):
             obj.age = self._age
-        if self._posture is not None:
+        if not _default_value(self._posture):
             obj.posture = self._posture
-        if self._gender is not None:
+        if not _default_value(self._gender):
             obj.gender = self._gender
-        if self._shirt_colour is not None:
+        if not _default_value(self._shirt_colour):
             obj.shirt_colour = self._shirt_colour
 
         return obj
@@ -326,47 +346,47 @@ class InSOMObject(object):
         Iterates through the non-null values, and returns a (string, value)
         pair for each one. THe string is the
         """
-        if self._id is not None:
+        if not _default_value(self._id):
             yield "obj_id", self._id
-        if self._map_name is not None:
+        if not _default_value(self._map_name):
             yield "map_name", self._map_name
-        # if self._meta_properties is not None:
+        # if not _default_value(self._meta_properties):
         #     yield "meta_properties", self._meta_properties
-        if self._type is not None:
+        if not _default_value(self._type):
             yield "type", self._type
-        if self._timestamp is not None:
+        if not _default_value(self._timestamp):
             yield "timestamp", self._timestamp
-        #if self._size is not None:
+        # if not _default_value(self._size):
         #    yield "size", self._size
-        if self._weight is not None:
+        if not _default_value(self._weight):
             yield "weight", self._weight
-        if self._task_role is not None:
+        if not _default_value(self._task_role):
             yield "task_role", self._task_role
-        #if self._pose_estimate is not None:
+        # if not _default_value(self._pose_estimate):
         #    yield "pose_estimate", self._pose_estimate
-        # if self._size is not None:
+        # if not _default_value(self._size):
         #     yield "size", self._size
-        # if self._robot_pose is not None:
+        # if not _default_value(self._robot_pose):
         #     yield "robot_pose", self._robot_pose
-        # if self._cloud is not None:
+        # if not _default_value(self._cloud):
         #     yield "cloud", self._cloud
-        if self._colour is not None:
+        if not _default_value(self._colour):
             yield "colour", self._colour
-        if self._room_name is not None:
+        if not _default_value(self._room_name):
             yield "room_name", self._room_name
-        if self._waypoint is not None:
+        if not _default_value(self._waypoint):
             yield "waypoint", self._waypoint
-        # if self._room_geometry is not None:
+        # if not _default_value(self._room_geometry):
         #     yield "room_geometry", self._room_geometry
-        if self._name is not None:
+        if not _default_value(self._name):
             yield "name", self._name
-        if self._age is not None:
+        if not _default_value(self._age):
             yield "age", self._age
-        if self._posture is not None:
+        if not _default_value(self._posture):
             yield "posture", self._posture
-        if self._gender is not None:
+        if not _default_value(self._gender):
             yield "gender", self._gender
-        if self._shirt_colour is not None:
+        if not _default_value(self._shirt_colour):
             yield "shirt_colour", self._shirt_colour
 
 
