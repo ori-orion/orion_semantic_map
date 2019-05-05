@@ -7,7 +7,7 @@ from geometry_msgs.msg import Pose, Point
 from geometry_msgs.msg import PoseArray
 from threading import Timer
 from mongodb_store.message_store import MessageStoreProxy
-from semantic_mapping.msg import SOMObservation, SOMObject
+from semantic_mapping.msg import SOMObservation, SOMObject, Relation
 from semantic_mapping.srv import *
 from std_msgs.msg import String
 
@@ -43,7 +43,7 @@ def test_database():
     print(resp.obj_id)
     my_second_observation.obj_id = resp.obj_id
     resp = observe_objs_srv(my_second_observation)
-    resp = query_object_srv(my_first_observation, 10, SOMObservation(), Pose())
+    resp = query_object_srv(my_first_observation, Relation(), SOMObservation(), Pose())
     print(resp)
     #print(resp)
     #returned_object = lookup_object_srv(resp.obj_ids[0])

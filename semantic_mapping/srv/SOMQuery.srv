@@ -1,6 +1,6 @@
 
 SOMObservation x
-uint32 relation
+Relation relation
 SOMObservation y
 geometry_msgs/Pose current_robot_pose
 

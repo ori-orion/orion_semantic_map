@@ -49,20 +49,22 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_ob
     """
     o1_matches = _mongo_som_objects_matching_template(som_template_one, mongo_object_store)
     o2_matches = _mongo_som_objects_matching_template(som_template_two, mongo_object_store)
-    relations = [relation] if relation is not None else _get_all_relations()
+    print(o1_matches)
 
     matches = []
     for o1 in o1_matches:
         for o2 in o2_matches:
-            rel = spatial_relation(cur_robot_pose, o1, o2)
+            rel = _spatial_relation(cur_robot_pose, o1, o2)
 
-            match = True
-            for key in relation.__dict__:
-                if relation[key] and not rel[key]:
-                    match = False
+            matching = True
+            strings = relation.__str__().split('\n')
+            for str in strings:
+                key = str.split(':')[0]
+                if relation.__getattribute__(key) and not rel.__getattribute__(key):
+                    matching = False
 
-            if match:
-                matching = Match(o1, rel, o2)
+            if matching:
+                match = Match(o1, rel, o2)
                 matches.append(match)
     return matches
 
@@ -85,7 +87,8 @@ def _mongo_som_objects_matching_template(som_obs, mongo_object_store):
 
     # Perform the query (return a list of SOMObjects)
     result = mongo_object_store.query(SOMObject._type, message_query=query_dict)
-    return []
+    result = [i[0] for i in result]
+    return result
 
 def _spatial_relation(cur_robot_pose, som_obj_one, som_obj_two):
     """
@@ -116,9 +119,9 @@ uples
     dist_thr = 3.0
 
     relation = Relation()
-    robot_pos = np.array([cur_robot_pose.x, cur_robot_pose.y, cur_robot_pose.z])
-    obj_one_pos = np.array([som_obj_one.pose_estimate.x, som_obj_one.pose_estimate.y, som_obj_one.pose_estimate.z])
-    obj_two_pos = np.array([som_obj_two.pose_estimate.x, som_obj_two.pose_estimate.y, som_obj_two.pose_estimate.z])
+    robot_pos = np.array([cur_robot_pose.position.x, cur_robot_pose.position.y, cur_robot_pose.position.z])
+    obj_one_pos = np.array([som_obj_one.pose_estimate.most_likely_pose.position.x, som_obj_one.pose_estimate.most_likely_pose.position.y, som_obj_one.pose_estimate.most_likely_pose.position.z])
+    obj_two_pos = np.array([som_obj_two.pose_estimate.most_likely_pose.position.x, som_obj_two.pose_estimate.most_likely_pose.position.y, som_obj_two.pose_estimate.most_likely_pose.position.z])
 
     robot_to_two = obj_two_pos - robot_pos
     two_to_one = obj_one_pos - obj_two_pos
@@ -127,12 +130,11 @@ uples
     if np.linalg.norm(obj_one_pos - obj_two_pos) > dist_thr:
         return relation
     else:
-        relation.at = True
+        relation.near = True
 
     # vertical relation
-    if som_obj_one.pose.z > som_obj_two.pose.z:
+    if obj_one_pos[2] > obj_two_pos[2]:
         relation.above = True
-        relation.ontop = True
     else:
         relation.below = True
 

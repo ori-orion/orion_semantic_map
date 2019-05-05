@@ -52,7 +52,7 @@ class InSOMObject(object):
         * Decide on the correct type for a location (a tf?)
     """
     def __init__(self):
-        self._id = None
+        self._obj_id = None
         self._map_name = None
         self._meta_properties = None
         self._type = None
@@ -69,10 +69,10 @@ class InSOMObject(object):
         self._shirt_colour = None
 
     def get_id(self):
-        return self._id
+        return self._obj_id
 
     def set_id(self, id):
-        self._id = id
+        self._obj_id = id
 
     def get_map_name(self):
         return self._map_name
@@ -234,8 +234,8 @@ class InSOMObject(object):
     def to_som_observation_message(self):
         obj = SOMObservation()
 
-        if not _default_value(self._id):
-            obj.id = self._id
+        if not _default_value(self._obj_id):
+            obj.obj_id = self._obj_id
         if not _default_value(self._map_name):
             obj.map_name = self._map_name
         if not _default_value(self._meta_properties):
@@ -276,7 +276,7 @@ class InSOMObject(object):
     def from_som_object_message(self, som_observation):
         obj = InSomObject()
 
-        obj.set_id(som_observation.id)
+        obj.set_id(som_observation.obj_id)
         obj.set_map_name(som_observation.map_name)
         obj.set_meta_properties(som_observation.meta_properties)
         obj.set_type(som_observation.type)
@@ -303,8 +303,8 @@ class InSOMObject(object):
     def to_som_object_message(self):
         obj = SOMObject()
 
-        if not _default_value(self._id):
-            obj.id = self._id
+        if not _default_value(self._obj_id):
+            obj.id = self._obj_id
         if not _default_value(self._map_name):
             obj.map_name = self._map_name
         if not _default_value(self._meta_properties):
@@ -346,8 +346,8 @@ class InSOMObject(object):
         Iterates through the non-null values, and returns a (string, value)
         pair for each one. THe string is the
         """
-        if not _default_value(self._id):
-            yield "obj_id", self._id
+        if not _default_value(self._obj_id):
+            yield "obj_id", self._obj_id
         if not _default_value(self._map_name):
             yield "map_name", self._map_name
         # if not _default_value(self._meta_properties):
