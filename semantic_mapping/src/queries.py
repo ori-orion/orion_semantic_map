@@ -4,7 +4,7 @@ import numpy as np
 from som_object import InSOMObject
 from semantic_mapping.msg import Match, Relation, SOMObject
 
-def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_object_store):
+def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_object_store, ontology):
     """
     Performs a query to the semantic object database. This function uses
     SOMObject objects as templates. Meaning that any fields specified in
@@ -47,10 +47,9 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_ob
         o1 matches the template of 'som_obj_one' and o2 matches the
         template of 'som_obj_two'.
     """
-    o1_matches = _mongo_som_objects_matching_template(som_template_one, mongo_object_store)
-    o2_matches = _mongo_som_objects_matching_template(som_template_two, mongo_object_store)
+    o1_matches = _mongo_som_objects_matching_template(som_template_one, mongo_object_store, ontology)
+    o2_matches = _mongo_som_objects_matching_template(som_template_two, mongo_object_store, ontology)
     print(o1_matches)
-
     matches = []
     for o1 in o1_matches:
         for o2 in o2_matches:
@@ -68,7 +67,7 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_ob
                 matches.append(match)
     return matches
 
-def _mongo_som_objects_matching_template(som_obs, mongo_object_store):
+def _mongo_som_objects_matching_template(som_obs, mongo_object_store, ontology):
     """uples
     Treats the SOMObservation 'som_obs' as a template to match in mongo db.
     This returns a list of SOMObjects in the database matching the
@@ -85,10 +84,23 @@ def _mongo_som_objects_matching_template(som_obs, mongo_object_store):
     som_obj = InSOMObject.from_som_observation_message(som_obs)
     query_dict = som_obj.to_som_object_mongo_db_query()
 
-    # Perform the query (return a list of SOMObjects)
-    result = mongo_object_store.query(SOMObject._type, message_query=query_dict)
-    result = [i[0] for i in result]
-    return result
+    # If query includes type return matching types including children in ontology
+    if 'type' in query_dict:
+        if not ontology.check_class_exists(query_dict['type']):
+            raise Exception('Type specified in observation is not valid ontology class')
+            return SOMObserveResponse(False, '')
+        valid_types = ontology.get_valid_types(query_dict['type'])
+
+        results = []
+        for valid_type in valid_types:
+            query_dict['type'] = valid_type.lower()
+            response = mongo_object_store.query(SOMObject._type, message_query=query_dict)
+            result = [i[0] for i in response]
+            results = results + result
+    else:
+        response = mongo_object_store.query(SOMObject._type, message_query=query_dict)
+        results = [i[0] for i in response]
+    return results
 
 def _spatial_relation(cur_robot_pose, som_obj_one, som_obj_two):
     """

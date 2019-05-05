@@ -26,12 +26,12 @@ def test_database():
 
     my_first_observation.pose_observation.position = Point(1.0, 2.0, 0.5)
     my_first_observation.size = Point(0.4, 0.5, 0.3)
-    my_first_observation.type = "shirt"
+    my_first_observation.type = "Bacon"
     my_first_observation.colour = "red"
 
     my_second_observation.pose_observation.position = Point(1.5, 2.5, 0.3)
     my_second_observation.size = Point(1.0, 0.5, 0.3)
-    my_second_observation.type = "person"
+    my_second_observation.type = "Pizza"
     my_second_observation.colour = "blue"
 
     mydir = os.path.dirname(__file__)
@@ -40,11 +40,11 @@ def test_database():
     resp = observe_objs_srv(my_first_observation)
     resp = observe_objs_srv(my_second_observation)
 
-    print(resp.obj_id)
-    my_second_observation.obj_id = resp.obj_id
-    resp = observe_objs_srv(my_second_observation)
-    resp = query_object_srv(my_first_observation, Relation(), SOMObservation(), Pose())
-    print(resp)
+    my_query = SOMObservation()
+    my_query.type = "food"
+    resp = query_object_srv(my_query, Relation(), SOMObservation(), Pose())
+    for match in resp.matches:
+        print match.obj1.type
     #print(resp)
     #returned_object = lookup_object_srv(resp.obj_ids[0])
     #print(returned_object)

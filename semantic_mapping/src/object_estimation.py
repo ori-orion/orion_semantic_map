@@ -40,7 +40,9 @@ def make_observation(obs, rois, object_store, observation_store):
     time_now = rospy.Time.now().secs
     obs.timestamp = time_now
     obj = message_conversion.observation_to_object(obs, default_frame_id="/map")
-
+    obs.type = obs.type.lower()
+    obj.type = obj.type.lower()
+    
     ## if no object id is supplied insert new object
     if obs.obj_id == "":
 

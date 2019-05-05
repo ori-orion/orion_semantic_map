@@ -17,11 +17,11 @@ class Ontology():
         """
         exists = False
         for onto_class in self.ontology.all_classes:
-            if onto_class.bestLabel().toPython() == label:
+            if onto_class.bestLabel().toPython().lower() == label.lower():
                 exists = True
         return exists
 
-    def get_children(self, label):
+    def get_valid_types(self, label):
         """
         Returns list of labels of children of object, including the label
         of the object itself.
@@ -31,12 +31,12 @@ class Ontology():
             return []
 
         for onto_class in self.ontology.all_classes:
-            if onto_class.bestLabel().toPython() == label:
-                list_of_children = [str(onto_class.bestLabel().toPython())]
+            if str(onto_class.bestLabel().toPython()).lower() == label.lower():
+                list_of_children = [str(onto_class.bestLabel().toPython()).lower()]
                 children = onto_class.children()
                 break
 
         for child in children:
-            list_of_children.append(str(child.bestLabel().toPython()))
+            list_of_children.append(str(child.bestLabel().toPython()).lower())
 
         return list_of_children

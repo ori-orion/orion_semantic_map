@@ -32,6 +32,7 @@ from interactive_markers.interactive_marker_server import *
 class SOMDataManager():
     def __init__(self, ontology_name, rois_name, clear_db):
 
+        self._ontology = Ontology(ontology_name)
         self._object_store = MessageStoreProxy(database="som_objects", collection="objects")
         self._observation_store = MessageStoreProxy(database="som_observations", collection="observations")
 
@@ -52,15 +53,18 @@ class SOMDataManager():
         roi_markers = visualisation.rois_to_marker_array(self._rois)
         roi_vis_pub.publish(roi_markers)
 
-        self._ontology = Ontology(ontology_name)
         rospy.spin()
 
     # Handles the soma2 objects to be inserted
     def handle_observe_request(self,req):
         obs = req.observation
+        if not self._ontology.check_class_exists(obs.type):
+            raise Exception('Type specified in observation is not valid ontology class')
+            return SOMObserveResponse(False, '')
         res, id, obj = make_observation(obs, self._rois, self._object_store, self._observation_store)
         if res:
             visualisation.update_objects(obj, id, self.server)
+
         return SOMObserveResponse(res, id)
 
     def clear_databases(self):
@@ -89,7 +93,7 @@ class SOMDataManager():
         relation = req.relation
         som_template_two = req.y
         cur_robot_pose = req.current_robot_pose
-        matches = query(som_template_one, relation, som_template_two, cur_robot_pose, self._object_store)
+        matches = query(som_template_one, relation, som_template_two, cur_robot_pose, self._object_store, self._ontology)
         return SOMQueryResponse(matches)
 
     def handle_lookup_request(self, req):
