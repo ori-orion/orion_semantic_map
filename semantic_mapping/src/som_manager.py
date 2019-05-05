@@ -30,10 +30,13 @@ from interactive_markers.interactive_marker_server import *
 
 # Soma2 Data Manager For storing and deleting data
 class SOMDataManager():
-    def __init__(self, ontology_name, rois_name):
+    def __init__(self, ontology_name, rois_name, clear_db):
 
         self._object_store = MessageStoreProxy(database="som_objects", collection="objects")
         self._observation_store = MessageStoreProxy(database="som_observations", collection="observations")
+
+        if clear_db.lower() == "true":
+            self.clear_databases()
 
         inss = rospy.Service('som/observe', SOMObserve, self.handle_observe_request)
         dels = rospy.Service('som/delete', SOMDelete, self.handle_delete_request)
@@ -59,6 +62,14 @@ class SOMDataManager():
         if res:
             visualisation.update_objects(obj, id, self.server)
         return SOMObserveResponse(res, id)
+
+    def clear_databases(self):
+        objs = self._object_store.query(SOMObject._type)
+        obss = self._observation_store.query(SOMObservation._type)
+        for object,meta in objs:
+            self._object_store.delete(str(meta['_id']))
+        for obs,meta in obss:
+            self._observation_store.delete(str(meta['_id']))
 
     # Handles the delete request of soma2 objs
     def handle_delete_request(self,req):
@@ -92,7 +103,7 @@ class SOMDataManager():
 if __name__=="__main__":
     rospy.init_node("soma_data_manager")
     myargv = rospy.myargv(argv=sys.argv)
-    if  len(myargv) < 3:
-        print('usage: som_manager.py <ontology.owl> <rois.pkl>')
+    if  len(myargv) < 4:
+        print('usage: som_manager.py <ontology.owl> <rois.pkl> <clear_db_bool>')
     else:
-        SOMDataManager(myargv[1], myargv[2])
+        SOMDataManager(myargv[1], myargv[2], myargv[3])
