@@ -7,7 +7,6 @@ import datetime
 import time
 import math
 import message_conversion
-import object_estimation
 import os
 import pickle
 import visualisation
@@ -19,7 +18,7 @@ from threading import Timer
 from mongodb_store.message_store import MessageStoreProxy
 from semantic_mapping.msg import SOMObservation, SOMObject
 from std_msgs.msg import String
-from object_estimation import make_observation
+from observation import make_observation
 from ontology import Ontology
 from queries import query
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer

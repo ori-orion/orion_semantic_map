@@ -35,27 +35,21 @@ def test_database():
     my_second_observation.type = "Pizza"
     my_second_observation.colour = "blue"
 
-    my_third_observation.pose_observation.position = Point(0.0, 0.0, 0.5)
-    my_third_observation.size = Point(0.4, 0.5, 0.3)
-    my_third_observation.type = "Bacon"
-    my_third_observation.colour = "red"
-
     mydir = os.path.dirname(__file__)
     robocup_onto_path = os.path.join(mydir, '../config/robocupontology.owl')
 
     resp = observe_objs_srv(my_first_observation)
     resp = observe_objs_srv(my_second_observation)
+
+    my_third_observation = my_second_observation
+    my_third_observation.obj_id = resp.obj_id
+    my_third_observation.shirt_colour = 2
+
     resp = observe_objs_srv(my_third_observation)
 
-    my_query = SOMObservation()
-    my_query.type = "bacon"
-
-
-    resp = query_object_srv(my_first_observation, Relation(above=True), SOMObservation(), Pose())
+    resp = query_object_srv(SOMObservation(), Relation(), SOMObservation(), Pose())
     for match in resp.matches:
-        print match.obj1.type
-        print match.relation
-        print match.obj2.type
+        print match.obj1
         print('\n\n')
     #print(resp)
     #returned_object = lookup_object_srv(resp.obj_ids[0])

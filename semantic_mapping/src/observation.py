@@ -1,27 +1,9 @@
 import message_conversion
 import rospy
-import shapely.geometry as geom
+
 from semantic_mapping.msg import *
+from som_object import InSOMObject
 
-def get_room_name(pose_estimate, rois):
-    '''Given a PoseEstimate and a list of SomROIObjects, returns the room
-    name that the PoseEstimate is in, based on the most_likely_pose. If the
-    PoseEstimate is not in a room, returns "NotInRoom"
-    '''
-    obj_pose = pose_estimate.most_likely_pose
-    obj_point = geom.Point(obj_pose.position.x, obj_pose.position.y)
-
-
-    for roi in rois:
-        vertex_poses = roi.posearray.poses
-        vertex_tuples = []
-        for vertex_pose in vertex_poses:
-            vertex_tuples.append((vertex_pose.position.x, vertex_pose.position.y))
-        roi_poly = geom.polygon.Polygon(vertex_tuples)
-
-        if roi_poly.contains(obj_point):
-            return roi.name
-    return "NotInRoom"
 
 def make_observation(obs, rois, object_store, observation_store):
     ''' Receives an observation and updates the object and observation stores
@@ -39,16 +21,14 @@ def make_observation(obs, rois, object_store, observation_store):
     '''
     time_now = rospy.Time.now().secs
     obs.timestamp = time_now
-    obj = message_conversion.observation_to_object(obs, default_frame_id="/map")
     obs.type = obs.type.lower()
-    obj.type = obj.type.lower()
-    
+
     ## if no object id is supplied insert new object
     if obs.obj_id == "":
+        in_som_object = InSOMObject.from_som_observation_message(obs)
+        in_som_object.update_from_observation_messages([obs], rois)
+        obj = in_som_object.to_som_object_message()
 
-        # pose estimate based on single observation
-        obj.pose_estimate = estimate_pose([obs])
-        obj.room_name = get_room_name(obj.pose_estimate, rois)
         try:
             obj_id = object_store.insert(obj)
             obs.obj_id = obj_id
@@ -68,9 +48,11 @@ def make_observation(obs, rois, object_store, observation_store):
             response = observation_store.query(SOMObservation._type,message_query={"obj_id": obj_id})
             all_observations = [i[0] for i in response]
 
-            # update object with new pose estimate
-            obj.pose_estimate = estimate_pose(all_observations)
-            obj.room_name = get_room_name(obj.pose_estimate, rois)
+            # update object from new observation
+            obj, meta = object_store.query_id(obj_id, SOMObject._type)
+            in_som_object = InSOMObject.from_som_object_message(obj)
+            in_som_object.update_from_observation_messages(all_observations, rois)
+            obj = in_som_object.to_som_object_message()
             object_store.update_id(obj_id, obj)
 
         except rospy.ServiceException, e:
@@ -78,12 +60,3 @@ def make_observation(obs, rois, object_store, observation_store):
             obj_id = ""
             return (False, obj_id, obj)
     return (True, obj_id, obj)
-
-def estimate_pose(observations):
-    ''' Receives a list of observations and returns pose_estimate object
-
-    '''
-    pose_estimate = PoseEstimate()
-    pose_estimate.most_likely_pose = observations[-1].pose_observation
-    pose_estimate.most_recent_pose = observations[-1].pose_observation
-    return pose_estimate

@@ -4,13 +4,13 @@ Defines the barebones API for InSOMObjects.
 
 
 
-from semantic_mapping.msg import SOMObservation, SOMObject
-
+from semantic_mapping.msg import SOMObservation, SOMObject, PoseEstimate
+import shapely.geometry as geom
 
 
 
 def _default_value(x):
-    return (x is None or x == 0 or x == "")
+    return (x is None or x == 0 or x == "" or x == PoseEstimate())
 
 
 
@@ -230,6 +230,32 @@ class InSOMObject(object):
 
         return obj
 
+    @classmethod
+    def from_som_object_message(self, som_object):
+        obj = InSOMObject()
+
+        obj.set_id(som_object.obj_id)
+        obj.set_map_name(som_object.map_name)
+        obj.set_meta_properties(som_object.meta_properties)
+        obj.set_type(som_object.type)
+        obj.set_timestamp(som_object.timestamp)
+        obj.set_size(som_object.size)
+        obj.set_weight(som_object.weight)
+        obj.set_task_role(som_object.task_role)
+        obj.set_pose_estimate(som_object.pose_estimate)
+        # obj.set_robot_pose(som_object.robot_pose)
+        obj.set_cloud(som_object.cloud)
+        obj.set_room_name(som_object.room_name)
+        obj.set_waypoint(som_object.waypoint)
+        obj.set_room_geometry(som_object.room_geometry)
+        obj.set_colour(som_object.colour)
+        obj.set_name(som_object.name)
+        obj.set_age(som_object.age)
+        obj.set_posture(som_object.posture)
+        obj.set_gender(som_object.gender)
+        obj.set_shirt_colour(som_object.shirt_colour)
+
+        return obj
 
     def to_som_observation_message(self):
         obj = SOMObservation()
@@ -272,39 +298,14 @@ class InSOMObject(object):
         return obj
 
 
-    @classmethod
-    def from_som_object_message(self, som_observation):
-        obj = InSomObject()
 
-        obj.set_id(som_observation.obj_id)
-        obj.set_map_name(som_observation.map_name)
-        obj.set_meta_properties(som_observation.meta_properties)
-        obj.set_type(som_observation.type)
-        obj.set_timestamp(som_observation.timestamp)
-        obj.set_size(som_observation.size)
-        obj.set_weight(som_observation.weight)
-        obj.set_task_role(som_observation.task_role)
-        obj.set_pose_estimate(som_observation.pose_estimate)
-        # obj.set_robot_pose(som_observation.robot_pose)
-        obj.set_cloud(som_observation.cloud)
-        obj.set_room_name(som_observation.room_name)
-        obj.set_waypoint(som_observation.waypoint)
-        obj.set_room_geometry(som_observation.room_geometry)
-        obj.set_colour(som_observation.colour)
-        obj.set_name(som_observation.name)
-        obj.set_age(som_observation.age)
-        obj.set_posture(som_observation.posture)
-        obj.set_gender(som_observation.gender)
-        obj.set_shirt_colour(som_observation.shirt_colour)
-
-        return obj
 
 
     def to_som_object_message(self):
         obj = SOMObject()
 
         if not _default_value(self._obj_id):
-            obj.id = self._obj_id
+            obj.obj_id = self._obj_id
         if not _default_value(self._map_name):
             obj.map_name = self._map_name
         if not _default_value(self._meta_properties):
@@ -319,8 +320,8 @@ class InSOMObject(object):
             obj.weight = self._weight
         if not _default_value(self._task_role):
             obj.task_role = self._task_role
-        # if not _default_value(self._pose_estimate):
-        #    obj.pose_estimate = self._pose_estimate
+        if not _default_value(self._pose_estimate):
+            obj.pose_estimate = self._pose_estimate
         # if not _default_value(self._robot_pose):
         #     obj.robot_pose = self._robot_pose
         if not _default_value(self._cloud):
@@ -340,6 +341,52 @@ class InSOMObject(object):
 
         return obj
 
+    def update_from_observation_messages(self, observations, rois):
+        pose_estimate = self.estimate_pose(observations)
+        most_recent_observation = observations[-1]
+        self.update_properties_from_obs_msg(most_recent_observation)
+        self.set_pose_estimate(pose_estimate)
+        self.set_room_name(self.get_room_name(pose_estimate, rois))
+
+    def update_properties_from_obs_msg(self, som_observation):
+        ''' For an existing InSOMObject this method uses a new observation to
+        update properties if the properties are not default values in the new
+        observation
+        '''
+        if not _default_value(som_observation.obj_id):
+            self._obj_id = som_observation.obj_id
+        if not _default_value(som_observation.map_name):
+            self._map_name = som_observation.map_name
+        if not _default_value(som_observation.meta_properties):
+            self._meta_properties = str(som_observation.meta_properties)
+        if not _default_value(som_observation.type):
+            self._type = som_observation.type
+        if not _default_value(som_observation.timestamp):
+            self._timestamp = som_observation.timestamp
+        if not _default_value(som_observation.size):
+            self._size = som_observation.size
+        if not _default_value(som_observation.weight):
+            self._weight = som_observation.weight
+        if not _default_value(som_observation.task_role):
+            self._task_role = som_observation.task_role
+        # if not _default_value(self._pose_estimate):
+        #    obj.pose_estimate = self._pose_estimate
+        # if not _default_value(self._robot_pose):
+        #     obj.robot_pose = self._robot_pose
+        if not _default_value(som_observation.cloud):
+            self._cloud = som_observation.cloud
+        if not _default_value(som_observation.colour):
+            self._colour = som_observation.colour
+        if not _default_value(som_observation.name):
+            self._name = som_observation.name
+        if not _default_value(som_observation.age):
+            self._age = som_observation.age
+        if not _default_value(som_observation.posture):
+            self._posture = som_observation.posture
+        if not _default_value(som_observation.gender):
+            self._gender = som_observation.gender
+        if not _default_value(som_observation.shirt_colour):
+            self._shirt_colour = som_observation.shirt_colour
 
     def dict_iter(self):
         """
@@ -417,6 +464,30 @@ class InSOMObject(object):
 
         return {key: value for key, value in self.dict_iter()}
 
+    def get_room_name(self, pose_estimate, rois):
+        '''Given a PoseEstimate and a list of SomROIObjects, returns the room
+        name that the PoseEstimate is in, based on the most_likely_pose. If the
+        PoseEstimate is not in a room, returns "NotInRoom"
+        '''
+        obj_pose = pose_estimate.most_likely_pose
+        obj_point = geom.Point(obj_pose.position.x, obj_pose.position.y)
 
-    def from_som_object_message(self):
-        pass
+
+        for roi in rois:
+            vertex_poses = roi.posearray.poses
+            vertex_tuples = []
+            for vertex_pose in vertex_poses:
+                vertex_tuples.append((vertex_pose.position.x, vertex_pose.position.y))
+            roi_poly = geom.polygon.Polygon(vertex_tuples)
+
+            if roi_poly.contains(obj_point):
+                return roi.name
+        return "NotInRoom"
+
+    def estimate_pose(self, observations):
+        ''' Receives a list of observations and returns pose_estimate object
+        '''
+        pose_estimate = PoseEstimate()
+        pose_estimate.most_likely_pose = observations[-1].pose_observation
+        pose_estimate.most_recent_pose = observations[-1].pose_observation
+        return pose_estimate
