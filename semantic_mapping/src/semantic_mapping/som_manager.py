@@ -50,19 +50,24 @@ class SOMDataManager():
         qrys = rospy.Service('som/query', SOMQuery, self.handle_query_request)
         lkps = rospy.Service('som/lookup', SOMLookup, self.handle_lookup_request)
         clr = rospy.Service('som/clear_database', SOMClearDatabase, self.clear_databases)
+        getall = rospy.Service('som/get_all_objects', SOMGetAllObjects, self.get_all_objects)
         rospy.spin()
 
     # Handles the soma2 objects to be inserted
     def handle_observe_request(self,req):
         obs = req.observation
-        if not self._ontology.check_class_exists(obs.type):
+        if (not self._ontology.check_class_exists(obs.type)) and (obs.type != ''):
             raise Exception('Type specified in observation is not valid ontology class')
             return SOMObserveResponse(False, '')
         res, id, obj = make_observation(obs, self._rois, self._object_store, self._observation_store)
         if res:
             visualisation.update_objects(obj, id, self.server)
-
         return SOMObserveResponse(res, id)
+
+    def get_all_objects(self, req):
+        resp = self._object_store.query(SOMObject._type)
+        objects = [i[0] for i in resp]
+        return SOMGetAllObjectsResponse(objects)
 
     def clear_databases(self, req):
         objs = self._object_store.query(SOMObject._type)
@@ -75,12 +80,17 @@ class SOMDataManager():
 
     # Handles the delete request of soma2 objs
     def handle_delete_request(self,req):
-        oid = req.obj_id
-        res = self._object_store.query(SOMObject._type,message_query={"obj_id": oid})
+        obj_id = req.obj_id
+        response = self._observation_store.query(SOMObject._type,message_query={"obj_id": obj_id})
 
-        for o,om in res:
+        try:
+            self._object_store.delete(obj_id)
+        except:
+            return SOMDeleteResponse(False)
+
+        for obj, meta in response:
             try:
-                self._object_store.delete(str(om['obj_id']))
+                self._observation_store.delete(meta['_id'])
             except:
                 return SOMDeleteResponse(False)
         return SOMDeleteResponse(True)

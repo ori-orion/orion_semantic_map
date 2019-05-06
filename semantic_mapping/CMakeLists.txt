@@ -68,6 +68,7 @@ catkin_python_setup()
    SOMQuery.srv
    SOMLookup.srv
    SOMClearDatabase.srv
+   SOMGetAllObjects.srv
  )
 
 ## Generate actions in the 'action' folder

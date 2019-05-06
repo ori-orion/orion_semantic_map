@@ -31,8 +31,10 @@ def make_observation(obs, rois, object_store, observation_store):
 
         try:
             obj_id = object_store.insert(obj)
+            obj.obj_id = obj_id
             obs.obj_id = obj_id
             obs_id = observation_store.insert(obs)
+            object_store.update_id(obj_id, obj)
 
         except rospy.ServiceException, e:
             print("Service call failed: %s"%(e))
