@@ -60,6 +60,7 @@ class SOMDataManager():
             raise Exception('Type specified in observation is not valid ontology class')
             return SOMObserveResponse(False, '')
         res, id, obj = make_observation(obs, self._rois, self._object_store, self._observation_store)
+
         if res:
             visualisation.update_objects(obj, id, self.server)
         return SOMObserveResponse(res, id)
@@ -74,6 +75,7 @@ class SOMDataManager():
         obss = self._observation_store.query(SOMObservation._type)
         for object,meta in objs:
             self._object_store.delete(str(meta['_id']))
+            visualisation.delete_object(str(meta['_id']), self.server)
         for obs,meta in obss:
             self._observation_store.delete(str(meta['_id']))
         return SOMClearDatabaseResponse()
@@ -85,6 +87,7 @@ class SOMDataManager():
 
         try:
             self._object_store.delete(obj_id)
+            visualisation.delete_object(obj_id, self.server)
         except:
             return SOMDeleteResponse(False)
 

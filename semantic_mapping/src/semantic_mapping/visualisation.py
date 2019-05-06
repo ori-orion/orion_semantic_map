@@ -65,6 +65,10 @@ def handle_viz_input(input):
         rospy.loginfo(obj)
         rospy.loginfo("\n\n\n")
 
+def delete_object(id, server):
+    server.erase(id)
+    server.applyChanges()
+
 def update_objects(object, id, server):
 
     # delete marker from object if its already there

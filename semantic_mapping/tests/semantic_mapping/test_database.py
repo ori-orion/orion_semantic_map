@@ -23,7 +23,7 @@ class TestDatabase(unittest.TestCase):
         self.clear_database_srv()
 
     def tearDown(self):
-        pass
+        self.clear_database_srv()
 
     def test_add_to_database(self):
         obs = SOMObservation()

@@ -100,7 +100,7 @@ def _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store,
     matches = []
     for o1 in o1_matches:
         for o2 in o2_matches:
-            rel = _spatial_relation(cur_robot_pose, o1, o2)
+            rel = spatial_relation(cur_robot_pose, o1, o2)
             matching = True
             strings = relation.__str__().split('\n')
 
@@ -144,7 +144,7 @@ def _mongo_som_objects_matching_template(query_dict, mongo_object_store, ontolog
         results = [i[0] for i in response]
     return results
 
-def _spatial_relation(cur_robot_pose, som_obj_one, som_obj_two):
+def spatial_relation(cur_robot_pose, som_obj_one, som_obj_two):
     """
     This should return the relation ~ that makes the statement
     "som_obj_one ~ som_obj_two" true.
