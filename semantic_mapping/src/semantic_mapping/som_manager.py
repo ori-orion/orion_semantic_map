@@ -29,29 +29,27 @@ from interactive_markers.interactive_marker_server import *
 
 # Soma2 Data Manager For storing and deleting data
 class SOMDataManager():
-    def __init__(self, ontology_name, rois_name, clear_db):
-
+    def __init__(self, ontology_name, rois_name):
+        rospy.init_node("soma_data_manager")
         self._ontology = Ontology(ontology_name)
         self._object_store = MessageStoreProxy(database="som_objects", collection="objects")
         self._observation_store = MessageStoreProxy(database="som_observations", collection="observations")
 
-        if clear_db.lower() == "true":
-            self.clear_databases()
-
-        inss = rospy.Service('som/observe', SOMObserve, self.handle_observe_request)
-        dels = rospy.Service('som/delete', SOMDelete, self.handle_delete_request)
-        upts = rospy.Service('som/query', SOMQuery, self.handle_query_request)
-        qrys = rospy.Service('som/lookup', SOMLookup, self.handle_lookup_request)
         roi_vis_pub = rospy.Publisher('som/roi_vis', MarkerArray, queue_size=1, latch=True)
         self.server = InteractiveMarkerServer("som/obj_vis")
 
         dirname = os.path.dirname(__file__)
-        fpath = os.path.join(dirname, '../config/' + rois_name)
+        fpath = os.path.join(dirname, '../../config/' + rois_name)
         roi_load = pickle.load(open(fpath,"rb"))
         self._rois = [i[0] for i in roi_load]
         roi_markers = visualisation.rois_to_marker_array(self._rois)
         roi_vis_pub.publish(roi_markers)
 
+        obss = rospy.Service('som/observe', SOMObserve, self.handle_observe_request)
+        dels = rospy.Service('som/delete', SOMDelete, self.handle_delete_request)
+        qrys = rospy.Service('som/query', SOMQuery, self.handle_query_request)
+        lkps = rospy.Service('som/lookup', SOMLookup, self.handle_lookup_request)
+        clr = rospy.Service('som/clear_database', SOMClearDatabase, self.clear_databases)
         rospy.spin()
 
     # Handles the soma2 objects to be inserted
@@ -66,13 +64,14 @@ class SOMDataManager():
 
         return SOMObserveResponse(res, id)
 
-    def clear_databases(self):
+    def clear_databases(self, req):
         objs = self._object_store.query(SOMObject._type)
         obss = self._observation_store.query(SOMObservation._type)
         for object,meta in objs:
             self._object_store.delete(str(meta['_id']))
         for obs,meta in obss:
             self._observation_store.delete(str(meta['_id']))
+        return SOMClearDatabaseResponse()
 
     # Handles the delete request of soma2 objs
     def handle_delete_request(self,req):
@@ -104,9 +103,8 @@ class SOMDataManager():
         return obj
 
 if __name__=="__main__":
-    rospy.init_node("soma_data_manager")
     myargv = rospy.myargv(argv=sys.argv)
-    if  len(myargv) < 4:
-        print('usage: som_manager.py <ontology.owl> <rois.pkl> <clear_db_bool>')
+    if  len(myargv) < 3:
+        print('usage: som_manager.py <ontology.owl> <rois.pkl>')
     else:
-        SOMDataManager(myargv[1], myargv[2], myargv[3])
+        SOMDataManager(myargv[1], myargv[2])

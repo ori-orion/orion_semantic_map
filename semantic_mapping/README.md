@@ -21,7 +21,7 @@ Display:
 Clicking on objects in Rviz prints out the information stored about that object.
 
 
-### Creating ROIs
+## Creating ROIs
 To edit the SOM ROIs:
 
 roscore
@@ -32,3 +32,9 @@ rosrun semantic_mapping roi_manager.py
 
 #### Save ROIS
 Right click on one of the markers, and click "Save ROIs" which saves the ROI objects to a pickle file.
+
+## Run tests
+roscore
+roslaunch mongodb_store mongodb_store.launch db_path:=\`rospack find semantic_mapping\`/db
+rosrun semantic_mapping som_manager.py '../tests/config/test_ontology.owl' '../tests/config/test_rooms.pkl'
+python -m unittest discover \`rospack find semantic_mapping\`/tests/semantic_mapping

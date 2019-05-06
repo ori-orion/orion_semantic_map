@@ -23,7 +23,6 @@ from geometry_msgs.msg import Pose
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Polygon
 from geometry_msgs.msg import PoseArray
-from semantic_mapping.msg import Room
 from nav_msgs.msg import OccupancyGrid
 from nav_msgs.srv import GetMap
 
@@ -97,7 +96,7 @@ class SOMAROIManager():
 
         self._server = InteractiveMarkerServer("som_roi")
 
-        self._init_types()
+        self.types = ['Attic', 'Foyer', 'Office', 'Kitchen', 'LivingRoom', 'DiningRoom', 'Pantry', 'Bedroom', 'Bathroom', 'Toilet', 'Hallway', 'GamesRoom', 'Library', 'LaundryRoom', 'Cellar', 'Closet', 'NotInRoom']
 
 
         #print resp
@@ -129,10 +128,6 @@ class SOMAROIManager():
         except rospy.ServiceException, e:
            print "Service call failed: %s"%e
            return None
-
-    def _init_types(self):
-
-            self.types = ["Office", "Kitchen", "Living Room"]
 
 
     ## Initialize the right-click menu

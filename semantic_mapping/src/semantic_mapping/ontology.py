@@ -7,7 +7,7 @@ class Ontology():
     """
     def __init__(self, filename):
         dir = os.path.dirname(__file__)
-        file_dir = os.path.join(dir, '../config/', filename)
+        file_dir = os.path.join(dir, '../../config/', filename)
         self.ontology = ontospy.Ontospy(file_dir)
 
     def check_class_exists(self, label):
