@@ -47,16 +47,63 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_ob
         o1 matches the template of 'som_obj_one' and o2 matches the
         template of 'som_obj_two'.
     """
-    o1_matches = _mongo_som_objects_matching_template(som_template_one, mongo_object_store, ontology)
-    o2_matches = _mongo_som_objects_matching_template(som_template_two, mongo_object_store, ontology)
-    print(o1_matches)
+    som_obj1 = InSOMObject.from_som_observation_message(som_template_one)
+    som_obj2 = InSOMObject.from_som_observation_message(som_template_two)
+    query_dict1 = som_obj1.to_som_object_mongo_db_query()
+    query_dict2 = som_obj2.to_som_object_mongo_db_query()
+
+    # if only a single object is specified
+    if (len(query_dict1) == 0 or len(query_dict2) == 0) and unspecified_relation(relation):
+        matches = _match_single_object(query_dict1, query_dict2, mongo_object_store, ontology)
+    else:
+        matches = _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store, ontology, cur_robot_pose)
+    return matches
+
+def _match_single_object(query_dict1, query_dict2, mongo_object_store, ontology):
+    '''
+    Generates matching tuples when only a single query and no relation is specified.
+
+    This is necessary because _match_with_relation does not handle this case properly.
+    For example, if the database were to contain orange1 and orange2, and we
+    attempt to query for oranges in the database:
+    query(orange, -, -)
+    _match_single_object returns:
+    Match(orange1,-,-)
+    Match(orange2,-,-)
+    as desired. _match_with_relation would instead return:
+    Match(orange1,rel,orange1)
+    Match(orange1,rel,orange2)
+    Match(orange2,rel,orange1)
+    Match(orange2,rel,orange2)
+    which is not the appropriate list of matches for this case.
+    '''
+    matches = []
+    if len(query_dict2) == 0:
+        objects = _mongo_som_objects_matching_template(query_dict1, mongo_object_store, ontology)
+        for object in objects:
+            match = Match(object, Relation(), SOMObject())
+            matches.append(match)
+    else:
+        objects = _mongo_som_objects_matching_template(query_dict2, mongo_object_store, ontology)
+        for object in objects:
+            match = Match(SOMObject(), Relation(), object)
+            matches.append(match)
+    return matches
+
+def _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store, ontology, cur_robot_pose):
+    '''
+    Generates matching tuples when more than a single object template is specified.
+    '''
+    o1_matches = _mongo_som_objects_matching_template(query_dict1, mongo_object_store, ontology)
+    o2_matches = _mongo_som_objects_matching_template(query_dict2, mongo_object_store, ontology)
+
     matches = []
     for o1 in o1_matches:
         for o2 in o2_matches:
             rel = _spatial_relation(cur_robot_pose, o1, o2)
-
             matching = True
             strings = relation.__str__().split('\n')
+
             for str in strings:
                 key = str.split(':')[0]
                 if relation.__getattribute__(key) and not rel.__getattribute__(key):
@@ -67,22 +114,17 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_ob
                 matches.append(match)
     return matches
 
-def _mongo_som_objects_matching_template(som_obs, mongo_object_store, ontology):
-    """uples
-    Treats the SOMObservation 'som_obs' as a template to match in mongo db.
-    This returns a list of SOMObjects in the database matching the
-    template.
+def _mongo_som_objects_matching_template(query_dict, mongo_object_store, ontology):
+    """
+    This returns a list of SOMObjects in the database matching the query dictionary.
 
     Args:
-        som_obj: The SOMObservation (template) specified to make a query
+        query: query dictionary
         mongo_object_store: A mongodb store for SomObject instances
+        ontology: Instance of Ontology class
     Returns:
         A list of objects matching the template.
     """
-    # Get queries for the mongo store (easiest way is currently to convert to
-    # InSOMObject and back)uples
-    som_obj = InSOMObject.from_som_observation_message(som_obs)
-    query_dict = som_obj.to_som_object_mongo_db_query()
 
     # If query includes type return matching types including children in ontology
     if 'type' in query_dict:
@@ -145,22 +187,40 @@ uples
         relation.near = True
 
     # vertical relation
-    if obj_one_pos[2] > obj_two_pos[2]:
+    eps = 0.001 # use tolerance otherwise comparing relations of object to itself returns true for some fields
+    if obj_one_pos[2] > obj_two_pos[2] + eps:
         relation.above = True
-    else:
+    elif obj_one_pos[2] < obj_two_pos[2] - eps:
         relation.below = True
 
     # forwards and backwards
-    if np.dot(robot_to_two, two_to_one) > 0.0:
+    if np.dot(robot_to_two, two_to_one) > eps:
         relation.behind = True
-    else:
+    elif np.dot(robot_to_two, two_to_one) < -eps:
         relation.frontof = True
 
     # left and right
     cross_pr = np.cross(robot_to_two, two_to_one)
-    if cross_pr[2] > 0.0:
+    if cross_pr[2] > eps:
         relation.left = True
-    else:
+    elif cross_pr[2] < -eps:
         relation.right = True
 
     return relation
+
+def unspecified_relation(relation):
+    '''
+    Checks if none of the fields of a relation are specified to be true.
+
+    Args:
+        relation: an instance of the Relation class
+    Returns:
+        A boolean indicating whether all of the fields are false
+    '''
+    all_false = True
+    strings = relation.__str__().split('\n')
+    for str in strings:
+        key = str.split(':')[0]
+        if relation.__getattribute__(key):
+            all_false = False
+    return all_false
