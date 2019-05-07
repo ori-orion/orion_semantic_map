@@ -9,7 +9,7 @@ rosrun semantic_mapping som_manager.py <ontology.owl> <som_rois.pkl> <clear_dbs_
 
 You can try running the code with:
 
-rosrun semantic_mapping test_database.py
+rosrun semantic_mapping example.py
 
 #### Visualise
 rosrun rviz rviz
