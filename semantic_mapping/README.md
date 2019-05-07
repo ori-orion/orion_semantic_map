@@ -30,6 +30,8 @@ roslaunch mongodb_store mongodb_store.launch db_path:=\`rospack find semantic_ma
 
 rosrun semantic_mapping roi_manager.py
 
+Its best to make the rooms overlap, as an object in a gap between rooms will be assigned the room_name "NotInRoom". An object in multiple overlapping rooms will be assigned to one of the rooms. 
+
 #### Save ROIS
 Right click on one of the markers, and click "Save ROIs" which saves the ROI objects to a pickle file.
 
