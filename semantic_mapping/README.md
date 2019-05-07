@@ -5,7 +5,7 @@ roscore
 
 roslaunch mongodb_store mongodb_store.launch db_path:=\`rospack find semantic_mapping\`/db
 
-rosrun semantic_mapping som_manager.py <ontology.owl> <som_rois.pkl> <clear_dbs_bool>
+rosrun semantic_mapping som_manager.py <ontology.owl> <som_rois.pkl> 
 
 You can try running the code with:
 
