@@ -1,7 +1,7 @@
 import message_conversion
 import rospy
 
-from semantic_mapping.msg import *
+from orion_actions.msg import *
 from som_object import InSOMObject
 
 

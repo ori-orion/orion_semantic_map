@@ -26,7 +26,7 @@ from geometry_msgs.msg import PoseArray
 from nav_msgs.msg import OccupancyGrid
 from nav_msgs.srv import GetMap
 
-from semantic_mapping.msg import SOMROIObject
+from orion_actions.msg import SOMROIObject
 from bson.objectid import ObjectId
 
 def trapezoidal_shaped_func(a, b, c, d, x):

@@ -4,7 +4,7 @@ Defines the barebones API for InSOMObjects.
 
 
 
-from semantic_mapping.msg import SOMObservation, SOMObject, PoseEstimate
+from orion_actions.msg import SOMObservation, SOMObject, PoseEstimate
 import shapely.geometry as geom
 
 

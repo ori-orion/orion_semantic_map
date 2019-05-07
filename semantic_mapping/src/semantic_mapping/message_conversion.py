@@ -1,5 +1,5 @@
 
-from semantic_mapping.msg import SOMObservation, SOMObject
+from orion_actions.msg import SOMObservation, SOMObject
 
 
 def observation_to_object(obs, default_frame_id):

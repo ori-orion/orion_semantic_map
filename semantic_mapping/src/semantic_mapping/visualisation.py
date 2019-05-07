@@ -4,7 +4,7 @@ from geometry_msgs.msg import Point, Pose
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, InteractiveMarkerFeedback
 from mongodb_store.message_store import MessageStoreProxy
-from semantic_mapping.msg import SOMObservation, SOMObject
+from orion_actions.msg import SOMObservation, SOMObject
 
 def rois_to_marker_array(rois):
     markers = []

@@ -7,8 +7,8 @@ from geometry_msgs.msg import Pose, Point
 from geometry_msgs.msg import PoseArray
 from threading import Timer
 from mongodb_store.message_store import MessageStoreProxy
-from semantic_mapping.msg import SOMObservation, SOMObject, Relation
-from semantic_mapping.srv import *
+from orion_actions.msg import SOMObservation, SOMObject, Relation
+from orion_actions.srv import *
 from std_msgs.msg import String
 
 def test_database():

@@ -1,8 +1,8 @@
 import unittest
 import rospy
 from semantic_mapping.som_manager import SOMDataManager
-from semantic_mapping.srv import *
-from semantic_mapping.msg import *
+from orion_actions.srv import *
+from orion_actions.msg import *
 
 class TestDatabase(unittest.TestCase):
 

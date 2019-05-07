@@ -2,7 +2,7 @@
 
 import numpy as np
 from som_object import InSOMObject
-from semantic_mapping.msg import Match, Relation, SOMObject
+from orion_actions.msg import Match, Relation, SOMObject
 
 def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_object_store, ontology):
     """

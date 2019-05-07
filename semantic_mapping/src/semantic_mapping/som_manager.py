@@ -13,18 +13,16 @@ import visualisation
 
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseArray
-from visualization_msgs.msg import Marker, MarkerArray
 from threading import Timer
 from mongodb_store.message_store import MessageStoreProxy
-from semantic_mapping.msg import SOMObservation, SOMObject
 from std_msgs.msg import String
 from observation import make_observation
 from ontology import Ontology
 from queries import query
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
-from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, InteractiveMarkerFeedback
-
-from semantic_mapping.srv import *
+from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, InteractiveMarkerFeedback, Marker, MarkerArray
+from orion_actions.msg import SOMObservation, SOMObject
+from orion_actions.srv import *
 from interactive_markers.interactive_marker_server import *
 
 # Soma2 Data Manager For storing and deleting data
