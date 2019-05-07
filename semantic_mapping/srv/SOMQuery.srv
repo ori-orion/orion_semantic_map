@@ -1,7 +1,7 @@
 
-SOMObservation x
+SOMObservation obj1
 Relation relation
-SOMObservation y
+SOMObservation obj2
 geometry_msgs/Pose current_robot_pose
 
 

@@ -76,7 +76,7 @@ class TestSpatialRelations(unittest.TestCase):
         self.man = lookup_resp.object
 
     def tearDown(self):
-        self.clear_database_srv()
+        pass
 
     def test_left_right(self):
         relation = spatial_relation(self.robot_pose, self.girl, self.pizza)

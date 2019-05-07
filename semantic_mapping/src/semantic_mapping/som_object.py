@@ -297,10 +297,6 @@ class InSOMObject(object):
 
         return obj
 
-
-
-
-
     def to_som_object_message(self):
         obj = SOMObject()
 
@@ -328,6 +324,8 @@ class InSOMObject(object):
             obj.cloud = self._cloud
         if not _default_value(self._colour):
             obj.colour = self._colour
+        if not _default_value(self._room_name):
+            obj.room_name = self._room_name
         if not _default_value(self._name):
             obj.name = self._name
         if not _default_value(self._age):
@@ -342,7 +340,7 @@ class InSOMObject(object):
         return obj
 
     def update_from_observation_messages(self, observations, rois):
-        pose_estimate = self.estimate_pose(observations)
+        pose_estimate = self.estimate_pose(observations, rois)
         most_recent_observation = observations[-1]
         self.update_properties_from_obs_msg(most_recent_observation)
         self.set_pose_estimate(pose_estimate)
@@ -484,10 +482,25 @@ class InSOMObject(object):
                 return roi.name
         return "NotInRoom"
 
-    def estimate_pose(self, observations):
-        ''' Receives a list of observations and returns pose_estimate object
+    def estimate_pose(self, observations, rois):
+        ''' Receives a list of observations and returns pose_estimate object.
+
+        TODO: improve this.
         '''
         pose_estimate = PoseEstimate()
         pose_estimate.most_likely_pose = observations[-1].pose_observation
         pose_estimate.most_recent_pose = observations[-1].pose_observation
+        pose_estimate.most_likely_room = self.get_room_name(pose_estimate, rois)
+
+        room_names = []
+        room_probs = []
+        for roi in rois:
+            room_names.append(roi.name)
+            if roi.name == pose_estimate.most_likely_room:
+                room_probs.append(0.8)
+            else:
+                room_probs.append(0.2/(len(rois)-1))
+
+        pose_estimate.room_probs = room_probs
+        pose_estimate.room_names = room_names
         return pose_estimate

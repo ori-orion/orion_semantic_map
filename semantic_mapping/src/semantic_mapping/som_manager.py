@@ -100,9 +100,9 @@ class SOMDataManager():
 
     # Handles the soma2 objects to be inserted
     def handle_query_request(self,req):
-        som_template_one = req.x
+        som_template_one = req.obj1
         relation = req.relation
-        som_template_two = req.y
+        som_template_two = req.obj2
         cur_robot_pose = req.current_robot_pose
         matches = query(som_template_one, relation, som_template_two, cur_robot_pose, self._object_store, self._ontology)
         return SOMQueryResponse(matches)
