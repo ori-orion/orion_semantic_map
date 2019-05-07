@@ -9,14 +9,16 @@ rosrun semantic_mapping som_manager.py <ontology.owl> <som_rois.pkl> <clear_dbs_
 
 You can try running the code with:
 
-rosrun semantic_mapping test_database.py
+rosrun semantic_mapping example.py
 
 #### Visualise
 rosrun rviz rviz
 
 Display:
+
 /som/obj_vis/update
-/som/rois
+
+/som/roi_vis
 
 Clicking on objects in Rviz prints out the information stored about that object.
 
@@ -29,6 +31,8 @@ roscore
 roslaunch mongodb_store mongodb_store.launch db_path:=\`rospack find semantic_mapping\`/db
 
 rosrun semantic_mapping roi_manager.py
+
+Its best to make the rooms overlap, as an object in a gap between rooms will be assigned the room_name "NotInRoom". An object in multiple overlapping rooms will be assigned to one of the rooms. 
 
 #### Save ROIS
 Right click on one of the markers, and click "Save ROIs" which saves the ROI objects to a pickle file.
