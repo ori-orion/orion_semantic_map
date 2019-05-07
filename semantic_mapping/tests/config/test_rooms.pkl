@@ -2,7 +2,7 @@
 (ccopy_reg
 _reconstructor
 p1
-(csemantic_mapping.msg._SOMROIObject
+(corion_actions.msg._SOMROIObject
 SOMROIObject
 p2
 c__builtin__
@@ -220,7 +220,7 @@ V/som_roi
 p92
 sVstored_class
 p93
-Vsemantic_mapping.msg._SOMROIObject.SOMROIObject
+Vorion_actions.msg._SOMROIObject.SOMROIObject
 p94
 sVinserted_by
 p95
@@ -417,7 +417,7 @@ V/som_roi
 p173
 sVstored_class
 p174
-Vsemantic_mapping.msg._SOMROIObject.SOMROIObject
+Vorion_actions.msg._SOMROIObject.SOMROIObject
 p175
 sVinserted_by
 p176
@@ -612,7 +612,7 @@ V/som_roi
 p253
 sVstored_class
 p254
-Vsemantic_mapping.msg._SOMROIObject.SOMROIObject
+Vorion_actions.msg._SOMROIObject.SOMROIObject
 p255
 sVinserted_by
 p256
@@ -807,7 +807,7 @@ V/som_roi
 p333
 sVstored_class
 p334
-Vsemantic_mapping.msg._SOMROIObject.SOMROIObject
+Vorion_actions.msg._SOMROIObject.SOMROIObject
 p335
 sVinserted_by
 p336
@@ -1002,7 +1002,7 @@ V/som_roi
 p413
 sVstored_class
 p414
-Vsemantic_mapping.msg._SOMROIObject.SOMROIObject
+Vorion_actions.msg._SOMROIObject.SOMROIObject
 p415
 sVinserted_by
 p416

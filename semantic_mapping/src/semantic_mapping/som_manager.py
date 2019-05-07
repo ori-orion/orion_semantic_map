@@ -21,9 +21,14 @@ from ontology import Ontology
 from queries import query
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, InteractiveMarkerFeedback, Marker, MarkerArray
-from orion_actions.msg import SOMObservation, SOMObject
+from orion_actions.msg import *
 from orion_actions.srv import *
 from interactive_markers.interactive_marker_server import *
+
+# this line is needed to make sure we can load the pickle files
+dirname = os.path.dirname(__file__)
+fpath = os.path.join(dirname, '../../../../orion_actions/orion_actions/msg')
+sys.path.append('fpath')
 
 # Soma2 Data Manager For storing and deleting data
 class SOMDataManager():

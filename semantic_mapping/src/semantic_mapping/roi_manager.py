@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest("soma_roi_manager")
+import roslib
 import rospy
 from rospkg import RosPack
 import json
@@ -176,7 +176,7 @@ class SOMAROIManager():
 
         dirname = os.path.dirname(__file__)
         fname = "som_rois_" + time.strftime("%Y-%m-%d-%H-%M") + ".pkl"
-        fpath = os.path.join(dirname, '../config/' + fname)
+        fpath = os.path.join(dirname, '../../config/' + fname)
 
         pickle.dump(rois, open(fpath, "wb" ) )
         print("\nROIs saved to %s\n" % (fpath))
