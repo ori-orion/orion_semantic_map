@@ -15,8 +15,10 @@ rosrun semantic_mapping example.py
 rosrun rviz rviz
 
 Display:
+
 /som/obj_vis/update
-/som/rois
+
+/som/roi_vis
 
 Clicking on objects in Rviz prints out the information stored about that object.
 
