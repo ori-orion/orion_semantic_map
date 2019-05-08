@@ -13,10 +13,15 @@ rosrun semantic_mapping example.py
 
 ## Available services
 rospy.ServiceProxy('som/observe', SOMObserve)
+
 rospy.ServiceProxy('som/lookup', SOMLookup)
+
 rospy.ServiceProxy('som/delete', SOMDelete)
+
 rospy.ServiceProxy('som/query', SOMQuery)
+
 rospy.ServiceProxy('som/clear_database', SOMClearDatabase)
+
 rospy.ServiceProxy('som/get_all_objects', SOMGetAllObjects)
 
 #### Visualise
