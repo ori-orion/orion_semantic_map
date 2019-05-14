@@ -67,6 +67,8 @@ class InSOMObject(object):
         self._posture = None
         self._gender = None
         self._shirt_colour = None
+        self._coat_colour = None
+        self._drink = None
 
     def get_id(self):
         return self._obj_id
@@ -165,6 +167,18 @@ class InSOMObject(object):
     def set_shirt_colour(self, shirt_colour):
         self._shirt_colour = shirt_colour
 
+    def get_coat_colour(self):
+        return self._coat_colour
+
+    def set_coat_colour(self, coat_colour):
+        self._coat_colour = coat_colour
+
+    def get_drink(self):
+        return self._drink
+
+    def set_drink(self, drink):
+        self._drink = drink
+
     def get_cloud(self):
         return self._cloud
 
@@ -227,6 +241,8 @@ class InSOMObject(object):
         obj.set_posture(som_observation.posture)
         obj.set_gender(som_observation.gender)
         obj.set_shirt_colour(som_observation.shirt_colour)
+        obj.set_coat_colour(som_observation.coat_colour)
+        obj.set_drink(som_observation.drink)
 
         return obj
 
@@ -254,6 +270,8 @@ class InSOMObject(object):
         obj.set_posture(som_object.posture)
         obj.set_gender(som_object.gender)
         obj.set_shirt_colour(som_object.shirt_colour)
+        obj.set_coat_colour(som_object.coat_colour)
+        obj.set_drink(som_object.drink)
 
         return obj
 
@@ -294,6 +312,10 @@ class InSOMObject(object):
             obj.gender = self._gender
         if not _default_value(self._shirt_colour):
             obj.shirt_colour = self._shirt_colour
+        if not _default_value(self._coat_colour):
+            obj.coat_colour = self._coat_colour
+        if not _default_value(self._drink):
+            obj.drink = self._drink
 
         return obj
 
@@ -336,6 +358,10 @@ class InSOMObject(object):
             obj.gender = self._gender
         if not _default_value(self._shirt_colour):
             obj.shirt_colour = self._shirt_colour
+        if not _default_value(self._drink):
+            obj.drink = self._drink
+        if not _default_value(self._coat_colour):
+            obj.coat_colour = self._coat_colour
 
         return obj
 
@@ -385,6 +411,10 @@ class InSOMObject(object):
             self._gender = som_observation.gender
         if not _default_value(som_observation.shirt_colour):
             self._shirt_colour = som_observation.shirt_colour
+        if not _default_value(som_observation.coat_colour):
+            self._coat_colour = som_observation.coat_colour
+        if not _default_value(som_observation.drink):
+            self._drink = som_observation.drink
 
     def dict_iter(self):
         """
@@ -433,6 +463,10 @@ class InSOMObject(object):
             yield "gender", self._gender
         if not _default_value(self._shirt_colour):
             yield "shirt_colour", self._shirt_colour
+        if not _default_value(self._coat_colour):
+            yield "coat_colour", self._coat_colour
+        if not _default_value(self._drink):
+            yield "drink", self._drink
 
 
     def to_som_object_mongo_db_query(self):

@@ -1,3 +1,8 @@
+## Install dependencies
+pip install shapely
+
+pip install ontospy==1.9
+
 ## Usage
 If it does not exist, create an empty folder:   semantic_mapping/db
 
