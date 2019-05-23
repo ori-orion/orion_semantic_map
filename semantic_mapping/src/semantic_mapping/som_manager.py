@@ -54,6 +54,7 @@ class SOMDataManager():
         lkps = rospy.Service('som/lookup', SOMLookup, self.handle_lookup_request)
         clr = rospy.Service('som/clear_database', SOMClearDatabase, self.clear_databases)
         getall = rospy.Service('som/get_all_objects', SOMGetAllObjects, self.get_all_objects)
+        print("Semantic database services initialised.")
         rospy.spin()
 
     # Handles the soma2 objects to be inserted

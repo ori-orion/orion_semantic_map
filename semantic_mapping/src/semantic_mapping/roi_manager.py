@@ -12,6 +12,7 @@ import math
 import pickle
 import os
 import time
+import csv
 
 from threading import Timer
 
@@ -80,6 +81,16 @@ class SOMAROIManager():
 
         #self.soma_map = soma_map
         #self.soma_map_name = soma_map_name
+        dirname = os.path.dirname(__file__)
+        fpath = os.path.join(dirname, '../../config/priors.csv')
+        with open(fpath) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            line_count = 0
+            for row in csv_reader:
+                if line_count == 0:
+                    self.types = row[1:-3]
+                line_count += 1
+
         self.map_unique_id = -1
         self.soma_conf = "hello"
         self._soma_obj_ids = dict()
@@ -95,8 +106,6 @@ class SOMAROIManager():
         self._msg_store=MessageStoreProxy(database="soma2data", collection="som_roi")
 
         self._server = InteractiveMarkerServer("som_roi")
-
-        self.types = ['Attic', 'Foyer', 'Office', 'Kitchen', 'LivingRoom', 'DiningRoom', 'Pantry', 'Bedroom', 'Bathroom', 'Toilet', 'Hallway', 'GamesRoom', 'Library', 'LaundryRoom', 'Cellar', 'Closet', 'NotInRoom']
 
 
         #print resp
@@ -330,7 +339,7 @@ class SOMAROIManager():
         # if collection is empty insert initial object
         if not objs:
             pose = Pose()
-            self.add_object('Office', pose)
+            self.add_object(self.types[0], pose)
             return
 
         # otherwise, load all object from collection
