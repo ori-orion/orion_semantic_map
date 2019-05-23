@@ -31,21 +31,21 @@ from interactive_markers.interactive_marker_server import *
 dirname = os.path.dirname(__file__)
 fpath = os.path.join(dirname, '../../../../orion_actions/orion_actions/msg')
 sys.path.append('fpath')
-prior_path = os.path.join(dirname, "../..", "config", "priors.csv")
 
 # Soma2 Data Manager For storing and deleting data
 class SOMDataManager():
-    def __init__(self, ontology_name, rois_name):
+    def __init__(self, ontology_name, rois_name, prior_name):
         rospy.init_node("soma_data_manager")
         self._ontology = Ontology(ontology_name)
         self._object_store = MessageStoreProxy(database="som_objects", collection="objects")
         self._observation_store = MessageStoreProxy(database="som_observations", collection="observations")
+        dirname = os.path.dirname(__file__)
+        prior_path = os.path.join(dirname, "../..", "config", prior_name)
         self._prior_knowledge_df = read_prior_csv(prior_path)
 
         roi_vis_pub = rospy.Publisher('som/roi_vis', MarkerArray, queue_size=1, latch=True)
         self.server = InteractiveMarkerServer("som/obj_vis")
 
-        dirname = os.path.dirname(__file__)
         fpath = os.path.join(dirname, '../../config/' + rois_name)
         roi_load = pickle.load(open(fpath,"rb"))
         self._rois = [i[0] for i in roi_load]
@@ -125,7 +125,7 @@ class SOMDataManager():
 
 if __name__=="__main__":
     myargv = rospy.myargv(argv=sys.argv)
-    if  len(myargv) < 3:
-        print('usage: som_manager.py <ontology.owl> <rois.pkl>')
+    if  len(myargv) < 4:
+        print('usage: som_manager.py <ontology.owl> <rois.pkl> <priors.csv>')
     else:
-        SOMDataManager(myargv[1], myargv[2])
+        SOMDataManager(myargv[1], myargv[2], myargv[3])

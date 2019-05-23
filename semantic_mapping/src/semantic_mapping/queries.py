@@ -6,7 +6,7 @@ import pandas as pd
 from collections import defaultdict
 from som_object import InSOMObject
 from orion_actions.msg import Match, Relation, SOMObject, PoseEstimate
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Pose, Point
 
 def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_object_store, prior_df, rois, ontology):
     """
@@ -72,11 +72,16 @@ def _match_prior_single_object(query_dict, prior_df, rois):
         return []
     room_names, room_probs, pose_coords, most_likely_room = get_prior_probs(prior_df, object_name, rois, lmbda=0.1)
     pose = Pose(position=Point(*pose_coords))
-    PoseEstimate(most_likely_pose=pose, 
-                 most_recent_pose=pose, 
-                 most_likely_room=most_likely_room, 
-                 room_names=room_names, 
+    pose_estimate = PoseEstimate(most_likely_pose=pose,
+                 most_recent_pose=pose,
+                 most_likely_room=most_likely_room,
+                 room_names=room_names,
                  room_probs=room_probs)
+    object = SOMObject()
+    object.type = query_dict["type"]
+    object.pose_estimate = pose_estimate
+    match = Match(object, Relation(), SOMObject())
+    return [match]
 
 
 
@@ -243,7 +248,7 @@ def unspecified_relation(relation):
 def _get_room_names_from_df(prior_df):
     column_names = list(prior_df.columns.values)
     room_names = copy.copy(column_names)
-    return column_names[0], column_names[1:-3], column_names[-3]
+    return column_names[0], column_names[1:-3], column_names[-3:]
 
 def read_prior_csv(filename):
     prior_df = pd.read_csv(filename)
@@ -269,6 +274,7 @@ def get_prior_probs(prior_df, object_name, rois, lmbda=0.1):
     # compute a weight per room
     lmbda /= len(room_names)
     room_weights = []
+    total_weight = 0.0
     for room_name in room_names:
         room_type = room_names_to_type[room_name]
         weight = lmbda + object_prior_ds[room_type] / float(room_type_counts[room_type])
@@ -279,10 +285,13 @@ def get_prior_probs(prior_df, object_name, rois, lmbda=0.1):
     for i in range(len(room_weights)):
         room_weights[i] /= total_weight
     pose = []
+    object_row = prior_df.loc[prior_df['object'] == object_name]
     for pose_name in pose_names:
-        pose.append(prior_df[pose_name])
+        pose.append(float(object_row[pose_name].iloc[0]))
+    print(pose)
 
     # compute the most likely room
+    room_probs = room_weights
     _, i = max([(room_probs, i) for i in range(len(room_probs))])
     most_likely_room = room_names[i]
 
@@ -295,15 +304,11 @@ def get_prior_probs(prior_df, object_name, rois, lmbda=0.1):
     # default pose if none provided
     if pose == [0.0, 0.0, 0.0]:
         pose = [0.0, 0.0, 0.0]
-        for p in most_likely_roi.posearray:
-            pose[0] += p.position.x / len(most_likely_roi.posearray)
-            pose[1] += p.position.y / len(most_likely_roi.posearray)
-            pose[2] += p.position.z / len(most_likely_roi.posearray)
+        for p in most_likely_roi.posearray.poses:
+            pose[0] += p.position.x / len(most_likely_roi.posearray.poses)
+            pose[1] += p.position.y / len(most_likely_roi.posearray.poses)
+            pose[2] += p.position.z / len(most_likely_roi.posearray.poses)
 
 
     # done
     return room_names, room_weights, pose, most_likely_room
-
-
-
-

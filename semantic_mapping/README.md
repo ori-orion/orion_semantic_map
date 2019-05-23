@@ -10,7 +10,7 @@ roscore
 
 roslaunch mongodb_store mongodb_store.launch db_path:=\`rospack find semantic_mapping\`/db
 
-rosrun semantic_mapping som_manager.py <ontology.owl> <som_rois.pkl> 
+rosrun semantic_mapping som_manager.py <ontology.owl> <som_rois.pkl> <priors.csv>
 
 You can try running the code with:
 
@@ -60,6 +60,6 @@ roscore
 
 roslaunch mongodb_store mongodb_store.launch db_path:=\`rospack find semantic_mapping\`/db
 
-rosrun semantic_mapping som_manager.py '../tests/config/test_ontology.owl' '../tests/config/test_rooms.pkl'
+rosrun semantic_mapping som_manager.py '../tests/config/test_ontology.owl' '../tests/config/test_rooms.pkl' '../tests/config/priors.csv'
 
 python -m unittest discover \`rospack find semantic_mapping\`/tests/semantic_mapping

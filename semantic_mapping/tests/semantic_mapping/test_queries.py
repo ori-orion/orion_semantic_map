@@ -85,6 +85,12 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(self.girl.room_name, 'Bathroom')
         self.assertEqual(self.milk.room_name, 'NotInRoom')
 
+    def test_unobserved_object_query(self):
+        query = SOMObservation()
+        query.type = 'boy'
+        resp = self.query_object_srv(query, Relation(), SOMObservation(), Pose())
+        print(resp.matches[0].obj1.pose_estimate)
+
     def test_single_object_query(self):
         query = SOMObservation()
         query.type = 'pizza'
@@ -98,13 +104,6 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(len(resp.matches), 1)
         self.assertEqual(resp.matches[0].obj1.type.lower(), 'pizza')
         self.assertEqual(resp.matches[0].obj2.type.lower(), '')
-
-        query = SOMObservation()
-        query.type = 'pizza'
-        resp = self.query_object_srv(SOMObservation(), Relation(), query, Pose())
-        self.assertEqual(len(resp.matches), 2)
-        self.assertEqual(resp.matches[0].obj2.type.lower(), 'pizza')
-        self.assertEqual(resp.matches[0].obj1.type.lower(), '')
 
     def test_object_and_relation(self):
         query = SOMObservation()
