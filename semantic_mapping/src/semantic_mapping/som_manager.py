@@ -19,6 +19,8 @@ from std_msgs.msg import String
 from observation import make_observation
 from ontology import Ontology
 from queries import query
+from queries import read_prior_csv
+from queries import get_prior_probs
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, InteractiveMarkerFeedback, Marker, MarkerArray
 from orion_actions.msg import *
@@ -29,6 +31,7 @@ from interactive_markers.interactive_marker_server import *
 dirname = os.path.dirname(__file__)
 fpath = os.path.join(dirname, '../../../../orion_actions/orion_actions/msg')
 sys.path.append('fpath')
+prior_path = os.path.join(dirname, "../..", "config", "priors.csv")
 
 # Soma2 Data Manager For storing and deleting data
 class SOMDataManager():
@@ -37,6 +40,7 @@ class SOMDataManager():
         self._ontology = Ontology(ontology_name)
         self._object_store = MessageStoreProxy(database="som_objects", collection="objects")
         self._observation_store = MessageStoreProxy(database="som_observations", collection="observations")
+        self._prior_knowledge_df = read_prior_csv(prior_path)
 
         roi_vis_pub = rospy.Publisher('som/roi_vis', MarkerArray, queue_size=1, latch=True)
         self.server = InteractiveMarkerServer("som/obj_vis")
@@ -107,7 +111,7 @@ class SOMDataManager():
         relation = req.relation
         som_template_two = req.obj2
         cur_robot_pose = req.current_robot_pose
-        matches = query(som_template_one, relation, som_template_two, cur_robot_pose, self._object_store, self._ontology)
+        matches = query(som_template_one, relation, som_template_two, cur_robot_pose, self._object_store, self._prior_knowledge_df, self._rois,  self._ontology)
         return SOMQueryResponse(matches)
 
     def handle_lookup_request(self, req):

@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import copy
 import numpy as np
+import pandas as pd
+from collections import defaultdict
 from som_object import InSOMObject
-from orion_actions.msg import Match, Relation, SOMObject
+from orion_actions.msg import Match, Relation, SOMObject, PoseEstimate
+from geometry_msgs.msg import Pose
 
-def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_object_store, ontology):
+def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_object_store, prior_df, rois, ontology):
     """
     Performs a query to the semantic object database. This function uses
     SOMObject objects as templates. Meaning that any fields specified in
@@ -54,12 +58,29 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_ob
 
     # if only a single object is specified
     if (len(query_dict1) == 0 or len(query_dict2) == 0) and unspecified_relation(relation):
-        matches = _match_single_object(query_dict1, query_dict2, mongo_object_store, ontology)
+        query_dict = query_dict1 if len(query_dict1) > 0 else query_dict2
+        matches = _match_single_object(query_dict, mongo_object_store, ontology)
+        if len(matches) == 0:
+            matches = _match_prior_single_object(query_dict, prior_df, rois)
     else:
         matches = _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store, ontology, cur_robot_pose)
     return matches
 
-def _match_single_object(query_dict1, query_dict2, mongo_object_store, ontology):
+def _match_prior_single_object(query_dict, prior_df, rois):
+    object_name = query_dict["type"]
+    if object_name in ["", None]:
+        return []
+    room_names, room_probs, pose_coords, most_likely_room = get_prior_probs(prior_df, object_name, rois, lmbda=0.1)
+    pose = Pose(position=Point(*pose_coords))
+    PoseEstimate(most_likely_pose=pose, 
+                 most_recent_pose=pose, 
+                 most_likely_room=most_likely_room, 
+                 room_names=room_names, 
+                 room_probs=room_probs)
+
+
+
+def _match_single_object(query_dict, mongo_object_store, ontology):
     '''
     Generates matching tuples when only a single query and no relation is specified.
 
@@ -78,16 +99,10 @@ def _match_single_object(query_dict1, query_dict2, mongo_object_store, ontology)
     which is not the appropriate list of matches for this case.
     '''
     matches = []
-    if len(query_dict2) == 0:
-        objects = _mongo_som_objects_matching_template(query_dict1, mongo_object_store, ontology)
-        for object in objects:
-            match = Match(object, Relation(), SOMObject())
-            matches.append(match)
-    else:
-        objects = _mongo_som_objects_matching_template(query_dict2, mongo_object_store, ontology)
-        for object in objects:
-            match = Match(SOMObject(), Relation(), object)
-            matches.append(match)
+    objects = _mongo_som_objects_matching_template(query_dict, mongo_object_store, ontology)
+    for object in objects:
+        match = Match(object, Relation(), SOMObject())
+        matches.append(match)
     return matches
 
 def _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store, ontology, cur_robot_pose):
@@ -224,3 +239,71 @@ def unspecified_relation(relation):
         if relation.__getattribute__(key):
             all_false = False
     return all_false
+
+def _get_room_names_from_df(prior_df):
+    column_names = list(prior_df.columns.values)
+    room_names = copy.copy(column_names)
+    return column_names[0], column_names[1:-3], column_names[-3]
+
+def read_prior_csv(filename):
+    prior_df = pd.read_csv(filename)
+    return prior_df
+
+def get_prior_probs(prior_df, object_name, rois, lmbda=0.1):
+    """
+    lmbda = amount of laplace smoothing to add
+    """
+    # get the row from the df
+    object_name_header, room_types, pose_names = _get_room_names_from_df(prior_df)
+    object_prior_ds = prior_df[prior_df[object_name_header] == object_name].iloc[0]
+
+    # get room names and their "room types"
+    room_type_counts = defaultdict(int)
+    room_names = []
+    room_names_to_type = {}
+    for roi in rois:
+        room_type_counts[roi.type] += 1
+        room_names.append(roi.name)
+        room_names_to_type[roi.name] = roi.type
+
+    # compute a weight per room
+    lmbda /= len(room_names)
+    room_weights = []
+    for room_name in room_names:
+        room_type = room_names_to_type[room_name]
+        weight = lmbda + object_prior_ds[room_type] / float(room_type_counts[room_type])
+        room_weights.append(weight)
+        total_weight += weight
+
+    # normalize
+    for i in range(len(room_weights)):
+        room_weights[i] /= total_weight
+    pose = []
+    for pose_name in pose_names:
+        pose.append(prior_df[pose_name])
+
+    # compute the most likely room
+    _, i = max([(room_probs, i) for i in range(len(room_probs))])
+    most_likely_room = room_names[i]
+
+    most_likely_roi = None
+    for roi in rois:
+        if roi.name == most_likely_room:
+            most_likely_roi = roi
+            break
+
+    # default pose if none provided
+    if pose == [0.0, 0.0, 0.0]:
+        pose = [0.0, 0.0, 0.0]
+        for p in most_likely_roi.posearray:
+            pose[0] += p.position.x / len(most_likely_roi.posearray)
+            pose[1] += p.position.y / len(most_likely_roi.posearray)
+            pose[2] += p.position.z / len(most_likely_roi.posearray)
+
+
+    # done
+    return room_names, room_weights, pose, most_likely_room
+
+
+
+
