@@ -57,6 +57,7 @@ class SOMDataManager():
         qrys = rospy.Service('som/query', SOMQuery, self.handle_query_request)
         lkps = rospy.Service('som/lookup', SOMLookup, self.handle_lookup_request)
         clr = rospy.Service('som/clear_database', SOMClearDatabase, self.clear_databases)
+        chksim = rospy.Service('som/check_similarity', SOMCheckSimilarity, self.check_similarity)
         getall = rospy.Service('som/get_all_objects', SOMGetAllObjects, self.get_all_objects)
         print("Semantic database services initialised.")
         rospy.spin()
@@ -64,14 +65,17 @@ class SOMDataManager():
     # Handles the soma2 objects to be inserted
     def handle_observe_request(self,req):
         obs = req.observation
-        #if (not self._ontology.check_class_exists(obs.type)) and (obs.type != ''):
-        #    raise Exception('Type specified in observation is not valid ontology class')
-        #    return SOMObserveResponse(False, '')
+        if (not self._ontology.check_class_exists(obs.type)) and (obs.type != '') and (not "point_of_interest" in obs.type):
+            raise Exception('Type specified in observation is not valid. Valid object types are those in the ontology, or those containing "point_of_interest"')
+            return SOMObserveResponse(False, '')
         res, id, obj = make_observation(obs, self._rois, self._object_store, self._observation_store)
 
         if res:
             visualisation.update_objects(obj, id, self.server)
         return SOMObserveResponse(res, id)
+
+    def check_similarity(self, req):
+        return SOMCheckSimilarityResponse(self._ontology.check_similarity(req.obj1, req.obj2))
 
     def get_all_objects(self, req):
         resp = self._object_store.query(SOMObject._type)

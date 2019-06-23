@@ -18,6 +18,7 @@ def test_database():
     rospy.wait_for_service('som/query')
     rospy.wait_for_service('som/clear_database')
     rospy.wait_for_service('som/get_all_objects')
+    rospy.wait_for_service('som/check_similarity')
 
     observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
     lookup_object_srv = rospy.ServiceProxy('som/lookup', SOMLookup)
@@ -25,6 +26,7 @@ def test_database():
     query_object_srv = rospy.ServiceProxy('som/query', SOMQuery)
     clear_database_srv = rospy.ServiceProxy('som/clear_database', SOMClearDatabase)
     get_all_objects_srv = rospy.ServiceProxy('som/get_all_objects', SOMGetAllObjects)
+    check_similarity_srv = rospy.ServiceProxy('som/check_similarity', SOMCheckSimilarity)
 
     # clear out the database
     clear_database_srv()
@@ -92,8 +94,13 @@ def test_database():
 
     # query for the relationship between bacon and milk
     resp = query_object_srv(SOMObservation(obj_id = bacon_id), Relation(), SOMObservation(obj_id = pizza_id), Pose())
-    print("The relationship between the bacon and the milk is")
-    print(resp.matches[0].relation)
+    print("The relationship between the bacon and the milk is %s\n" % (resp.matches[0].relation))
+
+    resp = check_similarity_srv(SOMObservation(type = 'pizza'), SOMObservation(type = 'bacon'))
+    print("The similiary between pizza and bacon is %i\n" % (resp.similarity))
+    
+    resp = check_similarity_srv(SOMObservation(type = 'pizza'), SOMObservation(type = 'milk'))
+    print("The similiary between pizza and milk is %i\n" % (resp.similarity))
 
 if __name__=="__main__":
     test_database()

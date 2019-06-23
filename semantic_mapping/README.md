@@ -3,6 +3,8 @@ pip install shapely
 
 pip install ontospy==1.9
 
+sudo apt install ros-kinetic-mongodb-store
+
 ## Usage
 If it does not exist, create an empty folder:   semantic_mapping/db
 
