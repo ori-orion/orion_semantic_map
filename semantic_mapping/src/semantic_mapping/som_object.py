@@ -69,6 +69,7 @@ class InSOMObject(object):
         self._shirt_colour = None
         self._coat_colour = None
         self._drink = None
+        self._observed = None
 
     def get_id(self):
         return self._obj_id
@@ -209,6 +210,9 @@ class InSOMObject(object):
     def set_meta_properties(self, meta_properties):
         self._meta_properties = meta_properties
 
+    def set_observed(self, observed):
+        self._observed = observed
+
     def get_room_distribution(self):
     	"""
 		TODO: return a distributuion over waypoints/rooms where we
@@ -243,6 +247,7 @@ class InSOMObject(object):
         obj.set_shirt_colour(som_observation.shirt_colour)
         obj.set_coat_colour(som_observation.coat_colour)
         obj.set_drink(som_observation.drink)
+        obj.set_observed(True)
 
         return obj
 
@@ -272,7 +277,8 @@ class InSOMObject(object):
         obj.set_shirt_colour(som_object.shirt_colour)
         obj.set_coat_colour(som_object.coat_colour)
         obj.set_drink(som_object.drink)
-
+        obj.set_observed(True)
+        
         return obj
 
     def to_som_observation_message(self):
@@ -362,10 +368,17 @@ class InSOMObject(object):
             obj.drink = self._drink
         if not _default_value(self._coat_colour):
             obj.coat_colour = self._coat_colour
+        obj.observed = self._observed
 
         return obj
 
     def update_from_observation_messages(self, observations, rois):
+        '''
+        Given a new observation message updates a SOM object.
+
+        The properties automatically updated are the pose estimate and room name.
+        Any other properties which have been specified are also updated.
+        '''
         pose_estimate = self.estimate_pose(observations, rois)
         most_recent_observation = observations[-1]
         self.update_properties_from_obs_msg(most_recent_observation)

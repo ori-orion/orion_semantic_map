@@ -67,6 +67,10 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_ob
     return matches
 
 def _match_prior_single_object(query_dict, prior_df, rois):
+    '''
+    Generates an estimate of the pose of an object type based on the prior knowledge
+    in the priors csv file.
+    '''
     object_name = query_dict["type"]
     if object_name in ["", None]:
         return []
@@ -80,6 +84,7 @@ def _match_prior_single_object(query_dict, prior_df, rois):
     object = SOMObject()
     object.type = query_dict["type"]
     object.pose_estimate = pose_estimate
+    object.observed = False
     match = Match(object, Relation(), SOMObject())
     return [match]
 
@@ -256,7 +261,11 @@ def read_prior_csv(filename):
 
 def get_prior_probs(prior_df, object_name, rois, lmbda=0.1):
     """
-    lmbda = amount of laplace smoothing to add
+    Returns prior probabilities for an object not yet observed in database.
+
+    lmbda = amount of laplace smoothing to add. this probability mass is spread evenly throughout
+    the rooms, regardless of the prior.
+
     """
     # get the row from the df
     object_name_header, room_types, pose_names = _get_room_names_from_df(prior_df)
