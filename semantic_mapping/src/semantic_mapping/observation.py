@@ -35,6 +35,7 @@ def make_observation(obs, rois, object_store, observation_store):
             obs.obj_id = obj_id
             obs_id = observation_store.insert(obs)
             object_store.update_id(obj_id, obj)
+            print("New object added to database.")
 
         except rospy.ServiceException, e:
             print("Service call failed: %s"%(e))
@@ -56,6 +57,7 @@ def make_observation(obs, rois, object_store, observation_store):
             in_som_object.update_from_observation_messages(all_observations, rois)
             obj = in_som_object.to_som_object_message()
             object_store.update_id(obj_id, obj)
+            print("Existing object updated in database.")
 
         except rospy.ServiceException, e:
             print("Service call failed: %s"%(e))

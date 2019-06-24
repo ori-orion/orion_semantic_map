@@ -12,7 +12,7 @@ roscore
 
 roslaunch mongodb_store mongodb_store.launch db_path:=\`rospack find semantic_mapping\`/db
 
-rosrun semantic_mapping som_manager.py <ontology.owl> <som_rois.pkl> <priors.csv>
+Please specify command line arguments: -p <priors.csv> -o <ont.owl> -r <rois.pkl> -d <db_name (optional)>
 
 You can try running the code with:
 
@@ -30,6 +30,8 @@ rospy.ServiceProxy('som/query', SOMQuery)
 rospy.ServiceProxy('som/clear_database', SOMClearDatabase)
 
 rospy.ServiceProxy('som/get_all_objects', SOMGetAllObjects)
+
+rospy.ServiceProxy('som/check_similarity', SOMCheckSimilarity)
 
 #### Visualise
 rosrun rviz rviz

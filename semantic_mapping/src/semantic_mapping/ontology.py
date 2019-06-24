@@ -88,7 +88,7 @@ class Ontology():
                 break
         index1 = parent_tree1.index(common_type)
         index2 = parent_tree2.index(common_type)
-        return (float(index1 + index2)/2.0)
+        return (float(index1 + index2)/2.0), common_type
 
 
     def get_parent_tree(self, label):
