@@ -64,6 +64,6 @@ roscore
 
 roslaunch mongodb_store mongodb_store.launch db_path:=\`rospack find semantic_mapping\`/db
 
-rosrun semantic_mapping som_manager.py '../tests/config/test_ontology.owl' '../tests/config/test_rooms.pkl' '../tests/config/priors.csv'
+rosrun semantic_mapping som_manager.py -o '../tests/config/test_ontology.owl' -r'../tests/config/test_rooms.pkl' -p '../tests/config/priors.csv'
 
 python -m unittest discover \`rospack find semantic_mapping\`/tests/semantic_mapping
