@@ -41,7 +41,7 @@ class TestDatabase(unittest.TestCase):
         self.bacon = lookup_resp.object
 
         obs4 = SOMObservation()
-        obs4.pose_observation.position = Point(-1.0, 1.0, 0.0)
+        obs4.pose_observation.position = Point(-0.4, 1.0, 0.0)
         obs4.type = 'Girl'
         response4 = self.observe_objs_srv(obs4)
         lookup_resp = self.lookup_object_srv(response4.obj_id)
@@ -78,6 +78,16 @@ class TestDatabase(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_left_most_query(self):
+        resp = self.query_object_srv(SOMObservation(), Relation(near=True, left_most=True), SOMObservation(type='pizza', room_name='Office'), Pose())
+        self.assertEqual(len(resp.matches), 1)
+        self.assertEqual(resp.matches[0].obj1.type, 'girl')
+
+    def test_right_most_query(self):
+        resp = self.query_object_srv(SOMObservation(), Relation(near=True, right_most=True), SOMObservation(type='pizza', room_name='Office'), Pose())
+        self.assertEqual(len(resp.matches), 1)
+        self.assertEqual(resp.matches[0].obj1.type, 'bacon')
+
     def test_room_allocation(self):
         self.assertEqual(self.milk_bedroom.room_name, 'Bedroom')
         self.assertEqual(self.pizza_bedroom.room_name, 'Bedroom')
@@ -89,7 +99,7 @@ class TestDatabase(unittest.TestCase):
         query = SOMObservation()
         query.type = 'boy'
         resp = self.query_object_srv(query, Relation(), SOMObservation(), Pose())
-        print(resp.matches[0].obj1.pose_estimate)
+        #print(resp.matches[0].obj1.pose_estimate)
 
     def test_single_object_query(self):
         query = SOMObservation()

@@ -33,7 +33,7 @@ def test_database():
 
     # observe some bacon
     my_first_observation = SOMObservation()
-    my_first_observation.pose_observation.position = Point(0.0, 0.0, 0.5)
+    my_first_observation.pose_observation.position = Point(0.2, 0.2, 0.5)
     my_first_observation.size = Point(0.4, 0.5, 0.3)
     my_first_observation.type = "Bacon"
     my_first_observation.colour = "red"
@@ -42,7 +42,7 @@ def test_database():
 
     # observe some pizza
     my_second_observation = SOMObservation()
-    my_second_observation.pose_observation.position = Point(0.0, 0.0, 0.3)
+    my_second_observation.pose_observation.position = Point(0.1, 0.3, 0.3)
     my_second_observation.size = Point(1.0, 0.5, 0.3)
     my_second_observation.type = "Pizza"
     my_second_observation.colour = "blue"
@@ -96,9 +96,14 @@ def test_database():
     resp = query_object_srv(SOMObservation(obj_id = bacon_id), Relation(), SOMObservation(obj_id = pizza_id), Pose())
     print("The relationship between the bacon and the milk is %s\n" % (resp.matches[0].relation))
 
+    # query for the left_most object which is near the pizza
+    resp = query_object_srv(SOMObservation(), Relation(near=True, left_most=True), SOMObservation(obj_id = pizza_id), Pose())
+    print("The left most object near the pizza is the %s\n" % (resp.matches[0].obj1.type))
+
+    # query similarity
     resp = check_similarity_srv(SOMObservation(type = 'pizza'), SOMObservation(type = 'bacon'))
     print("The similiary between pizza and bacon is %i\n" % (resp.similarity))
-    
+
     resp = check_similarity_srv(SOMObservation(type = 'pizza'), SOMObservation(type = 'milk'))
     print("The similiary between pizza and milk is %i\n" % (resp.similarity))
 

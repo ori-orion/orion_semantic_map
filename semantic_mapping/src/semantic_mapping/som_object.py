@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 Defines the barebones API for InSOMObjects.
 """
 
 
-
+from geometry_msgs.msg import Point
 from orion_actions.msg import SOMObservation, SOMObject, PoseEstimate
 import shapely.geometry as geom
 
@@ -332,7 +333,7 @@ class InSOMObject(object):
             obj.obj_id = self._obj_id
         if not _default_value(self._map_name):
             obj.map_name = self._map_name
-        if not _default_value(self._meta_properties): 
+        if not _default_value(self._meta_properties):
             obj.meta_properties = str(self._meta_properties)
         if not _default_value(self._type):
             obj.type = self._type
@@ -341,7 +342,7 @@ class InSOMObject(object):
         if not _default_value(self._size):
             obj.size = self._size
         else:
-            obj.size = Point(0.1, 0.1, 0.1) 
+            obj.size = Point(0.1, 0.1, 0.1)
         if not _default_value(self._weight):
             obj.weight = self._weight
         if not _default_value(self._task_role):

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import copy
+import math
 import numpy as np
 import pandas as pd
 from collections import defaultdict
@@ -131,12 +132,64 @@ def _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store,
 
             for str in strings:
                 key = str.split(':')[0]
+
+                # don't perform initial matching for left_most or right_most
+                if key == "left_most" or key == "right_most":
+                    continue
                 if relation.__getattribute__(key) and not rel.__getattribute__(key):
                     matching = False
 
             if matching:
                 match = Match(o1, rel, o2)
                 matches.append(match)
+
+    if relation.left_most:
+        matches = get_left_most_match(matches, cur_robot_pose)
+    if relation.right_most:
+        matches = get_right_most_match(matches, cur_robot_pose)
+    return matches
+
+def get_left_most_match(matches, cur_robot_pose):
+    return _get_extreme_match(matches, cur_robot_pose, left_most=True)
+
+def get_right_most_match(matches, cur_robot_pose):
+    return _get_extreme_match(matches, cur_robot_pose, right_most=True)
+
+def _get_extreme_match(matches, cur_robot_pose, left_most = False, right_most = False):
+    robot_pos = np.array([cur_robot_pose.position.x, cur_robot_pose.position.y, cur_robot_pose.position.z])
+    max_angle = -float('inf')
+    min_angle = float('inf')
+    for match in matches:
+        som_obj_one = match.obj1
+        som_obj_two = match.obj2
+        obj_one_pos = np.array([som_obj_one.pose_estimate.most_likely_pose.position.x, som_obj_one.pose_estimate.most_likely_pose.position.y, som_obj_one.pose_estimate.most_likely_pose.position.z])
+        obj_two_pos = np.array([som_obj_two.pose_estimate.most_likely_pose.position.x, som_obj_two.pose_estimate.most_likely_pose.position.y, som_obj_two.pose_estimate.most_likely_pose.position.z])
+
+        robot_to_one = obj_one_pos - robot_pos
+        robot_to_two = obj_two_pos - robot_pos
+        two_to_one = obj_one_pos - obj_two_pos
+
+        # compute magnitude of angle
+        arccos = np.dot(robot_to_two, robot_to_one)/np.linalg.norm(robot_to_one)/np.linalg.norm(robot_to_two)
+        arccos = 1.0 if arccos > 1.0 else arccos
+        arccos = -1.0 if arccos < -1.0 else arccos
+        angle_magnitude = math.acos(arccos)
+
+        # negate angle if object one is to the right
+        cross_pr = np.cross(robot_to_two, two_to_one)
+        if cross_pr[2] < 0.0:
+            angle = -1.0*angle_magnitude
+        else:
+            angle = angle_magnitude
+
+        # find left most or right most angle
+        if left_most and angle > max_angle and angle < np.pi/2.0:
+            matches = [match]
+            max_angle = angle
+
+        if right_most and angle < min_angle and angle > -np.pi/2.0:
+            matches = [match]
+            min_angle = angle
     return matches
 
 def _mongo_som_objects_matching_template(query_dict, mongo_object_store, ontology):
@@ -195,7 +248,7 @@ uples
     """
 
     # specifies the maximum distance in metres between objects for relations to exist.
-    dist_thr = 3.0
+    dist_thr = 2.0
 
     relation = Relation()
     robot_pos = np.array([cur_robot_pose.position.x, cur_robot_pose.position.y, cur_robot_pose.position.z])
