@@ -15,6 +15,7 @@ class TestDatabase(unittest.TestCase):
         rospy.wait_for_service('som/query')
         rospy.wait_for_service('som/clear_database')
         rospy.wait_for_service('som/get_all_objects')
+        rospy.wait_for_service('som/check_similarity')
 
         self.observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
         self.lookup_object_srv = rospy.ServiceProxy('som/lookup', SOMLookup)
@@ -22,6 +23,7 @@ class TestDatabase(unittest.TestCase):
         self.query_object_srv = rospy.ServiceProxy('som/query', SOMQuery)
         self.clear_database_srv = rospy.ServiceProxy('som/clear_database', SOMClearDatabase)
         self.get_all_objects_srv = rospy.ServiceProxy('som/get_all_objects', SOMGetAllObjects)
+        self.check_similarity_srv = rospy.ServiceProxy('som/check_similarity', SOMCheckSimilarity)
         self.clear_database_srv()
 
         self.robot_pose = Pose()
@@ -99,7 +101,12 @@ class TestDatabase(unittest.TestCase):
         query = SOMObservation()
         query.type = 'boy'
         resp = self.query_object_srv(query, Relation(), SOMObservation(), Pose())
-        #print(resp.matches[0].obj1.pose_estimate)
+        self.assertEqual(resp.matches[0].obj1.observed, False)
+
+        query = SOMObservation()
+        query.type = 'milk'
+        resp = self.query_object_srv(query, Relation(), SOMObservation(), Pose())
+        self.assertEqual(resp.matches[0].obj1.observed, True)
 
     def test_single_object_query(self):
         query = SOMObservation()
@@ -147,6 +154,13 @@ class TestDatabase(unittest.TestCase):
         self.assertTrue(resp.matches[0].obj2.type == 'pizza' or resp.matches[0].obj2.type == 'bacon' or resp.matches[0].obj2.type == 'girl')
         self.assertTrue(resp.matches[1].obj2.type == 'pizza' or resp.matches[1].obj2.type == 'bacon' or resp.matches[1].obj2.type == 'girl')
         self.assertTrue(resp.matches[2].obj2.type == 'pizza' or resp.matches[2].obj2.type == 'bacon' or resp.matches[2].obj2.type == 'girl')
+
+    def test_check_similarity(self):
+        resp = self.check_similarity_srv(SOMObservation(type = 'pizza'), SOMObservation(type = 'bacon'))
+        self.assertTrue(abs(resp.similarity - 1.0) < 1e-5)
+
+        resp = self.check_similarity_srv(SOMObservation(type = 'pizza'), SOMObservation(type = 'milk'))
+        self.assertTrue(abs(resp.similarity - 2.0) < 1e-5)
 
 if __name__ == '__main__':
     unittest.main()
