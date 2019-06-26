@@ -3,9 +3,10 @@ from orion_actions.msg import *
 from orion_actions.srv import *
 from tf import TransformListener
 from geometry_msgs.msg import PoseStamped, Point
+import rospy
 
 class DetectToObserve(object):
-    def __init__():
+    def __init__(self):
         self.camera_frame = "/camera_frame_name"
         self.global_frame = "/map"
         rospy.wait_for_service('som/observe')
