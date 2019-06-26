@@ -12,7 +12,9 @@ roscore
 
 roslaunch mongodb_store mongodb_store.launch db_path:=\`rospack find semantic_mapping\`/db
 
-Please specify command line arguments: -p <priors.csv> -o <ont.owl> -r <rois.pkl> -d <db_name (optional)>
+Please specify command line arguments: 
+
+rosrun semantic_mapping som_manager.py -p <priors.csv> -o <ont.owl> -r <rois.pkl> -d <db_name (optional)>
 
 You can try running the code with:
 
