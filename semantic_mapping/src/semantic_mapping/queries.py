@@ -260,6 +260,7 @@ uples
 
     # if the distance between the two objects is greater than the threshold then none of the relations are true
     if np.linalg.norm(obj_one_pos - obj_two_pos) > dist_thr:
+        relation.not_near = True
         return relation
     else:
         relation.near = True

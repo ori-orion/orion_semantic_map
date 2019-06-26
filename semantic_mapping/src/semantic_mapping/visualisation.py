@@ -27,18 +27,19 @@ def rois_to_marker_array(rois):
         marker = Marker()
         marker.header.frame_id = "map"
         marker.header.stamp = rospy.Time.now()
-        marker.ns = "roi"
+        marker.ns = "region"
         marker.id = len(markers)
         marker.type = 4
         marker.scale.x = 0.07
         marker.color.a = 1.0
         marker.color.r = 0.6
         marker.points = points
+        marker.text = roi.name
 
         text_marker = Marker()
         text_marker.header.frame_id = "map"
         text_marker.header.stamp = rospy.Time.now()
-        text_marker.ns = "text_roi"
+        text_marker.ns = "text"
         text_marker.id = len(markers)
         text_marker.type = 9
         text_marker.scale.z = 0.15
