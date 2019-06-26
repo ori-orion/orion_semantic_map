@@ -530,7 +530,7 @@ class InSOMObject(object):
 
             if roi_poly.contains(obj_point):
                 return roi.name
-        return "NotInRoom"
+        return "not_in_room"
 
     def estimate_pose(self, observations, rois):
         ''' Receives a list of observations and returns pose_estimate object.

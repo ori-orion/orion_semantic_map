@@ -78,6 +78,9 @@ def test_database():
     # query for all foods
     resp = query_object_srv(SOMObservation(type = 'food'), Relation(), SOMObservation(), Pose())
     print("The number of food objects is %d\n" % (len(resp.matches)))
+    food_objs = [match.obj1 for match in resp.matches]
+    food_objs_ids = [obj.obj_id for obj in food_objs]
+    print(food_objs_ids)
 
     # update that the bacon has gone off and is now blue
     my_fourth_observation = SOMObservation(obj_id = bacon_id, colour = 'blue')

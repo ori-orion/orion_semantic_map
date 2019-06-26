@@ -13,7 +13,7 @@ import pickle
 import os
 import time
 import csv
-
+import shapely.geometry as geom
 from threading import Timer
 
 from mongodb_store.message_store import MessageStoreProxy
@@ -30,6 +30,24 @@ from nav_msgs.srv import GetMap
 from orion_actions.msg import SOMROIObject
 from bson.objectid import ObjectId
 
+def get_room_from_pose(pose, rois):
+    '''
+    Takes a pose and a list of roi objects. Returns the name of the roi which
+    the pose is in.
+    '''
+    obj_point = geom.Point(pose.position.x, pose.position.y)
+
+    for roi in rois:
+        vertex_poses = roi.posearray.poses
+        vertex_tuples = []
+        for vertex_pose in vertex_poses:
+            vertex_tuples.append((vertex_pose.position.x, vertex_pose.position.y))
+        roi_poly = geom.polygon.Polygon(vertex_tuples)
+
+        if roi_poly.contains(obj_point):
+            return roi.name
+    return "not_in_room"
+
 def trapezoidal_shaped_func(a, b, c, d, x):
     min_val = min(min((x - a)/(b - a), float(1.0)), (d - x)/(d - c))
     return max(min_val, float(0.0))
@@ -39,7 +57,6 @@ def coords_to_lnglat(x, y):
         lng = 90 - math.degrees(math.acos(float(x) / earth_radius))
         lat = 90 - math.degrees(math.acos(float(y) / earth_radius))
         return [lng , lat]
-
 
 def r_func(x):
     a = -0.125

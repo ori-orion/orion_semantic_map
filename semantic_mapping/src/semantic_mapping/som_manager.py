@@ -9,9 +9,9 @@ import math
 import message_conversion
 import os
 import pickle
-import visualisation
 
 from argparse import ArgumentParser
+from visualisation import Visualisation
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseArray
 from threading import Timer
@@ -20,6 +20,7 @@ from std_msgs.msg import String
 from observation import make_observation
 from ontology import Ontology
 from queries import query
+from roi_manager import get_room_from_pose
 from queries import read_prior_csv
 from queries import get_prior_probs
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
@@ -27,6 +28,7 @@ from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, 
 from orion_actions.msg import *
 from orion_actions.srv import *
 from interactive_markers.interactive_marker_server import *
+
 
 # this line is needed to make sure we can load the pickle files
 dirname = os.path.dirname(__file__)
@@ -40,17 +42,16 @@ class SOMDataManager():
         self._ontology = Ontology(args.ont_filename)
         self._object_store = MessageStoreProxy(database=args.db_name, collection="objects")
         self._observation_store = MessageStoreProxy(database=args.db_name, collection="observations")
+        self.vis = Visualisation(self._object_store, InteractiveMarkerServer("som/obj_vis"))
         dirname = os.path.dirname(__file__)
         prior_path = os.path.join(dirname, "../..", "config", args.priors_filename)
         self._prior_knowledge_df = read_prior_csv(prior_path)
 
-        roi_vis_pub = rospy.Publisher('som/roi_vis', MarkerArray, queue_size=1, latch=True)
-        self.server = InteractiveMarkerServer("som/obj_vis")
-
         fpath = os.path.join(dirname, '../../config/' + args.rois_filename)
         roi_load = pickle.load(open(fpath,"rb"))
         self._rois = [i[0] for i in roi_load]
-        roi_markers = visualisation.rois_to_marker_array(self._rois)
+        roi_markers = self.vis.rois_to_marker_array(self._rois)
+        roi_vis_pub = rospy.Publisher('som/roi_vis', MarkerArray, queue_size=1, latch=True)
         roi_vis_pub.publish(roi_markers)
 
         obss = rospy.Service('som/observe', SOMObserve, self.handle_observe_request)
@@ -60,6 +61,7 @@ class SOMDataManager():
         clr = rospy.Service('som/clear_database', SOMClearDatabase, self.clear_databases)
         chksim = rospy.Service('som/check_similarity', SOMCheckSimilarity, self.check_similarity)
         getall = rospy.Service('som/get_all_objects', SOMGetAllObjects, self.get_all_objects)
+        getrm =  rospy.Service('som/get_room', SOMGetRoom, self.get_room)
         print("Semantic database services initialised.")
         rospy.spin()
 
@@ -72,7 +74,7 @@ class SOMDataManager():
         res, id, obj = make_observation(obs, self._rois, self._object_store, self._observation_store)
 
         if res:
-            visualisation.update_objects(obj, id, self.server)
+            self.vis.update_objects(obj, id)
         return SOMObserveResponse(res, id)
 
     def check_similarity(self, req):
@@ -89,7 +91,7 @@ class SOMDataManager():
         obss = self._observation_store.query(SOMObservation._type)
         for object,meta in objs:
             self._object_store.delete(str(meta['_id']))
-            visualisation.delete_object(str(meta['_id']), self.server)
+            self.vis.delete_object(str(meta['_id']))
         for obs,meta in obss:
             self._observation_store.delete(str(meta['_id']))
         print("Database cleared.")
@@ -102,7 +104,7 @@ class SOMDataManager():
 
         try:
             self._object_store.delete(obj_id)
-            visualisation.delete_object(obj_id, self.server)
+            self.vis.delete_object(obj_id, self.server)
         except:
             return SOMDeleteResponse(False)
 
@@ -131,6 +133,11 @@ class SOMDataManager():
             obj = None
             print("Service call failed: %s" % (e))
         return obj
+
+    def get_room(self, req):
+        room_name = get_room_from_pose(req.pose, self._rois)
+        return SOMGetRoomResponse(room_name)
+
 
 if __name__=="__main__":
     parser = ArgumentParser()

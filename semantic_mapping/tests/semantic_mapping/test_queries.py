@@ -16,6 +16,7 @@ class TestDatabase(unittest.TestCase):
         rospy.wait_for_service('som/clear_database')
         rospy.wait_for_service('som/get_all_objects')
         rospy.wait_for_service('som/check_similarity')
+        rospy.wait_for_service('som/get_room')
 
         self.observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
         self.lookup_object_srv = rospy.ServiceProxy('som/lookup', SOMLookup)
@@ -24,6 +25,7 @@ class TestDatabase(unittest.TestCase):
         self.clear_database_srv = rospy.ServiceProxy('som/clear_database', SOMClearDatabase)
         self.get_all_objects_srv = rospy.ServiceProxy('som/get_all_objects', SOMGetAllObjects)
         self.check_similarity_srv = rospy.ServiceProxy('som/check_similarity', SOMCheckSimilarity)
+        self.get_room_srv = rospy.ServiceProxy('som/get_room', SOMGetRoom)
         self.clear_database_srv()
 
         self.robot_pose = Pose()
@@ -95,7 +97,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(self.pizza_bedroom.room_name, 'Bedroom')
         self.assertEqual(self.bacon.room_name, 'Office')
         self.assertEqual(self.girl.room_name, 'Bathroom')
-        self.assertEqual(self.milk.room_name, 'NotInRoom')
+        self.assertEqual(self.milk.room_name, 'not_in_room')
 
     def test_unobserved_object_query(self):
         query = SOMObservation()
@@ -161,6 +163,19 @@ class TestDatabase(unittest.TestCase):
 
         resp = self.check_similarity_srv(SOMObservation(type = 'pizza'), SOMObservation(type = 'milk'))
         self.assertTrue(abs(resp.similarity - 2.0) < 1e-5)
+
+    def test_get_room(self):
+        pose = Pose()
+        pose.position.x = 1.3
+        pose.position.y = -3.1
+        resp = self.get_room_srv(pose)
+        self.assertEqual(resp.room_name, 'Bedroom')
+
+        pose = Pose()
+        pose.position.x = 2.2
+        pose.position.y = 3.3
+        resp = self.get_room_srv(pose)
+        self.assertEqual(resp.room_name, 'Office')
 
 if __name__ == '__main__':
     unittest.main()
