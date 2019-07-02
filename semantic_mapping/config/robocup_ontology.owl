@@ -124,6 +124,7 @@
 
     <owl:Class rdf:about="http://webprotege.stanford.edu/R7wAl5IIglw0ZbE6xZJtKf">
         <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RCVsUyhHnrZsv8cigMhZsvt"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">cereal</rdfs:label>
     </owl:Class>
     
 
@@ -499,7 +500,7 @@
 
     <owl:Class rdf:about="http://webprotege.stanford.edu/RD3Exhc2mbw8avFiMPmMW8">
         <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R9mGp1GoXrjguqEzfmanhO7"/>
-        <rdfs:label xml:lang="en-gb">dishwasher_tab</rdfs:label>
+        <rdfs:label xml:lang="en-gb">dishwasher_tablet</rdfs:label>
     </owl:Class>
     
 
