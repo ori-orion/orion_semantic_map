@@ -1,0 +1,356 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://webprotege.stanford.edu/project/8S0je1dwiaMTt9a6U3C2Kg#"
+     xml:base="http://webprotege.stanford.edu/project/8S0je1dwiaMTt9a6U3C2Kg"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://webprotege.stanford.edu/project/8S0je1dwiaMTt9a6U3C2Kg"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://webprotege.stanford.edu/R3vsgXg0ERj5y6Avrb7RbA -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R3vsgXg0ERj5y6Avrb7RbA">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">dishwasher</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R5u7vZ7kPZsrPIDgUMbpdr -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R5u7vZ7kPZsrPIDgUMbpdr">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDHUg7LjOBODwZGWj71X1gT"/>
+        <rdfs:label xml:lang="en-gb">female</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R71DXnwXCHG9SGd99DPkDgQ -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R71DXnwXCHG9SGd99DPkDgQ">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDz2PFZfrpOW2b2sqlhVm1k"/>
+        <rdfs:label xml:lang="en-gb">boy</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R7Ay8VDSRImiZbFi8zb4Y9t -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R7Ay8VDSRImiZbFi8zb4Y9t">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R5u7vZ7kPZsrPIDgUMbpdr"/>
+        <rdfs:label xml:lang="en-gb">woman</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R7SAAm6BAG0VXdu5WRsiPPF -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R7SAAm6BAG0VXdu5WRsiPPF">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDWjmBCndYw6dnObFH4horS"/>
+        <rdfs:label xml:lang="en-gb">pineapple</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R7dFskoR4a2qOYAD00LAB52 -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R7dFskoR4a2qOYAD00LAB52">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDWjmBCndYw6dnObFH4horS"/>
+        <rdfs:label xml:lang="en-gb">apple</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R7wAl5IIglw0ZbE6xZJtKf -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R7wAl5IIglw0ZbE6xZJtKf">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R9y2BoKlbN36s0QQRMqS4KS"/>
+        <rdfs:label xml:lang="en-gb">cereal</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R7wnGYC4xinbdLqYqHcGjmb -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R7wnGYC4xinbdLqYqHcGjmb">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R8sikx1GaJdOvZKX8cCcCPI"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">milk</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R8HutSkCL9eYrSyhy1OpnJr -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R8HutSkCL9eYrSyhy1OpnJr">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDWjmBCndYw6dnObFH4horS"/>
+        <rdfs:label xml:lang="en-gb">banana</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R8RT2Th78dhk7UcEMYC3uvx -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R8RT2Th78dhk7UcEMYC3uvx">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">fridge</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R8UdmyBuC6UBo0bK0o5Dwbr -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R8UdmyBuC6UBo0bK0o5Dwbr">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">coat_hanger</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R8sikx1GaJdOvZKX8cCcCPI -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R8sikx1GaJdOvZKX8cCcCPI">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RCc3U1G2u6YomJDUnw5NW4X"/>
+        <rdfs:label xml:lang="en-gb">drink</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R8uSNXF1nvyhdKIeHJL8P7f -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R8uSNXF1nvyhdKIeHJL8P7f">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R9y2BoKlbN36s0QQRMqS4KS"/>
+        <rdfs:label xml:lang="en-gb">meat</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R92U0ENsd5FrWBPn28tkE1 -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R92U0ENsd5FrWBPn28tkE1">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">cupboard</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R9AUA7HezZW3uxnOeUcnD8c -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R9AUA7HezZW3uxnOeUcnD8c">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDz2PFZfrpOW2b2sqlhVm1k"/>
+        <rdfs:label xml:lang="en-gb">man</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R9qbaqFlHYrBnjwMy5WMpJL -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R9qbaqFlHYrBnjwMy5WMpJL">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDWjmBCndYw6dnObFH4horS"/>
+        <rdfs:label xml:lang="en-gb">pear</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/R9y2BoKlbN36s0QQRMqS4KS -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R9y2BoKlbN36s0QQRMqS4KS">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RCc3U1G2u6YomJDUnw5NW4X"/>
+        <rdfs:label xml:lang="en-gb">food</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RB218AORdRTn8pFDH6UO5ts -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RB218AORdRTn8pFDH6UO5ts">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">office_chair</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RBBZzdEmbowLFfoXKhMCYXh -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RBBZzdEmbowLFfoXKhMCYXh">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R8uSNXF1nvyhdKIeHJL8P7f"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">bacon</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RBICeAA8E5MBJL1J8f4K7oe -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RBICeAA8E5MBJL1J8f4K7oe">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">desk</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RBp4BvosrzPj6M5NkRfj9oN -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RBp4BvosrzPj6M5NkRfj9oN">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">shelf</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RBrVxIASX3BOTfQvHpZw8nm -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RBrVxIASX3BOTfQvHpZw8nm">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">bed</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RBynkIawLQGsCkooFAIZYaU -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RBynkIawLQGsCkooFAIZYaU">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">sink</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RCc3U1G2u6YomJDUnw5NW4X -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RCc3U1G2u6YomJDUnw5NW4X">
+        <rdfs:label xml:lang="en-gb">consumable</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RCfighLogSLWLK0NRB3pSwO -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RCfighLogSLWLK0NRB3pSwO">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R9y2BoKlbN36s0QQRMqS4KS"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">pizza</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RCjnt64EHD9t032GXfD5NJE -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RCjnt64EHD9t032GXfD5NJE">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R8sikx1GaJdOvZKX8cCcCPI"/>
+        <rdfs:label xml:lang="en-gb">cola</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RCtFST3vY1OuaRzcrLwwKyW -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RCtFST3vY1OuaRzcrLwwKyW">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">chair</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RD2A9Ot2VW69HGnVIB8Edg8 -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RD2A9Ot2VW69HGnVIB8Edg8">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDWjmBCndYw6dnObFH4horS"/>
+        <rdfs:label xml:lang="en-gb">orange</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RDHUg7LjOBODwZGWj71X1gT -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RDHUg7LjOBODwZGWj71X1gT">
+        <rdfs:label xml:lang="en-gb">person</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RDWjmBCndYw6dnObFH4horS -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RDWjmBCndYw6dnObFH4horS">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R9y2BoKlbN36s0QQRMqS4KS"/>
+        <rdfs:label xml:lang="en-gb">fruit</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj">
+        <rdfs:label xml:lang="en-gb">furniture</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RDz2PFZfrpOW2b2sqlhVm1k -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RDz2PFZfrpOW2b2sqlhVm1k">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDHUg7LjOBODwZGWj71X1gT"/>
+        <rdfs:label xml:lang="en-gb">male</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RJLXrKCVTXOnBS0Wnug8Qn -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RJLXrKCVTXOnBS0Wnug8Qn">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/RDjFbzzBNWcaNk5NtVTYOoj"/>
+        <rdfs:label xml:lang="en-gb">table</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RYd6PDvYF6M5eEyLg1NsgK -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RYd6PDvYF6M5eEyLg1NsgK">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R8sikx1GaJdOvZKX8cCcCPI"/>
+        <rdfs:label xml:lang="en-gb">juice</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/Rk8l56T8ZiiOugVvjBGkd3 -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/Rk8l56T8ZiiOugVvjBGkd3">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R5u7vZ7kPZsrPIDgUMbpdr"/>
+        <rdfs:label xml:lang="en-gb">girl</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RsGR4aWupw1VwQ0c4Aok0b -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RsGR4aWupw1VwQ0c4Aok0b">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R8uSNXF1nvyhdKIeHJL8P7f"/>
+        <rdfs:label xml:lang="en-gb">steak</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RyRwdkNpJKwDTJ8RxoMsjq -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RyRwdkNpJKwDTJ8RxoMsjq">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R8sikx1GaJdOvZKX8cCcCPI"/>
+        <rdfs:label xml:lang="en-gb">orange_juice</rdfs:label>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.10) https://github.com/owlcs/owlapi -->
+
