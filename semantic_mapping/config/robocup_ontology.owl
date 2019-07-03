@@ -182,6 +182,15 @@
     
 
 
+    <!-- http://webprotege.stanford.edu/R81YHbxk4oKXz30Iq3qGYC1 -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/R81YHbxk4oKXz30Iq3qGYC1">
+        <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R9mGp1GoXrjguqEzfmanhO7"/>
+        <rdfs:label xml:lang="en-gb">trash_bin</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://webprotege.stanford.edu/R8BQg13aFoHt2CUo5uGUCDw -->
 
     <owl:Class rdf:about="http://webprotege.stanford.edu/R8BQg13aFoHt2CUo5uGUCDw">
@@ -705,6 +714,15 @@
     <owl:Class rdf:about="http://webprotege.stanford.edu/RsGR4aWupw1VwQ0c4Aok0b">
         <rdfs:subClassOf rdf:resource="http://webprotege.stanford.edu/R8uSNXF1nvyhdKIeHJL8P7f"/>
         <rdfs:label xml:lang="en-gb">steak</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://webprotege.stanford.edu/RvydJKjosjzkppiBo6gNaX -->
+
+    <owl:Class rdf:about="http://webprotege.stanford.edu/RvydJKjosjzkppiBo6gNaX">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:label xml:lang="en-gb">take_out_the_garbage_point_of_interest</rdfs:label>
     </owl:Class>
     
 
