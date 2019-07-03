@@ -68,9 +68,9 @@ class SOMDataManager():
     # Handles the soma2 objects to be inserted
     def handle_observe_request(self,req):
         obs = req.observation
-        if (not self._ontology.check_class_exists(obs.type)) and (obs.type != '') and (not "point_of_interest" in obs.type):
-            raise Exception('Type specified in observation is not valid. Valid object types are those in the ontology, or those containing "point_of_interest"')
-            return SOMObserveResponse(False, '')
+        #if (not self._ontology.check_class_exists(obs.type)) and (obs.type != '') and (not "point_of_interest" in obs.type):
+        #    raise Exception('Type specified in observation is not valid. Valid object types are those in the ontology, or those containing "point_of_interest"')
+        #    return SOMObserveResponse(False, '')
         res, id, obj = make_observation(obs, self._rois, self._object_store, self._observation_store)
 
         if res:
