@@ -206,9 +206,6 @@ def _mongo_som_objects_matching_template(query_dict, mongo_object_store, ontolog
 
     # If query includes type return matching types including children in ontology
     if 'type' in query_dict:
-        if not ontology.check_class_exists(query_dict['type']):
-            raise Exception('Type specified in observation is not valid ontology class')
-            return SOMObserveResponse(False, '')
         valid_types = ontology.get_valid_types(query_dict['type'])
 
         results = []

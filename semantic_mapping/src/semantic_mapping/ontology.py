@@ -27,8 +27,7 @@ class Ontology():
         of the object itself.
         """
         if not self.check_class_exists(label):
-            raise Exception("This object type does not exist in ontology")
-            return []
+            return [label]
 
         for onto_class in self.ontology.all_classes:
             if str(onto_class.bestLabel().toPython()).lower() == label.lower():

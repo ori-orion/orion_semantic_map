@@ -177,5 +177,21 @@ class TestDatabase(unittest.TestCase):
         resp = self.get_room_srv(pose)
         self.assertEqual(resp.room_name, 'Office')
 
+    def test_unknown_object_type(self):
+        obs1 = SOMObservation()
+        obs1.pose_observation.position = Point(0.4, 1.0, 0.0)
+        obs1.type = 'a_random_object'
+        response1 = self.observe_objs_srv(obs1)
+
+        obs1 = SOMObservation()
+        obs1.pose_observation.position = Point(0.4, 1.0, 0.0)
+        obs1.type = 'a_random_object'
+        response1 = self.observe_objs_srv(obs1)
+
+        query = SOMObservation()
+        query.type = 'a_random_object'
+        resp = self.query_object_srv(query, Relation(), SOMObservation(), Pose())
+        self.assertEqual(len(resp.matches), 2)
+
 if __name__ == '__main__':
     unittest.main()
