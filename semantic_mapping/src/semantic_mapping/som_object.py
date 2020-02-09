@@ -7,6 +7,7 @@ Defines the barebones API for InSOMObjects.
 from geometry_msgs.msg import Point
 from orion_actions.msg import SOMObservation, SOMObject, PoseEstimate
 import shapely.geometry as geom
+import numpy as np
 
 
 
@@ -71,6 +72,7 @@ class InSOMObject(object):
         self._coat_colour = None
         self._drink = None
         self._observed = None
+        self._in_place = None
 
     def get_id(self):
         return self._obj_id
@@ -83,6 +85,12 @@ class InSOMObject(object):
 
     def set_map_name(self, map_name):
         self._map_name = map_name
+
+    def get_in_place(self):
+        return self._in_place
+
+    def set_in_place(self, in_place):
+        self._in_place = in_place
 
     # def get_ontology_concept(self):
     #     pass
@@ -371,28 +379,20 @@ class InSOMObject(object):
             obj.drink = self._drink
         if not _default_value(self._coat_colour):
             obj.coat_colour = self._coat_colour
+        if not _default_value(self._in_place):
+            obj.in_place = self._in_place
         obj.observed = self._observed
 
         return obj
 
-    def update_from_observation_messages(self, observations, rois):
-        '''
-        Given a new observation message updates a SOM object.
-
-        The properties automatically updated are the pose estimate and room name.
-        Any other properties which have been specified are also updated.
-        '''
-        pose_estimate = self.estimate_pose(observations, rois)
-        most_recent_observation = observations[-1]
-        self.update_properties_from_obs_msg(most_recent_observation)
-        self.set_pose_estimate(pose_estimate)
-        self.set_room_name(self.get_room_name(pose_estimate, rois))
-
-    def update_properties_from_obs_msg(self, som_observation):
+    def update_from_obs_msgs(self, observations, rois, priors):
         ''' For an existing InSOMObject this method uses a new observation to
         update properties if the properties are not default values in the new
         observation
         '''
+
+        # set properties according to most recent observation
+        som_observation = observations[-1]
         if not _default_value(som_observation.obj_id):
             self._obj_id = som_observation.obj_id
         if not _default_value(som_observation.map_name):
@@ -431,6 +431,14 @@ class InSOMObject(object):
             self._coat_colour = som_observation.coat_colour
         if not _default_value(som_observation.drink):
             self._drink = som_observation.drink
+
+        # compute and update other properties
+        pose_estimate = self.estimate_pose(observations, rois)
+        room_name = self.get_room_name(pose_estimate, rois)
+        in_place = self.check_in_place(pose_estimate, priors)
+        self.set_pose_estimate(pose_estimate)
+        self.set_room_name(room_name)
+        self.set_in_place(in_place)
 
     def dict_iter(self):
         """
@@ -554,3 +562,25 @@ class InSOMObject(object):
         pose_estimate.room_probs = room_probs
         pose_estimate.room_names = room_names
         return pose_estimate
+
+    def check_in_place(self, pose, priors):
+
+        # if there is a desired pose for this object check it
+        tol = 1.
+        if self._type in priors['object'].to_numpy():
+            object_row = priors.loc[priors['object'] == self._type]
+            desired_pose = np.array([object_row['desired_pose_x'].iloc[0],
+                                    object_row['desired_pose_y'].iloc[0],
+                                    object_row['desired_pose_z'].iloc[0]])
+            current_pose = np.array([pose.most_likely_pose.position.x,
+                                    pose.most_likely_pose.position.y,
+                                    pose.most_likely_pose.position.z])
+            dist = np.linalg.norm(desired_pose - current_pose)
+            if dist < tol:
+                return True
+            else:
+                return False
+
+        # otherwise return false
+        else:
+            return False

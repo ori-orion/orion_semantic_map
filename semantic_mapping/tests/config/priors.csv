@@ -1,6 +1,6 @@
-object,Kitchen,LivingRoom,Hallway,Foyer,Office,DiningRoom,Library,Bedroom,Bathroom,pose_x,pose_y,pose_z
-pizza,0.50,0.25,0.00,0.00,0.00,0.00,0.00,0.25,0.00,0.00,0.00,0.00
-bacon,0.70,0.10,0.00,0.00,0.00,0.00,0.00,0.10,0.00,0.00,0.00,0.00
-milk,0.50,0.30,0.00,0.00,0.00,0.00,0.00,0.20,0.00,0.00,0.00,0.00
-juice,0.60,0.20,0.00,0.00,0.00,0.00,0.00,0.20,0.00,0.00,0.00,0.00
-boy,0.40,0.00,0.20,0.00,0.00,0.00,0.00,0.30,0.10,0.00,0.00,0.00
+object,Kitchen,LivingRoom,Hallway,Foyer,Office,DiningRoom,Library,Bedroom,Bathroom,pose_x,pose_y,pose_z,desired_pose_x,desired_pose_y,desired_pose_z
+pizza,0.5,0.25,0,0,0,0,0,0.25,0,0,0,0,1,2,0
+bacon,0.7,0.1,0,0,0,0,0,0.1,0,0,0,0,1.5,2.1,1.7
+milk,0.5,0.3,0,0,0,0,0,0.2,0,0,0,0,0,0,0
+juice,0.6,0.2,0,0,0,0,0,0.2,0,0,0,0,0,0,0
+boy,0.4,0,0.2,0,0,0,0,0.3,0.1,0,0,0,0,0,0

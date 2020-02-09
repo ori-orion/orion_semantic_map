@@ -5,7 +5,7 @@ from orion_actions.msg import *
 from som_object import InSOMObject
 
 
-def make_observation(obs, rois, object_store, observation_store):
+def make_observation(obs, rois, object_store, observation_store, priors):
     ''' Receives an observation and updates the object and observation stores
     accordingly.
 
@@ -26,7 +26,7 @@ def make_observation(obs, rois, object_store, observation_store):
     ## if no object id is supplied insert new object
     if obs.obj_id == "":
         in_som_object = InSOMObject.from_som_observation_message(obs)
-        in_som_object.update_from_observation_messages([obs], rois)
+        in_som_object.update_from_obs_msgs([obs], rois, priors)
         obj = in_som_object.to_som_object_message()
 
         try:
@@ -54,7 +54,7 @@ def make_observation(obs, rois, object_store, observation_store):
             # update object from new observation
             obj, meta = object_store.query_id(obj_id, SOMObject._type)
             in_som_object = InSOMObject.from_som_object_message(obj)
-            in_som_object.update_from_observation_messages(all_observations, rois)
+            in_som_object.update_from_obs_msgs(all_observations, rois, priors)
             obj = in_som_object.to_som_object_message()
             object_store.update_id(obj_id, obj)
             print("Existing object of type %s updated in database." % (obj.type))

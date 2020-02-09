@@ -34,8 +34,8 @@ def test_database():
     # observe some bacon
     my_first_observation = SOMObservation()
     my_first_observation.pose_observation.position = Point(0.2, 0.2, 0.5)
-    my_first_observation.size = Point(0.4, 0.5, 0.3)
-    my_first_observation.type = "Bacon"
+    my_first_observation.size = Point(0.2, 0.2, 0.1)
+    my_first_observation.type = "bacon"
     my_first_observation.colour = "red"
     resp = observe_objs_srv(my_first_observation)
     bacon_id = resp.obj_id
@@ -43,17 +43,33 @@ def test_database():
     # observe some pizza
     my_second_observation = SOMObservation()
     my_second_observation.pose_observation.position = Point(0.1, 0.3, 0.3)
-    my_second_observation.size = Point(1.0, 0.5, 0.3)
-    my_second_observation.type = "Pizza"
+    my_second_observation.size = Point(0.4, 0.4, 0.05)
+    my_second_observation.type = "pizza"
     my_second_observation.colour = "blue"
     resp = observe_objs_srv(my_second_observation)
     pizza_id = resp.obj_id
 
     # observe some milk
     my_third_observation = SOMObservation()
-    my_third_observation.pose_observation.position = Point(0.0,  0.5, -0.3)
-    my_third_observation.size = Point(1.0, 0.5, 0.3)
-    my_third_observation.type = "Milk"
+    my_third_observation.pose_observation.position = Point(0.0,  0.5, 0.0)
+    my_third_observation.size = Point(0.1, 0.1, 0.2)
+    my_third_observation.type = "milk"
+    my_third_observation.colour = "white"
+    resp = observe_objs_srv(my_third_observation)
+    milk_id = resp.obj_id
+
+    my_third_observation = SOMObservation()
+    my_third_observation.pose_observation.position = Point(3.0,  0.5, 0.4)
+    my_third_observation.size = Point(1.0, 0.5, 0.5)
+    my_third_observation.type = "fridge"
+    my_third_observation.colour = "white"
+    resp = observe_objs_srv(my_third_observation)
+    milk_id = resp.obj_id
+
+    my_third_observation = SOMObservation()
+    my_third_observation.pose_observation.position = Point(-2.0,  -1.0, 0.5)
+    my_third_observation.size = Point(1.0, 1.5, 1.0)
+    my_third_observation.type = "sink"
     my_third_observation.colour = "white"
     resp = observe_objs_srv(my_third_observation)
     milk_id = resp.obj_id
