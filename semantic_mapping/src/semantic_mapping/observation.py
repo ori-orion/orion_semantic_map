@@ -37,7 +37,7 @@ def make_observation(obs, rois, object_store, observation_store, priors):
             object_store.update_id(obj_id, obj)
             print("New object of type %s added to database." % (obj.type))
 
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             print("Service call failed: %s"%(e))
             obj_id = ""
             return (False, obj_id, obj)
@@ -59,7 +59,7 @@ def make_observation(obs, rois, object_store, observation_store, priors):
             object_store.update_id(obj_id, obj)
             print("Existing object of type %s updated in database." % (obj.type))
 
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             print("Service call failed: %s"%(e))
             obj_id = ""
             return (False, obj_id, obj)
