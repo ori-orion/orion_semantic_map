@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import roslib, rospy, json, argparse, random, os
 import copy, sys, datetime, time, math

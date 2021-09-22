@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import roslib
 import rospy
@@ -131,7 +131,7 @@ class SOMAROIManager():
         self.soma_map_name = ""
         self.map_unique_id = ""
 
-        print "Map name: ",self.soma_map_name," Unique ID: ",self.map_unique_id
+        print ("Map name: ",self.soma_map_name," Unique ID: ",self.map_unique_id)
 
         self._init_menu()
 
@@ -140,10 +140,10 @@ class SOMAROIManager():
         rospy.spin()
 
     def _init_map(self):
-        print "Waiting for the map info from soma2_map_manager"
+        print ("Waiting for the map info from soma2_map_manager")
         try:
             rospy.wait_for_service('soma2/map_info')
-            print "Map info received..."
+            print ("Map info received...")
         except:
            # print("No 'static_map' service")
             return None
@@ -151,8 +151,8 @@ class SOMAROIManager():
            map_info = rospy.ServiceProxy('soma2/map_info',MapInfo)
            resp1 = map_info(0)
            return resp1
-        except rospy.ServiceException, e:
-           print "Service call failed: %s"%e
+        except rospy.ServiceException as e:
+           print ("Service call failed: %s"%e)
            return None
 
 
@@ -472,7 +472,7 @@ class SOMAROIManager():
         #create a SOMA2ROI Object
         soma_obj = SOMROIObject()
 
-        print roi_id
+        print (roi_id)
 
         # a new roi
         if roi_id == None:
@@ -484,7 +484,7 @@ class SOMAROIManager():
             soma_roi_id = self._next_roi_id()
 
             roi_id = soma_roi_id
-            print soma_roi_id
+            print (soma_roi_id)
 
             type_count = dict()
             for type in self.types:

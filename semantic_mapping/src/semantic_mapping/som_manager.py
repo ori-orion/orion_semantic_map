@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import roslib, rospy, json, argparse, random
 import sys
@@ -145,7 +145,7 @@ class SOMDataManager():
     def handle_lookup_request(self, req):
         try:
             obj, meta = self._object_store.query_id(req.obj_id, SOMObject._type)
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             obj = None
             print("Service call failed: %s" % (e))
         return obj
