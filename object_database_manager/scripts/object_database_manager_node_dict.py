@@ -22,7 +22,7 @@ class ObjectDatabaseManager(object):
         #self.object_recognition_sub = rospy.Subscriber('/yolo2_object_position_node/result', ObjectDetections, self.object_insertion_cb)
         #rospy.loginfo('Listening on topic /yolo2_object_position_node/result now for recognized objects.')
 
-	self.object_recognition_sub = rospy.Subscriber('/yolo2_node/detections', DetectionArray, self.object_insertion_cb)
+    	self.object_recognition_sub = rospy.Subscriber('/yolo2_node/detections', DetectionArray, self.object_insertion_cb)
         rospy.loginfo('Listening on topic /yolo2_node/detections now for recognized objects.')
 
 
