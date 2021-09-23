@@ -59,8 +59,8 @@ class SOMDataManager():
 
     def load_rois(self, file):
         self.vis = Visualisation(self._object_store, InteractiveMarkerServer("som/obj_vis"))
-        fpath = os.path.join(dirname, '../../config/' + file)
-        roi_load = pickle.load(open(fpath,"rb"))
+        fpath = os.path.join(dirname, '../../config/' + file)        
+        roi_load = pickle.load(open(fpath,"rb"), encoding='latin1')
         self._rois = [i[0] for i in roi_load]
         roi_markers = self.vis.rois_to_marker_array(self._rois)
         roi_vis_pub = rospy.Publisher('som/roi_vis', MarkerArray, queue_size=1, latch=True)
