@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import rospy
 from object_database_manager.srv import ObjectLocation, ObjectLocationResponse, InsertObject
@@ -38,7 +38,7 @@ class ObjectDatabaseManager(object):
     
             return response
     
-        except IndexError, e:
+        except IndexError as e:
             rospy.loginfo("Object '%s' was most likely not in the database: %s" % (request.object, e))
 
     def object_insertion_cb(self, request):

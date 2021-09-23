@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import rospy
 from object_database_manager.srv import ObjectLocation, ObjectLocationResponse
@@ -86,12 +86,12 @@ class ObjectDatabaseManager(object):
                 sightings = {}
 
                 for waypoint in rospy.get_param("waypoints").values():
-		    #print waypoint                    
-		    sightings[waypoint] = False
+                    sightings[waypoint] = False;
+                    #print(waypoint)
 
                 sightings[self.currentNode] = True 
 		
-		print self.currentNode
+		print (self.currentNode)
 		#print type(obj_name)
                 self.db[obj_name] = sightings
                 #rospy.loginfo('Object: "%s" was inserted into the database at waypoint "%s".' % (obj_name, request.waypoint))
