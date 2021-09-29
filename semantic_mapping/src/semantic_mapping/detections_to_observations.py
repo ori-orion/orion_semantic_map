@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 from orion_actions.msg import *
 from orion_actions.srv import *
-from tf import TransformListener
-from geometry_msgs.msg import PoseStamped, Point, Pose
+from geometry_msgs.msg import PoseStamped, Point    #, Pose
 from orion_actions.msg import PoseDetectionPosition
 import rospy
-
-from cv_bridge import CvBridge, CvBridgeError
-import geometry_msgs.msg
-import message_filters
-import numpy as np
-from sensor_msgs.msg import CameraInfo
-from sensor_msgs.msg import Image
 import tf2_ros
 from orion_actions.msg import DetectionArray, Detection
 
-class DetectionTFPublisher:
+# from cv_bridge import CvBridge, CvBridgeError
+# import geometry_msgs.msg
+# import message_filters
+# import numpy as np
+# from sensor_msgs.msg import CameraInfo
+# from sensor_msgs.msg import Image
+# from tf import TransformListener
+
+
+class DetectToObserve:
     def __init__(self):
         queue_size = 10;
         
@@ -166,60 +167,60 @@ class DetectionTFPublisher:
 #     rospy.spin()
 
 
-class DetectToObserve(object):
-    def __init__(self):
-        self.camera_frame = "head_rgbd_sensor_rgb_frame"
-        self.global_frame = "map"
-        rospy.wait_for_service('som/observe')
-        rospy.wait_for_service('som/query')
-        self.observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
-        self.query_objs_srv = rospy.ServiceProxy('som/query', SOMQuery)
-        self.tf = TransformListener()
-        self.detections_sub = rospy.Subscriber("/vision/detection_locations", DetectionLocation, self.detection_to_observation, queue_size = 5)
-        self.detections_sub = rospy.Subscriber("/vision/pose_locations", PoseDetectionPosition, self.person_observations, queue_size = 5)
+# class DetectToObserve(object):
+#     def __init__(self):
+#         self.camera_frame = "head_rgbd_sensor_rgb_frame"
+#         self.global_frame = "map"
+#         rospy.wait_for_service('som/observe')
+#         rospy.wait_for_service('som/query')
+#         self.observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
+#         self.query_objs_srv = rospy.ServiceProxy('som/query', SOMQuery)
+#         self.tf = TransformListener()
+#         self.detections_sub = rospy.Subscriber("/vision/detection_locations", DetectionLocation, self.detection_to_observation, queue_size = 5)
+#         self.detections_sub = rospy.Subscriber("/vision/pose_locations", PoseDetectionPosition, self.person_observations, queue_size = 5)
 
-    def detection_to_observation(self, data):
-        obs = SOMObservation()
-        if self.tf.frameExists(self.camera_frame) and self.tf.frameExists(self.global_frame):
-            p_camera = PoseStamped()
-            p_camera.header.frame_id = self.camera_frame
-            p_camera.pose.position = Point(data.x_cam_m, data.y_cam_m, data.z_cam_m)
-            p_global = self.tf.transformPose(self.global_frame, p_camera)
-            obs.pose_observation = p_global.pose
-        else:
-            print("ERROR converting detection to observation: both frames %s and %s do not exist" % (self.camera_frame, self.global_frame))
-        obs.type = data.label.name
-        obs.size = Point(data.bb_width_m, data.bb_height_m, data.bb_depth_m)
+#     def detection_to_observation(self, data):
+#         obs = SOMObservation()
+#         if self.tf.frameExists(self.camera_frame) and self.tf.frameExists(self.global_frame):
+#             p_camera = PoseStamped()
+#             p_camera.header.frame_id = self.camera_frame
+#             p_camera.pose.position = Point(data.x_cam_m, data.y_cam_m, data.z_cam_m)
+#             p_global = self.tf.transformPose(self.global_frame, p_camera)
+#             obs.pose_observation = p_global.pose
+#         else:
+#             print("ERROR converting detection to observation: both frames %s and %s do not exist" % (self.camera_frame, self.global_frame))
+#         obs.type = data.label.name
+#         obs.size = Point(data.bb_width_m, data.bb_height_m, data.bb_depth_m)
 
-        # if we have observed same object type of same colour before use same object id
-        resp = self.query_objs_srv(SOMObservation(type = obs.type, colour = obs.colour), Relation(), SOMObservation(), Pose())
-        if resp.matches[0].obj1.observed:
-            obs.obj_id = resp.matches[0].obj1.obj_id
+#         # if we have observed same object type of same colour before use same object id
+#         resp = self.query_objs_srv(SOMObservation(type = obs.type, colour = obs.colour), Relation(), SOMObservation(), Pose())
+#         if resp.matches[0].obj1.observed:
+#             obs.obj_id = resp.matches[0].obj1.obj_id
 
-        result = self.observe_objs_srv(obs)
-        if not result.result:
-            print("Failed to convert detection to observation.")
+#         result = self.observe_objs_srv(obs)
+#         if not result.result:
+#             print("Failed to convert detection to observation.")
 
-    def person_observations(self, data):
-        obs = SOMObservation()
-        if self.tf.frameExists(self.camera_frame) and self.tf.frameExists(self.global_frame):
-            p_camera = PoseStamped()
-            p_camera.header.frame_id = self.camera_frame
-            p_camera.pose.position = Point(data.x_cam_m, data.y_cam_m, data.z_cam_m)
-            p_global = self.tf.transformPose(self.global_frame, p_camera)
-            obs.pose_observation = p_global.pose
-        else:
-            print("ERROR converting detection to observation: both frames %s and %s do not exist" % (self.camera_frame, self.global_frame))
-        obs.colour = data.color
-        obs.type = 'person'
+#     def person_observations(self, data):
+#         obs = SOMObservation()
+#         if self.tf.frameExists(self.camera_frame) and self.tf.frameExists(self.global_frame):
+#             p_camera = PoseStamped()
+#             p_camera.header.frame_id = self.camera_frame
+#             p_camera.pose.position = Point(data.x_cam_m, data.y_cam_m, data.z_cam_m)
+#             p_global = self.tf.transformPose(self.global_frame, p_camera)
+#             obs.pose_observation = p_global.pose
+#         else:
+#             print("ERROR converting detection to observation: both frames %s and %s do not exist" % (self.camera_frame, self.global_frame))
+#         obs.colour = data.color
+#         obs.type = 'person'
 
-        resp = self.query_objs_srv(SOMObservation(type = obs.type, colour = obs.colour), Relation(), SOMObservation(), Pose())
-        if resp.matches[0].obj1.observed:
-            obs.obj_id = resp.matches[0].obj1.obj_id
+#         resp = self.query_objs_srv(SOMObservation(type = obs.type, colour = obs.colour), Relation(), SOMObservation(), Pose())
+#         if resp.matches[0].obj1.observed:
+#             obs.obj_id = resp.matches[0].obj1.obj_id
 
-        result = self.observe_objs_srv(obs)
-        if not result.result:
-            print("Failed to convert detection to observation.")
+#         result = self.observe_objs_srv(obs)
+#         if not result.result:
+#             print("Failed to convert detection to observation.")
 
 if __name__ == '__main__':
     rospy.init_node('detections_to_observations')
