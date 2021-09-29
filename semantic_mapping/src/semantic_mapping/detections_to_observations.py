@@ -33,6 +33,12 @@ class DetectToObserve:
         self.observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
         self.query_objs_srv = rospy.ServiceProxy('som/query', SOMQuery)
 
+        # The format of this is:
+        # { object_type: forwarding }
+        # where forwarding is of the type SOMObservation and is what gets sent across som/observe
+        # This feels more foolproof than doing a query (as well as potentially being more time efficient) 
+        self.previous_detections = {};
+
         rospy.Subscriber('/vision/bbox_detections', DetectionArray, self.forwardDetectionsToSOM, queue_size=queue_size)
         pass;
 
@@ -49,7 +55,7 @@ class DetectToObserve:
             forwarding.size = detection.size;
 
             # Getting the robot pose:
-            camera_to_global = self.tfBuffer.lookup_transform(self.camera_frame, self.global_frame, rospy.Time());
+            camera_to_global:tf2_ros.TransformStamped = self.tfBuffer.lookup_transform(self.camera_frame, self.global_frame, rospy.Time());
             forwarding.robot_pose.position.x = camera_to_global.transform.translation.x;
             forwarding.robot_pose.position.y = camera_to_global.transform.translation.y;
             forwarding.robot_pose.position.z = camera_to_global.transform.translation.z;
@@ -70,9 +76,43 @@ class DetectToObserve:
             forwarding.header.stamp = rospy.Time.now();
             # NOTE need to check frame ID in the header. (Could that be that of the camera?)
             forwarding.header.frame_id = self.camera_frame;
+
+            # We now want to check for duplicates.
+            # (Anything that goes through the vision system will be subject to duplicates/multiple).
+            item_previously_identified = False;
+            if (detection.label.name in self.previous_detections):
+                # Check coordinates in size interval. (Essentially we want to check whether 
+                # the point is in the bounding box of a previously identified object.)
+                def CCISI(prev_coord, current_coord, interval):
+                    return -interval/2 < prev_coord - current_coord and prev_coord - current_coord < interval/2
+                
+                entries = self.previous_detections[detection.label.name];
+                
+                for entry in entries:
+                    entry:SOMObservation;
+                    # If this is the case then the current point is in the bounding box of the previous. 
+                    # They are therefore one and the same.
+                    if (CCISI(forwarding.pose_observation.position.x, entry.pose_observation.position.x, forwarding.size.x) and
+                        CCISI(forwarding.pose_observation.position.y, entry.pose_observation.position.y, forwarding.size.y) and 
+                        CCISI(forwarding.pose_observation.position.z, entry.pose_observation.position.z, forwarding.size.z)):
+
+                        item_previously_identified = True;
+                        forwarding.obj_id = entry.obj_id;
+                        break;
+                    pass;
+                
+                pass;    
+                
             
-            forward_return = self.observe_objs_srv(forwarding);
-            print(forward_return);            
+            result, obj_id_returned = self.observe_objs_srv(forwarding);    
+
+            if (not item_previously_identified):
+                forwarding.obj_id = obj_id_returned;
+                self.previous_detections[detection.label.name] = [forwarding];
+
+
+            print(result);
+
 
         pass;
 
