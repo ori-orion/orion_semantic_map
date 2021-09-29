@@ -2,10 +2,169 @@
 from orion_actions.msg import *
 from orion_actions.srv import *
 from tf import TransformListener
-from geometry_msgs.msg import PoseStamped, Point
+from geometry_msgs.msg import PoseStamped, Point, Pose
 from orion_actions.msg import PoseDetectionPosition
-from tmc_vision_msgs.msg import DetectionLocation
 import rospy
+
+from cv_bridge import CvBridge, CvBridgeError
+import geometry_msgs.msg
+import message_filters
+import numpy as np
+from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import Image
+import tf2_ros
+from orion_actions.msg import DetectionArray, Detection
+
+class DetectionTFPublisher:
+    def __init__(self):
+        queue_size = 10;
+        
+        # Data about transform frames
+        self.camera_frame = "head_rgbd_sensor_rgb_frame"
+        self.global_frame = "map"
+
+        self.tfBuffer = tf2_ros.Buffer();
+        self.listener = tf2_ros.TransformListener(self.tfBuffer)
+
+        # Initialising the SOM services
+        rospy.wait_for_service('som/observe')
+        rospy.wait_for_service('som/query')
+        self.observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
+        self.query_objs_srv = rospy.ServiceProxy('som/query', SOMQuery)
+
+        rospy.Subscriber('/vision/bbox_detections', DetectionArray, self.forwardDetectionsToSOM, queue_size=queue_size)
+        pass;
+
+    # We essentially want to forward detections from orion_recognition over to the SOM database. This should do that.
+    def forwardDetectionsToSOM(self, data:DetectionArray):
+    
+        for detection in data.detections:
+            detection:Detection;
+            
+            forwarding = SOMObservation;
+
+            # NOTE: Assuming SOMObservation.type is for the name of the object. This is most likely wrong!
+            forwarding.type = detection.label.name;
+            forwarding.size = detection.size;
+
+            # Getting the robot pose:
+            camera_to_global = self.tfBuffer.lookup_transform(self.camera_frame, self.global_frame, rospy.Time());
+            forwarding.robot_pose.position.x = camera_to_global.transform.translation.x;
+            forwarding.robot_pose.position.y = camera_to_global.transform.translation.y;
+            forwarding.robot_pose.position.z = camera_to_global.transform.translation.z;
+            forwarding.robot_pose.orientation.w = camera_to_global.transform.rotation.w;
+            forwarding.robot_pose.orientation.x = camera_to_global.transform.rotation.x;
+            forwarding.robot_pose.orientation.y = camera_to_global.transform.rotation.y;
+            forwarding.robot_pose.orientation.z = camera_to_global.transform.rotation.z;
+
+            # Getting the position of the object in 3D space relative to the global frame.
+            object_point = PoseStamped()
+            object_point.header.frame_id = self.camera_frame
+            object_point.pose.position = Point(detection.translation_x, detection.translation_y, detection.translation_z);
+            transformed_obj_point:PoseStamped = self.tfBuffer.transform(forwarding.robot_pose, object_point);
+            forwarding.pose_observation = transformed_obj_point.pose;
+
+            forwarding.colour = detection.color;
+
+            forwarding.header.stamp = rospy.Time.now();
+            # NOTE need to check frame ID in the header. (Could that be that of the camera?)
+            forwarding.header.frame_id = self.camera_frame;
+            
+            forward_return = self.observe_objs_srv(forwarding);
+            print(forward_return);            
+
+        pass;
+
+
+# class DetectionTFPublisher(object):
+#     def __init__(self):
+#         self.camera_frame = "head_rgbd_sensor_rgb_frame"
+#         self.global_frame = "map"
+#         rospy.wait_for_service('som/observe')
+#         rospy.wait_for_service('som/query')
+#         self.observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
+#         self.query_objs_srv = rospy.ServiceProxy('som/query', SOMQuery)
+        
+#         self.tfBuffer = tf2_ros.Buffer();
+#         self.listener = tf2_ros.TransformListener(self.tfBuffer)
+
+#         self.bridge = CvBridge()
+#         detection_sub = message_filters.Subscriber(
+#             "/vision/bbox_detections", DetectionArray)
+#         depth_sub = message_filters.Subscriber(
+#             "/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw", Image)
+#         self._objects = rospy.get_param('~objects', [])
+#         self._ts = message_filters.ApproximateTimeSynchronizer(
+#             [detection_sub, depth_sub], 30, 0.5)
+#         self._ts.registerCallback(self.callback)
+#         # self._br = tf2_ros.TransformBroadcaster()
+
+
+
+#     def callback(self, detections, depth_data):
+#         objects = {key.label.name: [] for key in detections.detections} #self._objects}
+#         trans = []
+#         for detection in detections.detections:
+#                 object_point = [detection.translation_x, detection.translation_y, detection.translation_z]
+#                 objects[detection.label.name].append(object_point)
+#         print(objects)
+        
+#         for obj in objects:
+#             for i, pos in enumerate(objects[obj]):
+#                 t = geometry_msgs.msg.TransformStamped()
+#                 t.header = depth_data.header
+#                 t.child_frame_id = obj + '_' + str(i)
+#                 t.transform.translation.x = pos[0]
+#                 t.transform.translation.y = pos[1]
+#                 t.transform.translation.z = pos[2]
+#                 # compute the tf frame
+#                 # rotate -90 degrees along z-axis
+#                 t.transform.rotation.z = np.sin(-np.pi / 4)
+#                 t.transform.rotation.w = np.cos(-np.pi / 4)
+#                 trans.append(t)
+
+#             observation = SOMObservation();
+
+#             try:
+#                 camera_to_global = self.tfBuffer.lookup_transform(self.camera_frame, self.global_frame, rospy.Time())
+#                 p_camera = PoseStamped();
+#                 p_camera.header.frame_id = self.camera_frame                
+#                 p_camera.pose.position.x = camera_to_global.transform.translation.x;
+#                 p_camera.pose.position.y = camera_to_global.transform.translation.y;
+#                 p_camera.pose.position.z = camera_to_global.transform.translation.z;
+#                 p_camera.pose.orientation.w = camera_to_global.transform.rotation.w;
+#                 p_camera.pose.orientation.x = camera_to_global.transform.rotation.x;
+#                 p_camera.pose.orientation.y = camera_to_global.transform.rotation.y;
+#                 p_camera.pose.orientation.z = camera_to_global.transform.rotation.z;
+#                 p_global = self.tf.transformPose(self.global_frame, p_camera)
+#                 observation.pose_observation = p_global.pose
+#                 pass;
+#             except Exception as ex:
+#                 rospy.logerr(ex);
+
+#             if self.tf.frameExists(self.camera_frame) and self.tf.frameExists(self.global_frame):
+#                 p_camera = PoseStamped()
+#                 p_camera.header.frame_id = self.camera_frame
+#                 p_camera.pose.position = Point(data.x_cam_m, data.y_cam_m, data.z_cam_m)
+#                 p_global = self.tf.transformPose(self.global_frame, p_camera)
+#                 observation.pose_observation = p_global.pose
+#             else:
+#                 print("ERROR converting detection to observation: both frames %s and %s do not exist" % (self.camera_frame, self.global_frame))
+
+#             serviceReturn = self.observe_objs_srv(observation);
+#             print(serviceReturn);
+#         # self._br.sendTransform(trans)
+
+
+
+
+
+
+# if __name__ == '__main__':
+#     rospy.init_node('detection_tf_publisher')
+#     DetectionTFPublisher()
+#     rospy.spin()
+
 
 class DetectToObserve(object):
     def __init__(self):
