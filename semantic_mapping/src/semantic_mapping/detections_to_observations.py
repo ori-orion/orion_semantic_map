@@ -35,7 +35,7 @@ class DetectToObserve:
 
         # The format of this is:
         # { object_type: forwarding }
-        # where forwarding is of the type SOMObservation and is what gets sent across som/observe
+        # where forwarding is of the type SOMObservation[] and is what gets sent across som/observe
         # This feels more foolproof than doing a query (as well as potentially being more time efficient) 
         self.previous_detections = {};
 
@@ -101,14 +101,17 @@ class DetectToObserve:
                         break;
                     pass;
                 
-                pass;    
+                pass;
                 
             
             result, obj_id_returned = self.observe_objs_srv(forwarding);    
 
             if (not item_previously_identified):
                 forwarding.obj_id = obj_id_returned;
-                self.previous_detections[detection.label.name] = [forwarding];
+                if (detection.label.name in self.previous_detections):
+                    self.previous_detections[detection.label.name].append(forwarding);
+                else:
+                    self.previous_detections[detection.label.name] = [forwarding];
 
 
             print(result);
