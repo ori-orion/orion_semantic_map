@@ -13,8 +13,8 @@ class DetectToObserve(object):
         self.global_frame = "map"
         rospy.wait_for_service('som/observe')
         rospy.wait_for_service('som/query')
-        observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
-        query_objs_srv = rospy.ServiceProxy('som/query', SOMQuery)
+        self.observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
+        self.query_objs_srv = rospy.ServiceProxy('som/query', SOMQuery)
         self.tf = TransformListener()
         self.detections_sub = rospy.Subscriber("/vision/detection_locations", DetectionLocation, self.detection_to_observation, queue_size = 5)
         self.detections_sub = rospy.Subscriber("/vision/pose_locations", PoseDetectionPosition, self.person_observations, queue_size = 5)
@@ -33,11 +33,11 @@ class DetectToObserve(object):
         obs.size = Point(data.bb_width_m, data.bb_height_m, data.bb_depth_m)
 
         # if we have observed same object type of same colour before use same object id
-        resp = query_object_srv(SOMObservation(type = obs.type, colour = obs.colour), Relation(), SOMObservation(), Pose())
+        resp = self.query_objs_srv(SOMObservation(type = obs.type, colour = obs.colour), Relation(), SOMObservation(), Pose())
         if resp.matches[0].obj1.observed:
             obs.obj_id = resp.matches[0].obj1.obj_id
 
-        result = observe_objs_srv(obs)
+        result = self.observe_objs_srv(obs)
         if not result.result:
             print("Failed to convert detection to observation.")
 
@@ -54,11 +54,11 @@ class DetectToObserve(object):
         obs.colour = data.color
         obs.type = 'person'
 
-        resp = query_object_srv(SOMObservation(type = obs.type, colour = obs.colour), Relation(), SOMObservation(), Pose())
+        resp = self.query_objs_srv(SOMObservation(type = obs.type, colour = obs.colour), Relation(), SOMObservation(), Pose())
         if resp.matches[0].obj1.observed:
             obs.obj_id = resp.matches[0].obj1.obj_id
 
-        result = observe_objs_srv(obs)
+        result = self.observe_objs_srv(obs)
         if not result.result:
             print("Failed to convert detection to observation.")
 
