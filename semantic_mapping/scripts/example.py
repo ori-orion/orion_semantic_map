@@ -89,7 +89,8 @@ def test_database():
     # query for objects above the pizza
     resp = query_object_srv(SOMObservation(), Relation(above=True), SOMObservation(type = 'milk'), Pose())
     print("The number of objects above the milk is %d\n" % (len(resp.matches)))
-    print("The objects above the milk are %s and %s\n" % (resp.matches[0].obj1.type, resp.matches[1].obj1.type))
+    if(len(resp.matches) >= 2):
+        print("The objects above the milk are %s and %s\n" % (resp.matches[0].obj1.type, resp.matches[1].obj1.type))
 
     # query for all foods
     resp = query_object_srv(SOMObservation(type = 'food'), Relation(), SOMObservation(), Pose())

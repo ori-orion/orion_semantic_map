@@ -54,8 +54,17 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_ob
     """
     som_obj1 = InSOMObject.from_som_observation_message(som_template_one)
     som_obj2 = InSOMObject.from_som_observation_message(som_template_two)
+
+    print(som_obj1);
+    print(som_obj2);
+    print(dir(som_obj1));
+
     query_dict1 = som_obj1.to_som_object_mongo_db_query()
     query_dict2 = som_obj2.to_som_object_mongo_db_query()
+
+    # If there are no matches then we want to return an empty array.
+    if (len(query_dict1) == 0 and len(query_dict2) == 0):
+        return [];
 
     # if only a single object is specified
     if (len(query_dict1) == 0 or len(query_dict2) == 0) and unspecified_relation(relation):
