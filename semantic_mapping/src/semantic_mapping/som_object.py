@@ -74,6 +74,7 @@ class InSOMObject(object):
         self._observed = None
         self._in_place = None
 
+    #region basic get and set operations
     def get_id(self):
         return self._obj_id
 
@@ -228,6 +229,7 @@ class InSOMObject(object):
 		think this object may actually be.
     	"""
     	pass
+    #endregion
 
 
     @classmethod
@@ -379,8 +381,8 @@ class InSOMObject(object):
             obj.drink = self._drink
         if not _default_value(self._coat_colour):
             obj.coat_colour = self._coat_colour
-        if not _default_value(self._in_place):
-            obj.in_place = self._in_place
+        # if not _default_value(self._in_place):    # NOTE 'SOMObject' object has no attribute 'in_place': Not sure what's going on here
+        #     obj.in_place = self._in_place
         obj.observed = self._observed
 
         return obj
@@ -569,9 +571,10 @@ class InSOMObject(object):
         tol = 1.
         if self._type in priors['object'].to_numpy():
             object_row = priors.loc[priors['object'] == self._type]
-            desired_pose = np.array([object_row['desired_pose_x'].iloc[0],
-                                    object_row['desired_pose_y'].iloc[0],
-                                    object_row['desired_pose_z'].iloc[0]])
+            print(object_row);
+            desired_pose = np.array([object_row['pose_x'].iloc[0],
+                                    object_row['pose_y'].iloc[0],
+                                    object_row['pose_z'].iloc[0]])
             current_pose = np.array([pose.most_likely_pose.position.x,
                                     pose.most_likely_pose.position.y,
                                     pose.most_likely_pose.position.z])

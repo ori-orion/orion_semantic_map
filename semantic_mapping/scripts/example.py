@@ -58,20 +58,20 @@ def test_database():
     resp = observe_objs_srv(my_third_observation)
     milk_id = resp.obj_id
 
-    my_third_observation = SOMObservation()
-    my_third_observation.pose_observation.position = Point(3.0,  0.5, 0.4)
-    my_third_observation.size = Point(1.0, 0.5, 0.5)
-    my_third_observation.type = "fridge"
-    my_third_observation.colour = "white"
-    resp = observe_objs_srv(my_third_observation)
+    my_fourth_observation = SOMObservation()
+    my_fourth_observation.pose_observation.position = Point(3.0,  0.5, 0.4)
+    my_fourth_observation.size = Point(1.0, 0.5, 0.5)
+    my_fourth_observation.type = "fridge"
+    my_fourth_observation.colour = "white"
+    resp = observe_objs_srv(my_fourth_observation)
     milk_id = resp.obj_id
 
-    my_third_observation = SOMObservation()
-    my_third_observation.pose_observation.position = Point(-2.0,  -1.0, 0.5)
-    my_third_observation.size = Point(1.0, 1.5, 1.0)
-    my_third_observation.type = "sink"
-    my_third_observation.colour = "white"
-    resp = observe_objs_srv(my_third_observation)
+    my_fifth_observation = SOMObservation()
+    my_fifth_observation.pose_observation.position = Point(-2.0,  -1.0, 0.5)
+    my_fifth_observation.size = Point(1.0, 1.5, 1.0)
+    my_fifth_observation.type = "sink"
+    my_fifth_observation.colour = "white"
+    resp = observe_objs_srv(my_fifth_observation)
     milk_id = resp.obj_id
 
     # query for all bacon objects
@@ -99,8 +99,8 @@ def test_database():
     print(food_objs_ids)
 
     # update that the bacon has gone off and is now blue
-    my_fourth_observation = SOMObservation(obj_id = bacon_id, colour = 'blue')
-    observe_objs_srv(my_fourth_observation)
+    my_sixth_observation = SOMObservation(obj_id = bacon_id, colour = 'blue')
+    observe_objs_srv(my_sixth_observation)
     print("We observed the bacon is now blue")
 
     # query for all blue bacon objects
