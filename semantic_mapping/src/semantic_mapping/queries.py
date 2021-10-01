@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 from collections import defaultdict
 from som_object import InSOMObject
-from orion_actions.msg import Match, Relation, SOMObject, PoseEstimate
+from orion_actions.msg import Match, Relation, SOMObject, PoseEstimate, SOMObservation
 from geometry_msgs.msg import Pose, Point
 
-def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_object_store, prior_df, rois, ontology):
+def query(som_template_one:SOMObservation, relation, som_template_two:SOMObservation, cur_robot_pose, mongo_object_store, prior_df, rois, ontology):
     """
     Performs a query to the semantic object database. This function uses
     SOMObject objects as templates. Meaning that any fields specified in
@@ -54,10 +54,6 @@ def query(som_template_one, relation, som_template_two, cur_robot_pose, mongo_ob
     """
     som_obj1 = InSOMObject.from_som_observation_message(som_template_one)
     som_obj2 = InSOMObject.from_som_observation_message(som_template_two)
-
-    print(som_obj1);
-    print(som_obj2);
-    print(dir(som_obj1));
 
     query_dict1 = som_obj1.to_som_object_mongo_db_query()
     query_dict2 = som_obj2.to_som_object_mongo_db_query()

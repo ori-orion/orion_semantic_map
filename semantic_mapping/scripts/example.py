@@ -29,7 +29,9 @@ def test_database():
     check_similarity_srv = rospy.ServiceProxy('som/check_similarity', SOMCheckSimilarity)
 
     # clear out the database
+    print("Pre clearing database");
     clear_database_srv()
+    print("Database cleared");
 
     # observe some bacon
     my_first_observation = SOMObservation()
@@ -111,6 +113,16 @@ def test_database():
     # query for all red bacon objects
     resp = query_object_srv(SOMObservation(type = 'bacon', colour = 'red'), Relation(), SOMObservation(), Pose())
     print("The number of red bacon objects observed is %d\n" % (len(resp.matches)))
+
+    print("Bacon ID: ", bacon_id)
+    baconQuery = query_object_srv(SOMObservation(obj_id = bacon_id), Relation(), SOMObservation(), Pose())
+    # print(baconQuery);
+    # print(baconQuery.matches);
+
+    print("Pizza ID: ", pizza_id)
+    pizzaQuery = query_object_srv(SOMObservation(obj_id = pizza_id), Relation(), SOMObservation(), Pose())
+    # print(pizzaQuery);
+    # print(pizzaQuery.matches);
 
     # query for the relationship between bacon and milk
     resp = query_object_srv(SOMObservation(obj_id = bacon_id), Relation(), SOMObservation(obj_id = pizza_id), Pose())
