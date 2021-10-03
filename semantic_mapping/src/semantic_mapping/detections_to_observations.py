@@ -44,8 +44,8 @@ class DetectToObserve:
             detection:Detection;
             
             forwarding = SOMObservation();            
-            print(dir(forwarding))
-            print(dir(forwarding.robot_pose));
+            # print(dir(forwarding))
+            # print(dir(forwarding.robot_pose));
 
 
             # NOTE: Assuming SOMObservation.type is for the name of the object. This is most likely wrong!
@@ -106,9 +106,11 @@ class DetectToObserve:
                 
                 pass;
                 
-            print(type (forwarding));
+            # print(type (forwarding));
             
-            addition_successful, obj_id_returned = self.observe_objs_srv(forwarding);    
+            service_output:SOMObserveResponse = self.observe_objs_srv(forwarding);    
+            addition_successful = service_output.result;
+            obj_id_returned = service_output.obj_id;
 
             if (addition_successful and not item_previously_identified):
                 forwarding.obj_id = obj_id_returned;
@@ -120,9 +122,13 @@ class DetectToObserve:
                     self.previous_detections[detection.label.name] = [forwarding];
 
 
-            print("Adding to SOM:", detection.label.name, addition_successful, obj_id_returned);
+            print(
+                "Obj ID:",  obj_id_returned,
+                "\tAdding to SOM:", detection.label.name, 
+                "\tSuccessful: ", addition_successful,                
+                "\tObject previously identified:", item_previously_identified);
 
-
+        print("------------------")
         pass;
 
 if __name__ == '__main__':
