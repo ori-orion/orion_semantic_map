@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+import datetime
 from orion_actions.msg import *
 from orion_actions.srv import *
 from geometry_msgs.msg import PoseStamped, Point, Pose
@@ -8,6 +10,10 @@ import tf2_ros
 from orion_actions.msg import DetectionArray, Detection
 from tf import TransformListener;
 import std_msgs.msg;
+
+# import mongo as MongoInt;
+from ebbhrd_ebb.msg import EBBQueryBase, Observation;
+
 
 class DetectToObserve:
     def __init__(self):
@@ -33,6 +39,9 @@ class DetectToObserve:
         # where forwarding is of the type SOMObservation[] and is what gets sent across som/observe
         # This feels more foolproof than doing a query (as well as potentially being more time efficient) 
         self.previous_detections = {};
+
+        # self.mongodb_client = MongoInt.MongoDBInterface();
+        self.observation_pusher = rospy.Publisher('/ebb/observations', Observation, queue_size=queue_size)
 
         rospy.Subscriber('/vision/bbox_detections', DetectionArray, self.forwardDetectionsToSOM, queue_size=queue_size)
         pass;
@@ -121,12 +130,29 @@ class DetectToObserve:
                 else:
                     self.previous_detections[detection.label.name] = [forwarding];
 
+            observation_topic_content:Observation = Observation();
+            observation_topic_content.base_info.header = "Observation from orion_recognition";
+            observation_topic_content.base_info.timestamp = rospy.Time.now();
+            observation_topic_content.base_info.location = forwarding.robot_pose;
+            observation_topic_content.base_info.entry_type = EBBQueryBase.OBSERVATION;
+            observation_topic_content.obj_type = forwarding.type;
+            observation_topic_content.obj_colour = forwarding.colour;
+            observation_topic_content.location_of_object = forwarding.pose_observation;
+            observation_topic_content.id_of_object = obj_id_returned;
+            observation_topic_content.obj_previously_identified = item_previously_identified;
+
+            self.observation_pusher.publish(observation_topic_content);
+            # self.mongodb_client.addObject(MongoInt.OBSERVATION_COLL, adding_to_mongo);
 
             print(
                 "Obj ID:",  obj_id_returned,
                 "\tAdding to SOM:", detection.label.name, 
                 "\tSuccessful: ", addition_successful,                
-                "\tObject previously identified:", item_previously_identified);
+                "\tObject previously identified:", item_previously_identified,                
+                "\tposition: ({0:.3f}, {0:.3f}, {0:.3f})".format(
+                    forwarding.pose_observation.position.x, 
+                    forwarding.pose_observation.position.y, 
+                    forwarding.pose_observation.position.z));
 
         print("------------------")
         pass;
