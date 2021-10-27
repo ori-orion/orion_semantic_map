@@ -149,7 +149,7 @@ class DetectToObserve:
                 "\tAdding to SOM:", detection.label.name, 
                 "\tSuccessful: ", addition_successful,                
                 "\tObject previously identified:", item_previously_identified,                
-                "\tposition: ({0:.3f}, {0:.3f}, {0:.3f})".format(
+                "\tposition: ({0:.3f}, {1:.3f}, {1:.3f})".format(
                     forwarding.pose_observation.position.x, 
                     forwarding.pose_observation.position.y, 
                     forwarding.pose_observation.position.z));
