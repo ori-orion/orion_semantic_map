@@ -12,7 +12,7 @@ from tf import TransformListener;
 import std_msgs.msg;
 
 # import mongo as MongoInt;
-from ebbhrd_ebb.msg import EBBQueryBase, Observation;
+from ebbhrd_msgs.msg import EBBQueryBase, Observation;
 
 
 class DetectToObserve:
