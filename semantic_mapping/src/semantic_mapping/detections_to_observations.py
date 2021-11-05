@@ -132,7 +132,7 @@ class DetectToObserve:
 
             observation_topic_content:Observation = Observation();
             observation_topic_content.base_info.header = "Observation from orion_recognition";
-            observation_topic_content.base_info.timestamp = rospy.Time.now();
+            observation_topic_content.base_info.ros_timestamp = rospy.Time.now();
             observation_topic_content.base_info.location = forwarding.robot_pose;
             observation_topic_content.base_info.entry_type = EBBQueryBase.OBSERVATION;
             observation_topic_content.obj_type = forwarding.type;
