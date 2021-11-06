@@ -5,7 +5,7 @@ from orion_actions.msg import *
 from som_object import InSOMObject
 
 
-def make_observation(obs, rois, object_store, observation_store, priors):
+def make_observation(obs:SOMObservation, rois, object_store, observation_store, priors):
     ''' Receives an observation and updates the object and observation stores
     accordingly.
 

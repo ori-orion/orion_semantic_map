@@ -2,7 +2,7 @@
 from orion_actions.msg import SOMObservation, SOMObject
 
 
-def observation_to_object(obs, default_frame_id):
+def observation_to_object(obs:SOMObservation, default_frame_id):
     obj = SOMObject()
 
     if (obj.header.frame_id == ""):
