@@ -52,11 +52,11 @@ def query(som_template_one:SOMObservation, relation, som_template_two:SOMObserva
         o1 matches the template of 'som_obj_one' and o2 matches the
         template of 'som_obj_two'.
     """
-    som_obj1 = InSOMObject.from_som_observation_message(som_template_one)
-    som_obj2 = InSOMObject.from_som_observation_message(som_template_two)
+    som_obj1:InSOMObject = InSOMObject.from_som_observation_message(som_template_one)
+    som_obj2:InSOMObject = InSOMObject.from_som_observation_message(som_template_two)
 
-    query_dict1 = som_obj1.to_som_object_mongo_db_query()
-    query_dict2 = som_obj2.to_som_object_mongo_db_query()
+    query_dict1:dict = som_obj1.to_som_object_mongo_db_query()
+    query_dict2:dict = som_obj2.to_som_object_mongo_db_query()
 
     # If there are no matches then we want to return an empty array.
     if (len(query_dict1) == 0 and len(query_dict2) == 0):

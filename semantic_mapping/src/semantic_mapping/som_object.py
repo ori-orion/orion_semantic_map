@@ -233,7 +233,7 @@ class InSOMObject(object):
 
 
     @classmethod
-    def from_som_observation_message(self, som_observation):
+    def from_som_observation_message(self, som_observation:SOMObservation) -> InSOMObject:
         obj = InSOMObject()
 
         obj.set_id(som_observation.obj_id)
@@ -263,7 +263,7 @@ class InSOMObject(object):
         return obj
 
     @classmethod
-    def from_som_object_message(self, som_object):
+    def from_som_object_message(self, som_object:SOMObject) -> InSOMObject:
         obj = InSOMObject()
 
         obj.set_id(som_object.obj_id)
@@ -292,7 +292,7 @@ class InSOMObject(object):
 
         return obj
 
-    def to_som_observation_message(self):
+    def to_som_observation_message(self) -> SOMObservation:
         obj = SOMObservation()
 
         if not _default_value(self._obj_id):
@@ -445,7 +445,7 @@ class InSOMObject(object):
     def dict_iter(self):
         """
         Iterates through the non-null values, and returns a (string, value)
-        pair for each one. THe string is the
+        pair for each one. The string is the
         """
         if not _default_value(self._obj_id):
             yield "obj_id", self._obj_id
@@ -495,7 +495,7 @@ class InSOMObject(object):
             yield "drink", self._drink
 
 
-    def to_som_object_mongo_db_query(self):
+    def to_som_object_mongo_db_query(self) -> dict:
         """
         Returns a dictionary 'd' to be used as follows:
         msg_store.query(SOMObservation._type, d)
