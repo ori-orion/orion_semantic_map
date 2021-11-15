@@ -9,7 +9,7 @@ from som_object import InSOMObject
 from orion_actions.msg import Match, Relation, SOMObject, PoseEstimate, SOMObservation
 from geometry_msgs.msg import Pose, Point
 
-def query(som_template_one:SOMObservation, relation, som_template_two:SOMObservation, cur_robot_pose, mongo_object_store, prior_df, rois, ontology):
+def query(som_template_one:SOMObservation, relation, som_template_two:SOMObservation, cur_robot_pose, mongo_object_store, prior_df, rois, ontology) -> list:
     """
     Performs a query to the semantic object database. This function uses
     SOMObject objects as templates. Meaning that any fields specified in
@@ -69,10 +69,10 @@ def query(som_template_one:SOMObservation, relation, som_template_two:SOMObserva
         if len(matches) == 0:
             matches = _match_prior_single_object(query_dict, prior_df, rois)
     else:
-        matches = _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store, ontology, cur_robot_pose)
+        matches:list = _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store, ontology, cur_robot_pose)
     return matches
 
-def _match_prior_single_object(query_dict, prior_df, rois):
+def _match_prior_single_object(query_dict, prior_df, rois) -> list:
     '''
     Generates an estimate of the pose of an object type based on the prior knowledge
     in the priors csv file.
@@ -91,7 +91,7 @@ def _match_prior_single_object(query_dict, prior_df, rois):
     object.type = query_dict["type"]
     object.pose_estimate = pose_estimate
     object.observed = False
-    match = Match(object, Relation(), SOMObject())
+    match:Match = Match(object, Relation(), SOMObject())
     return [match]
 
 
@@ -117,18 +117,18 @@ def _match_single_object(query_dict, mongo_object_store, ontology):
     matches = []
     objects = _mongo_som_objects_matching_template(query_dict, mongo_object_store, ontology)
     for object in objects:
-        match = Match(object, Relation(), SOMObject())
+        match = Match(object, Relation(), SOMObject());
         matches.append(match)
     return matches
 
-def _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store, ontology, cur_robot_pose):
+def _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store, ontology, cur_robot_pose) -> list:
     '''
     Generates matching tuples when more than a single object template is specified.
     '''
     o1_matches = _mongo_som_objects_matching_template(query_dict1, mongo_object_store, ontology)
     o2_matches = _mongo_som_objects_matching_template(query_dict2, mongo_object_store, ontology)
 
-    matches = []
+    matches:list = []
     for o1 in o1_matches:
         for o2 in o2_matches:
             rel = spatial_relation(cur_robot_pose, o1, o2)
@@ -154,13 +154,13 @@ def _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store,
         matches = get_right_most_match(matches, cur_robot_pose)
     return matches
 
-def get_left_most_match(matches, cur_robot_pose):
+def get_left_most_match(matches:list, cur_robot_pose) -> list:
     return _get_extreme_match(matches, cur_robot_pose, left_most=True)
 
-def get_right_most_match(matches, cur_robot_pose):
+def get_right_most_match(matches:list, cur_robot_pose) -> list:
     return _get_extreme_match(matches, cur_robot_pose, right_most=True)
 
-def _get_extreme_match(matches, cur_robot_pose, left_most = False, right_most = False):
+def _get_extreme_match(matches:list, cur_robot_pose, left_most = False, right_most = False) -> list:
     robot_pos = np.array([cur_robot_pose.position.x, cur_robot_pose.position.y, cur_robot_pose.position.z])
     max_angle = -float('inf')
     min_angle = float('inf')
@@ -189,11 +189,11 @@ def _get_extreme_match(matches, cur_robot_pose, left_most = False, right_most = 
 
         # find left most or right most angle
         if left_most and angle > max_angle and angle < np.pi/2.0:
-            matches = [match]
+            matches:list = [match]
             max_angle = angle
 
         if right_most and angle < min_angle and angle > -np.pi/2.0:
-            matches = [match]
+            matches:list = [match]
             min_angle = angle
     return matches
 
