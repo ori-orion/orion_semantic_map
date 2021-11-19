@@ -9,7 +9,7 @@ from som_object import InSOMObject
 from orion_actions.msg import Match, Relation, SOMObject, PoseEstimate, SOMObservation
 from geometry_msgs.msg import Pose, Point
 
-def query(som_template_one:SOMObservation, relation, som_template_two:SOMObservation, cur_robot_pose, mongo_object_store, prior_df, rois, ontology) -> list:
+def query(som_template_one:SOMObservation, relation:Relation, som_template_two:SOMObservation, cur_robot_pose, mongo_object_store, prior_df, rois, ontology) -> list:
     """
     Performs a query to the semantic object database. This function uses
     SOMObject objects as templates. Meaning that any fields specified in

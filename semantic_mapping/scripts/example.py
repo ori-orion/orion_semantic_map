@@ -12,6 +12,8 @@ from orion_actions.srv import *
 from std_msgs.msg import String
 
 def test_database():
+    rospy.init_node('basic_node');
+
     rospy.wait_for_service('som/observe')
     rospy.wait_for_service('som/lookup')
     rospy.wait_for_service('som/delete')

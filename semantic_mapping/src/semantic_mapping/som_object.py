@@ -233,7 +233,7 @@ class InSOMObject(object):
 
 
     @classmethod
-    def from_som_observation_message(self, som_observation:SOMObservation) -> InSOMObject:
+    def from_som_observation_message(self, som_observation:SOMObservation):
         obj = InSOMObject()
 
         obj.set_id(som_observation.obj_id)
@@ -263,7 +263,7 @@ class InSOMObject(object):
         return obj
 
     @classmethod
-    def from_som_object_message(self, som_object:SOMObject) -> InSOMObject:
+    def from_som_object_message(self, som_object:SOMObject):
         obj = InSOMObject()
 
         obj.set_id(som_object.obj_id)
