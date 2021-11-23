@@ -58,10 +58,6 @@ def query(som_template_one:SOMObservation, relation, som_template_two:SOMObserva
     query_dict1 = som_obj1.to_som_object_mongo_db_query()
     query_dict2 = som_obj2.to_som_object_mongo_db_query()
 
-    # If there are no matches then we want to return an empty array.
-    if (len(query_dict1) == 0 and len(query_dict2) == 0):
-        return [];
-
     # if only a single object is specified
     if (len(query_dict1) == 0 or len(query_dict2) == 0) and unspecified_relation(relation):
         query_dict = query_dict1 if len(query_dict1) > 0 else query_dict2
