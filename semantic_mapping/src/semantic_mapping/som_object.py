@@ -224,11 +224,11 @@ class InSOMObject(object):
         self._observed = observed
 
     def get_room_distribution(self):
-    	"""
-		TODO: return a distributuion over waypoints/rooms where we
-		think this object may actually be.
-    	"""
-    	pass
+        """
+        TODO: return a distributuion over waypoints/rooms where we
+        think this object may actually be.
+        """
+        pass
     #endregion
 
 

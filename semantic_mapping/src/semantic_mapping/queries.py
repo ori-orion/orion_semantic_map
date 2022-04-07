@@ -58,6 +58,18 @@ def query(som_template_one:SOMObservation, relation:Relation, som_template_two:S
     query_dict1:dict = som_obj1.to_som_object_mongo_db_query()
     query_dict2:dict = som_obj2.to_som_object_mongo_db_query()
 
+    # Specifically to do with the EBBHRD project where we don't want to 
+    # see things from previous runs. (I'm setting whether stuff is observed
+    # to False for all previous objects because we want to keep all the objects
+    # in the SOM system for later introspection.)
+    if (len(query_dict1) > 0):
+        query_dict1["observed"] = True;
+    if (len(query_dict2) > 0):
+        query_dict2["observed"] = True;
+
+    print(query_dict1);
+    print(query_dict2);
+
     # If there are no matches then we want to return an empty array.
     if (len(query_dict1) == 0 and len(query_dict2) == 0):
         return [];
@@ -66,8 +78,9 @@ def query(som_template_one:SOMObservation, relation:Relation, som_template_two:S
     if (len(query_dict1) == 0 or len(query_dict2) == 0) and unspecified_relation(relation):
         query_dict = query_dict1 if len(query_dict1) > 0 else query_dict2
         matches = _match_single_object(query_dict, mongo_object_store, ontology)
-        if len(matches) == 0:
-            matches = _match_prior_single_object(query_dict, prior_df, rois)
+        # Commented out for ebbhrd.
+        # if len(matches) == 0:
+        #     matches = _match_prior_single_object(query_dict, prior_df, rois)        
     else:
         matches:list = _match_with_relation(query_dict1, relation, query_dict2, mongo_object_store, ontology, cur_robot_pose)
     return matches
