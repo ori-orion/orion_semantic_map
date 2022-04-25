@@ -96,6 +96,7 @@ class DetectToObserve:
                 # Check coordinates in size interval. (Essentially we want to check whether 
                 # the point is in the bounding box of a previously identified object.)
                 def CCISI(prev_coord, current_coord, interval):
+                    interval *= 4;
                     return -interval/2 < prev_coord - current_coord and prev_coord - current_coord < interval/2
                 
                 entries = self.previous_detections[detection.label.name];
@@ -106,7 +107,8 @@ class DetectToObserve:
                     # They are therefore one and the same.
                     if (CCISI(forwarding.pose_observation.position.x, entry.pose_observation.position.x, forwarding.size.x) and
                         CCISI(forwarding.pose_observation.position.y, entry.pose_observation.position.y, forwarding.size.y) and 
-                        CCISI(forwarding.pose_observation.position.z, entry.pose_observation.position.z, forwarding.size.z)):
+                        CCISI(forwarding.pose_observation.position.z, entry.pose_observation.position.z, forwarding.size.z) and
+                        forwarding.colour == entry.colour):
 
                         item_previously_identified = True;
                         forwarding.obj_id = entry.obj_id;
@@ -130,6 +132,8 @@ class DetectToObserve:
                 else:
                     self.previous_detections[detection.label.name] = [forwarding];
 
+            # For interfacing with the EBB!!! (Observation is defined within ebbhrd_msgs.)
+            # (Well named object!)
             observation_topic_content:Observation = Observation();
             observation_topic_content.base_info.header = "Observation from orion_recognition";
             observation_topic_content.base_info.ros_timestamp = rospy.Time.now();
