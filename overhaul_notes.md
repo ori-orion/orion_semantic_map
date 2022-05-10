@@ -116,3 +116,8 @@ Recognition stuff.
 
 Objects collection
 Humans collection
+
+
+Potential errors:
+- utils.py::dict_to_obj() time detection.
+- Constants are currently checked for by looking at the leading charachter and seeing if it's a capital letter or not. (Probably not a good idea long term but works for now.)
