@@ -52,9 +52,12 @@ def get_attributes(obj) -> list:
 # Main set of infrastructure to convert ROS types to and from dictionaries.
 #   should be able to push almost anything into a dictionary (There may well be some as 
 #   yet unknown types that need to be dealt with)!
-def obj_to_dict(obj, add_base_info = True,  attributes:list=None, session_id:int=-1, uid:int=-1) -> dict:
+def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:bool=False) -> dict:
     """
     This will transfer an arbitrary ROS object into a dictionary.
+
+    ignore_default is for queries. If we don't want to compare a parameter, we want to 
+    be able to set it to the default and ignore it. This sets this up.
     """
     # print("obj_to_dict(...)");
 
@@ -66,31 +69,56 @@ def obj_to_dict(obj, add_base_info = True,  attributes:list=None, session_id:int
 
     # print(attributes, end = ";\n\t");
 
-    def pushObjToDict(element):
+    def pushObjToDict(element, ignore_default:bool):
+        """
+        ignore_default is for queries. If we don't want to compare a parameter, we want to 
+        be able to set it to the default and ignore it. This sets this up. (The check is
+        done right at the end of the function with the comparison output==output_type()).
+
+        Needs testing.
+        """
+
         # print(type(element));
+        output = None;
+        output_type = None;
+
+        base_types = [str, float, int, bool, complex, bytes, tuple];
+
         if isinstance(element, list):
             adding = [];
             for sub_element in element:
-                adding.append(pushObjToDict(sub_element));
-            return adding;
-        elif (isinstance(element, str) or isinstance(element, float) or isinstance(element, int) or isinstance(element, bool) or isinstance(element, complex) or isinstance(element, bytes)):
-            return element;
-        elif (isinstance(element, tuple)):
-            return element;
-        elif isinstance(element, rospy.Time):
-            return ROSTimeToNumericalTime(element);            
-        elif isinstance(element, rospy.Duration):
-            element:rospy.Duration;            
-            # I think this works with the current inner working of ROSTimeToNumericalTime(...)
-            # Going forward, this might cause problems but not sure.
-            return ROSTimeToNumericalTime(element);
-        elif isinstance(element, genpy.rostime.Time):
-            return ROSTimeToNumericalTime(element);
-        elif isinstance(element, genpy.Message):
-            # print("Any message");
-            attributes_recursive_in:list = get_attributes(element);
-            return obj_to_dict(element, False, attributes_recursive_in);
-        return None;
+                adding.append(pushObjToDict(sub_element, ignore_default));
+            return adding;        
+        
+        for type_ in base_types:
+            if isinstance(element, type_):
+                output = element;
+                output_type = type_;
+        
+        if output == None:
+            if isinstance(element, rospy.Time):
+                output = ROSTimeToNumericalTime(element);
+                output_type = rospy.Time;
+            elif isinstance(element, rospy.Duration):
+                # I think this works with the current inner working of ROSTimeToNumericalTime(...)
+                # Going forward, this might cause problems but not sure.
+                output = ROSTimeToNumericalTime(element);
+                output_type = rospy.Duration;
+                                
+            elif isinstance(element, genpy.rostime.Time):
+                output = ROSTimeToNumericalTime(element);
+                output_type = genpy.rostime.Time;
+                
+            elif isinstance(element, genpy.Message):                
+                attributes_recursive_in:list = get_attributes(element);
+                element = obj_to_dict(element, attributes=attributes_recursive_in, ignore_default=ignore_default);
+                output_type = None;
+        
+        if ignore_default and element != None and output_type != None:
+            if element == output_type():
+                element = None;
+
+        return element;
     
     output:dict = {};
     for attr in attributes:
@@ -102,16 +130,19 @@ def obj_to_dict(obj, add_base_info = True,  attributes:list=None, session_id:int
 
         element = getattr(obj, attr);
         
-        carry = pushObjToDict(element);
+        carry = pushObjToDict(element, ignore_default);
         if carry == None:
-            rospy.logwarn(attr + " of type " + str(type(element)) + "could not be added to an entry within the database. ");
+            #rospy.logwarn(attr + " of type " + str(type(element)) + "could not be added to an entry within the database. ");
+            pass;
         else:
-            output[attr] = pushObjToDict(element);        
+            output[attr] = carry;
 
     if (session_id != -1):
-        output[SESSION_ID] = session_id;    
+        output[SESSION_ID] = session_id;
 
     return output;
+
+
 def dict_to_obj(dictionary:dict, objFillingOut):
     """
     The main idea here is that we may well want to convert an arbitrary dictionary to one of the ROS types
@@ -126,6 +157,12 @@ def dict_to_obj(dictionary:dict, objFillingOut):
         if (key in attributes):
             if isinstance(dictionary[key], dict):                
                 dict_to_obj(dictionary[key], getattr(objFillingOut, key));
+            elif isinstance(dictionary[key], list):
+                carry = [];
+                for element in dictionary[key]:
+                    carry.append(dict_to_obj(element));
+                setattr(objFillingOut, key, carry);
+                pass;
             elif isinstance(getattr(objFillingOut, key), rospy.Time):   # Needs to be checked
                 print("rospy.Time element found.");
                 setattr(objFillingOut, key, numericalTimeToROSTime(dictionary[key]));

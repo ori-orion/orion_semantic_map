@@ -37,6 +37,6 @@ class MemoryManager:
 
         pass;
 
-    def addCollection(self, collection_name:str) -> void:
+    def addCollection(self, collection_name:str):
         self.collections[collection_name] = self.database[collection_name];
-        pass;
+        return self.collections[collection_name];        
