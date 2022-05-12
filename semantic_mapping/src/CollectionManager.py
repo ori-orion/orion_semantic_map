@@ -16,17 +16,17 @@ class CollectionManager:
                         we are taking observations and so need to do stuff with it beforehand).
     service_name    - The rossrv list name of the service. This is the service name that you
                         will be able to send stuff to in order to add it to this collection.
-    collection_name - The name of the pymongo collection.
+                        Note that this will also be the name of the pymongo collection.    
     memory_manager  - The interface through which the basic memory mangement will happen.                            
     """
-    def __init__(self, ros_type:type, service_name:str, collection_name:str, memory_manager:MemoryManager):
+    def __init__(self, ros_type:type, ros_query_type:type, service_name:str, memory_manager:MemoryManager):
         self.ros_type:type = ros_type;
-        self.service_name:str = service_name;
-        self.collection_name:str = collection_name;
+        self.ros_query_type:type = ros_query_type;
+        self.service_name:str = service_name;        
         self.memory_manager:MemoryManager = memory_manager;
 
         # Makes sure the collection is added to the memory manager.
-        self.collection = memory_manager.addCollection(self.collection_name);
+        self.collection = memory_manager.addCollection(self.service_name);
         
 
     def add_item_to_collection(self, adding):
@@ -50,6 +50,9 @@ class CollectionManager:
             self.ros_type, 
             self.add_item_to_collection);
 
-        
+        rospy.Service(
+            SERVICE_ROOT + self.service_name + '/basic_query',
+            self.ros_query_type,
+            self.get_item_from_collection);
 
         pass;
