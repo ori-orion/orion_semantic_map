@@ -7,6 +7,17 @@ from MemoryManager import MemoryManager;
 SERVICE_ROOT = "som/";
 
 
+class TypesCollection:
+    def __init__(self, base_ros_type:type, query_parent:type, query_response:type):
+        self.base_ros_type:type = base_ros_type;
+
+        # Services have the parent type, the request type and the response type. 
+        # The request can easily just be read in. That makes the response and the
+        # parent the only types of relevance here.
+        self.query_parent:type = query_parent;
+        self.query_response:type = query_response;
+
+
 class CollectionManager:
     """
     This will be the collection level interface into pymongo, as well as dealing with the basic
@@ -19,9 +30,8 @@ class CollectionManager:
                         Note that this will also be the name of the pymongo collection.    
     memory_manager  - The interface through which the basic memory mangement will happen.                            
     """
-    def __init__(self, ros_type:type, ros_query_type:type, service_name:str, memory_manager:MemoryManager):
-        self.ros_type:type = ros_type;
-        self.ros_query_type:type = ros_query_type;
+    def __init__(self, types:TypesCollection, service_name:str, memory_manager:MemoryManager):
+        self.types:TypesCollection = types;
         self.service_name:str = service_name;        
         self.memory_manager:MemoryManager = memory_manager;
 
@@ -47,12 +57,12 @@ class CollectionManager:
 
         rospy.Service(
             SERVICE_ROOT + self.service_name + '/input', 
-            self.ros_type, 
+            self.types.base_ros_type, 
             self.add_item_to_collection);
 
         rospy.Service(
             SERVICE_ROOT + self.service_name + '/basic_query',
-            self.ros_query_type,
+            self.types.query_parent,
             self.get_item_from_collection);
 
         pass;
