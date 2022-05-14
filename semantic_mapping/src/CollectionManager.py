@@ -8,7 +8,12 @@ SERVICE_ROOT = "som/";
 
 
 class TypesCollection:
-    def __init__(self, base_ros_type:type, query_parent:type, query_response:type):
+    def __init__(self, 
+        base_ros_type:type, 
+        input_parent:type=None, 
+        query_parent:type=None, 
+        query_response:type=None):
+
         self.base_ros_type:type = base_ros_type;
 
         # Services have the parent type, the request type and the response type. 
@@ -16,6 +21,9 @@ class TypesCollection:
         # parent the only types of relevance here.
         self.query_parent:type = query_parent;
         self.query_response:type = query_response;
+
+        # The service definition for the input type.
+        self.input_parent:type = input_parent;
 
 
 class CollectionManager:
@@ -39,30 +47,51 @@ class CollectionManager:
         self.collection = memory_manager.addCollection(self.service_name);
         
 
-    def add_item_to_collection(self, adding):
+    def addItemToCollection(self, adding):
         adding_dict:dict = utils.obj_to_dict(adding, ignore_default=False);
 
         self.collection.insert_one(adding_dict);
 
-    def get_item_from_collection(self, query) -> list:
-        query_dict = utils.obj_to_dict(query, ignore_default=True);
+    def queryIntoCollection(self, query_dict) -> list:
+        # query_dict = utils.obj_to_dict(query, ignore_default=True);
 
         query_result:pymongo.cursor.Cursor = self.collection.find(query_dict);
         query_result_list = list(query_result);
 
         return query_result_list;
 
+    def rosQueryEntrypoint(self, ros_query):    # -> self.types.query_response
+        ros_query_dict:dict = utils.obj_to_dict(ros_query, ignore_default=True);
+
+        response:list = self.queryIntoCollection(ros_query_dict[ros_query_dict.keys()[0]]);
+
+        ros_response = self.types.query_response();
+        query_response_attr = utils.get_attributes(ros_response)[0];
+
+        resp_array = getattr(ros_response, query_response_attr);
+
+        assert(type(resp_array) is list);
+
+        for element in response:
+            appending = self.types.base_ros_type();
+            appending = utils.dict_to_obj(element, appending);
+            resp_array.append(appending);
+
+        return ros_response;        
+
     
-    def setup_services(self):
+    def setupServices(self):
 
-        rospy.Service(
-            SERVICE_ROOT + self.service_name + '/input', 
-            self.types.base_ros_type, 
-            self.add_item_to_collection);
-
-        rospy.Service(
-            SERVICE_ROOT + self.service_name + '/basic_query',
-            self.types.query_parent,
-            self.get_item_from_collection);
+        if (self.types.input_parent != None):
+            rospy.Service(
+                SERVICE_ROOT + self.service_name + '/input', 
+                self.types.input_parent, 
+                self.addItemToCollection);
+        
+        if (self.types.query_parent != None and self.types.query_response != None):
+            rospy.Service(
+                SERVICE_ROOT + self.service_name + '/basic_query',
+                self.types.query_parent,
+                self.rosQueryEntrypoint);
 
         pass;
