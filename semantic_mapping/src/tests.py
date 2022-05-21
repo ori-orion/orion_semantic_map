@@ -1,8 +1,3 @@
-t = int;
-x = t();
-print(x);
 
-
-t = tuple;
-x = t();
-print(x);
+def test_observation_input():
+    pass;

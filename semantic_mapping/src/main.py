@@ -1,8 +1,9 @@
-from symtable import Function
 from MemoryManager import MemoryManager;
-from CollectionManager import CollectionManager;
+from CollectionManager import CollectionManager, TypesCollection;
 
 import rospy;
+
+import orion_actions.msg
 
 def setup_system():
 
@@ -10,4 +11,5 @@ def setup_system():
 
     mem_manager:MemoryManager = MemoryManager();
 
-    # observation_manager:CollectionManager = CollectionManager();
+    observation_types:TypesCollection = TypesCollection(orion_actions.msg.SOMObservation)
+    observation_manager:CollectionManager = CollectionManager()

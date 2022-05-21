@@ -1,4 +1,3 @@
-from cv2 import _INPUT_ARRAY_FIXED_SIZE
 import utils;
 import pymongo;
 import pymongo.collection
