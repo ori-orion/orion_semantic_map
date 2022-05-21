@@ -1,20 +1,23 @@
-from numpy import void
 import pymongo
 import pymongo.cursor
 import pymongo.collection
 import datetime
-import rospy
+# import rospy
 
-import utils
+# import utils
 
 SESSION_ID = "session_num";
 UID_ENTRY = "entry_uid";
 GLOBAL_TIME_STAMP_ENTRY = "global_timestamp";
 
+
+DEBUG = True;
+
+
 class MemoryManager:
     def __init__(self, root="localhost", port=27017):
         self.client = pymongo.MongoClient(root, port);
-        self.database = self.client.database;
+        self.database = self.client.database_test;
 
         self.collections:dict = {};
 

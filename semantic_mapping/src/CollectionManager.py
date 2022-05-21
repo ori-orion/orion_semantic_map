@@ -2,7 +2,7 @@ import utils;
 import pymongo;
 import pymongo.collection
 import rospy;
-from MemoryManager import MemoryManager;
+from MemoryManager import MemoryManager, DEBUG;
 
 # The root for all things som related.
 SERVICE_ROOT = "som/";
@@ -55,25 +55,34 @@ class CollectionManager:
     def addItemToCollection(self, adding):
         adding_dict:dict = utils.obj_to_dict(adding, ignore_default=False);
 
+        if (DEBUG):
+            rospy.logdebug("adding object...");
+            print(adding_dict);
+
         result = self.collection.insert_one(adding_dict);
 
         result_id = result.inserted_id;
-        print(result_id);
+        # print(result_id);
         return result_id;
 
     def rosPushToCollection(self, pushing): # -> self.types.input_response
         pushing_attr = utils.get_attributes(pushing);
-        uid = self.addItemToCollection(getattr(pushing, pushing_attr));
+        rospy.logdebug("obj adding has name " + pushing_attr[0] + ".");
+        uid = self.addItemToCollection(getattr(pushing, pushing_attr[0]));
 
         response = self.types.input_response();
-        # this needs to have the field uid in it!
-        response.uid = uid;
+        # this needs to have the field UID in it!
+        response.UID = str(uid);
         return response;
         
 
 
     def queryIntoCollection(self, query_dict) -> list:
         # query_dict = utils.obj_to_dict(query, ignore_default=True);
+
+        if (DEBUG):
+            rospy.logdebug("querying object...");
+            print(query_dict);
 
         query_result:pymongo.cursor.Cursor = self.collection.find(query_dict);
         query_result_list = list(query_result);

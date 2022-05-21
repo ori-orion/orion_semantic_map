@@ -8,7 +8,6 @@ UID_ENTRY = "entry_uid";
 
 def ROSTimeToNumericalTime(time:rospy.Time) -> int:
     output = time.nsecs + time.secs * 1e9;
-    # print(output);
     return output;
 def numericalTimeToROSTime(time:int) -> rospy.Time:
     output = rospy.Time();
@@ -78,11 +77,11 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
         Needs testing.
         """
 
-        # print(type(element));
         output = None;
         output_type = None;
 
         base_types = [str, float, int, bool, complex, bytes, tuple];
+
 
         if isinstance(element, list):
             adding = [];
@@ -90,7 +89,7 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
                 adding.append(pushObjToDict(sub_element, ignore_default));
             return adding;        
         
-        for type_ in base_types:
+        for type_ in base_types:            
             if isinstance(element, type_):
                 output = element;
                 output_type = type_;
@@ -106,19 +105,19 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
                 output_type = rospy.Duration;
                                 
             elif isinstance(element, genpy.rostime.Time):
-                output = ROSTimeToNumericalTime(element);
+                output = ROSTimeToNumericalTime(element);                
                 output_type = genpy.rostime.Time;
                 
             elif isinstance(element, genpy.Message):                
                 attributes_recursive_in:list = get_attributes(element);
-                element = obj_to_dict(element, attributes=attributes_recursive_in, ignore_default=ignore_default);
-                output_type = None;
+                output = obj_to_dict(element, attributes=attributes_recursive_in, ignore_default=ignore_default);
+                output_type = dict;
         
-        if ignore_default and element != None and output_type != None:
-            if element == output_type():
-                element = None;
+        if ignore_default and output != None and output_type != None:            
+            if output == output_type():
+                output = None;
 
-        return element;
+        return output;
     
     output:dict = {};
     for attr in attributes:
@@ -132,9 +131,10 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
         
         carry = pushObjToDict(element, ignore_default);
         if carry == None:
-            #rospy.logwarn(attr + " of type " + str(type(element)) + "could not be added to an entry within the database. ");
+            # rospy.logwarn(attr + " of type " + str(type(element)) + "could not be added to an entry within the database. ");
             pass;
         else:
+            # print("\t", attr, "<-", carry);
             output[attr] = carry;
 
     if (session_id != -1):
