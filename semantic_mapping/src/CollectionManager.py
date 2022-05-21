@@ -1,5 +1,7 @@
+from cv2 import _INPUT_ARRAY_FIXED_SIZE
 import utils;
 import pymongo;
+import pymongo.collection
 import rospy;
 from MemoryManager import MemoryManager;
 
@@ -10,7 +12,8 @@ SERVICE_ROOT = "som/";
 class TypesCollection:
     def __init__(self, 
         base_ros_type:type, 
-        input_parent:type=None, 
+        input_parent:type=None,
+        input_response:type=None,
         query_parent:type=None, 
         query_response:type=None):
 
@@ -24,6 +27,7 @@ class TypesCollection:
 
         # The service definition for the input type.
         self.input_parent:type = input_parent;
+        self.input_response:type = input_response;
 
 
 class CollectionManager:
@@ -44,13 +48,28 @@ class CollectionManager:
         self.memory_manager:MemoryManager = memory_manager;
 
         # Makes sure the collection is added to the memory manager.
-        self.collection = memory_manager.addCollection(self.service_name);
+        self.collection:pymongo.collection.Collection = memory_manager.addCollection(self.service_name);
         
 
     def addItemToCollection(self, adding):
         adding_dict:dict = utils.obj_to_dict(adding, ignore_default=False);
 
-        self.collection.insert_one(adding_dict);
+        result = self.collection.insert_one(adding_dict);
+
+        result_id = result.inserted_id;
+        print(result_id);
+        return result_id;
+
+    def rosPushToCollection(self, pushing): # -> self.types.input_response
+        pushing_attr = utils.get_attributes(pushing);
+        uid = self.addItemToCollection(getattr(pushing, pushing_attr));
+
+        response = self.types.input_response();
+        # this needs to have the field uid in it!
+        response.uid = uid;
+        return response;
+        
+
 
     def queryIntoCollection(self, query_dict) -> list:
         # query_dict = utils.obj_to_dict(query, ignore_default=True);
@@ -86,7 +105,7 @@ class CollectionManager:
             rospy.Service(
                 SERVICE_ROOT + self.service_name + '/input', 
                 self.types.input_parent, 
-                self.addItemToCollection);
+                self.rosPushToCollection);
         
         if (self.types.query_parent != None and self.types.query_response != None):
             rospy.Service(

@@ -1,6 +1,7 @@
 from numpy import void
 import pymongo
 import pymongo.cursor
+import pymongo.collection
 import datetime
 import rospy
 
@@ -15,7 +16,7 @@ class MemoryManager:
         self.client = pymongo.MongoClient(root, port);
         self.database = self.client.database;
 
-        self.collections = {};
+        self.collections:dict = {};
 
         #region Setting up the session stuff.
         session_log = self.main_database.session_log_coll;
@@ -37,6 +38,6 @@ class MemoryManager:
 
         pass;
 
-    def addCollection(self, collection_name:str):
+    def addCollection(self, collection_name:str) -> pymongo.collection.Collection:
         self.collections[collection_name] = self.database[collection_name];
-        return self.collections[collection_name];        
+        return self.collections[collection_name];
