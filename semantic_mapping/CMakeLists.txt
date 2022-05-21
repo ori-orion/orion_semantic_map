@@ -54,7 +54,7 @@ catkin_python_setup()
 add_message_files(
   FILES
   # SOMObject.msg
-  SOMObservation.msg
+  # SOMObservation.msg
   # SOMROIObject.msg
   # PoseEstimate.msg
   # Relation.msg
@@ -64,6 +64,8 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
+  # SOMAddObservation.srv
+  # SOMGetObservations.srv
   # SOMDelete.srv
   # SOMObserve.srv
   # SOMQuery.srv

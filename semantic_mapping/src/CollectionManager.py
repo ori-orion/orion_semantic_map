@@ -48,6 +48,8 @@ class CollectionManager:
 
         # Makes sure the collection is added to the memory manager.
         self.collection:pymongo.collection.Collection = memory_manager.addCollection(self.service_name);
+
+        self.setupServices();
         
 
     def addItemToCollection(self, adding):
