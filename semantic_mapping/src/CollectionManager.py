@@ -92,7 +92,7 @@ class CollectionManager:
     def rosQueryEntrypoint(self, ros_query):    # -> self.types.query_response
         ros_query_dict:dict = utils.obj_to_dict(ros_query, ignore_default=True);
 
-        response:list = self.queryIntoCollection(ros_query_dict[ros_query_dict.keys()[0]]);
+        response:list = self.queryIntoCollection(ros_query_dict[list(ros_query_dict.keys())[0]]);
 
         ros_response = self.types.query_response();
         query_response_attr = utils.get_attributes(ros_response)[0];
@@ -102,6 +102,9 @@ class CollectionManager:
         assert(type(resp_array) is list);
 
         for element in response:
+            if DEBUG:
+                print(element);
+
             appending = self.types.base_ros_type();
             appending = utils.dict_to_obj(element, appending);
             resp_array.append(appending);

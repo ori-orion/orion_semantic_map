@@ -164,10 +164,13 @@ def dict_to_obj(dictionary:dict, objFillingOut):
                 setattr(objFillingOut, key, carry);
                 pass;
             elif isinstance(getattr(objFillingOut, key), rospy.Time):   # Needs to be checked
-                print("rospy.Time element found.");
+                # print("rospy.Time element found.");
                 setattr(objFillingOut, key, numericalTimeToROSTime(dictionary[key]));
             elif isinstance(getattr(objFillingOut, key), rospy.Duration):   # Needs to be checked
-                print("rospy.Duration element found.");
+                # print("rospy.Duration element found.");
+                setattr(objFillingOut, key, numericalTimeToROSDuration(dictionary[key]));
+            elif isinstance(getattr(objFillingOut, key), genpy.rostime.Time):   # Needs to be checked
+                # print("rospy.Duration element found.");
                 setattr(objFillingOut, key, numericalTimeToROSDuration(dictionary[key]));
             else:                
                 setattr(objFillingOut, key, dictionary[key]);
