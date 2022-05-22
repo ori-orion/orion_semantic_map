@@ -2,7 +2,8 @@ import utils;
 import pymongo;
 import pymongo.collection
 import rospy;
-from MemoryManager import MemoryManager, DEBUG;
+import genpy;
+from MemoryManager import MemoryManager, DEBUG, SESSION_ID, UID_ENTRY;
 
 # The root for all things som related.
 SERVICE_ROOT = "som/";
@@ -55,6 +56,8 @@ class CollectionManager:
     def addItemToCollection(self, adding):
         adding_dict:dict = utils.obj_to_dict(adding, ignore_default=False);
 
+        adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
+
         if (DEBUG):
             rospy.logdebug("adding object...");
             print(adding_dict);
@@ -90,7 +93,11 @@ class CollectionManager:
         return query_result_list;
 
     def rosQueryEntrypoint(self, ros_query):    # -> self.types.query_response
-        ros_query_dict:dict = utils.obj_to_dict(ros_query, ignore_default=True);
+        ros_query_dict:dict = utils.obj_to_dict(
+            ros_query, 
+            ignore_default=True,
+            ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time]
+        );
 
         response:list = self.queryIntoCollection(ros_query_dict[list(ros_query_dict.keys())[0]]);
 

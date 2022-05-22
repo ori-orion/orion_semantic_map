@@ -51,12 +51,15 @@ def get_attributes(obj) -> list:
 # Main set of infrastructure to convert ROS types to and from dictionaries.
 #   should be able to push almost anything into a dictionary (There may well be some as 
 #   yet unknown types that need to be dealt with)!
-def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:bool=False) -> dict:
+def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:bool=False, ignore_of_type=[]) -> dict:
     """
     This will transfer an arbitrary ROS object into a dictionary.
 
     ignore_default is for queries. If we don't want to compare a parameter, we want to 
     be able to set it to the default and ignore it. This sets this up.
+
+    For queries, there are fields of types we want to ignore completely (such as those of time.)
+        The ignore_of_type entry handles this.
     """
     # print("obj_to_dict(...)");
 
@@ -81,7 +84,7 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
         output_type = None;
 
         base_types = [str, float, int, bool, complex, bytes, tuple];
-
+        temporal_types = [rospy.Time, rospy.Duration, genpy.rostime.Time];
 
         if isinstance(element, list):
             adding = [];
@@ -90,27 +93,25 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
             return adding;        
         
         for type_ in base_types:            
-            if isinstance(element, type_):
+            if (type_ not in ignore_of_type) and isinstance(element, type_):
                 output = element;
                 output_type = type_;
         
         if output == None:
-            if isinstance(element, rospy.Time):
-                output = ROSTimeToNumericalTime(element);
-                output_type = rospy.Time;
-            elif isinstance(element, rospy.Duration):
-                # I think this works with the current inner working of ROSTimeToNumericalTime(...)
-                # Going forward, this might cause problems but not sure.
-                output = ROSTimeToNumericalTime(element);
-                output_type = rospy.Duration;
-                                
-            elif isinstance(element, genpy.rostime.Time):
-                output = ROSTimeToNumericalTime(element);                
-                output_type = genpy.rostime.Time;
-                
-            elif isinstance(element, genpy.Message):                
+            for type_ in temporal_types:
+                if (type_ not in ignore_of_type) and isinstance(element, type_):
+                    output = ROSTimeToNumericalTime(element);
+                    output_type = type_;
+
+        if output == None:    
+            if (genpy.Message not in ignore_of_type) and isinstance(element, genpy.Message):                
                 attributes_recursive_in:list = get_attributes(element);
-                output = obj_to_dict(element, attributes=attributes_recursive_in, ignore_default=ignore_default);
+                output = obj_to_dict(
+                    element, 
+                    attributes=attributes_recursive_in, 
+                    ignore_default=ignore_default, 
+                    ignore_of_type=ignore_of_type);
+
                 output_type = dict;
         
         if ignore_default and output != None and output_type != None:            

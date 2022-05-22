@@ -6,8 +6,8 @@ import datetime
 
 # import utils
 
-SESSION_ID = "session_num";
-UID_ENTRY = "entry_uid";
+SESSION_ID = "SESSION_NUM";
+UID_ENTRY = "UID";
 GLOBAL_TIME_STAMP_ENTRY = "global_timestamp";
 
 
@@ -17,13 +17,13 @@ DEBUG = True;
 class MemoryManager:
     def __init__(self, root="localhost", port=27017):
         self.client = pymongo.MongoClient(root, port);
+        # self.clear_db();
         self.database = self.client.database_test;
 
         self.collections:dict = {};
 
         #region Setting up the session stuff.
         session_log = self.database.session_log_coll;
-        print(session_log.estimated_document_count());
         if session_log.estimated_document_count() > 0:
             #https://stackoverflow.com/questions/32076382/mongodb-how-to-get-max-value-from-collections
             # => .find().sort(...).limit(...) is actually quite efficient
@@ -32,6 +32,7 @@ class MemoryManager:
             self.current_session_id = previous_session[0][SESSION_ID] + 1;
         else:
             self.current_session_id = 1;
+        print("Session:", self.current_session_id);
 
         session_log.insert_one({
             SESSION_ID: self.current_session_id,
@@ -44,3 +45,7 @@ class MemoryManager:
     def addCollection(self, collection_name:str) -> pymongo.collection.Collection:
         self.collections[collection_name] = self.database[collection_name];
         return self.collections[collection_name];
+
+    def clear_db(self):
+        self.client.drop_database('database_test');
+        pass;
