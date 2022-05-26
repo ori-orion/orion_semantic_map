@@ -4,6 +4,7 @@ import genpy;
 SESSION_ID = "session_num";
 UID_ENTRY = "entry_uid";
 
+PYMONGO_ID_SPECIFIER = "_id";
 
 
 def ROSTimeToNumericalTime(time:rospy.Time) -> int:

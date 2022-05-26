@@ -100,7 +100,7 @@ class CollectionManager:
         Note also, _id is an internal mongodb convention
         """
 
-        self.collection.update_one({"_id":uid}, update_to);
+        self.collection.update_one({utils.PYMONGO_ID_SPECIFIER:uid}, update_to);
         pass
 
 
