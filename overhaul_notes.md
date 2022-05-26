@@ -121,3 +121,51 @@ Humans collection
 Potential errors:
 - utils.py::dict_to_obj() time detection.
 - Constants are currently checked for by looking at the leading charachter and seeing if it's a capital letter or not. (Probably not a good idea long term but works for now.)
+
+## Notes: 
+What is in the table region?
+x-y bounding box.
+
+For the z slice and xy bounds, what's in there?
+
+Set the table as a prior.
+
+Take into account the size of an object when doing this.
+
+Define a region. Are we then in a given region?
+
+Closest object of given class.
+    (If class_ is "", then search all objects.)
+    GetClosestObjectName
+
+Ontologies!!!
+
+Unknown category for objects not in the ontology tree.
+
+REGIONS in SOM. 
+    Position of the region is defined by lower X, Y and Z coord.
+    Dimensions of region x - length, y depth, z height.
+    Pose (orientation.)
+    Region
+        pose:Pose
+            Orientation of bounding box:Quaternion
+            position:Point
+        extent:Point
+Find empty space for where to put down an object?
+    Simulate putting stuff on the shelf.
+    Use the region stuff to work it out?
+    SIZE INFORMATION.
+        Size have direction?
+    Find the absence of an object?
+
+
+Manip will stick with tf publishing for size and position identification. 
+
+Keep as much of the object definition as possible.
+    OR have a translation mechanism in place.
+
+Tasks
+    Put away the groceries.
+    Find my mates.
+    Take out the trash (backup).
+

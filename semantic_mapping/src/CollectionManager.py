@@ -1,3 +1,4 @@
+from turtle import position
 import utils;
 import pymongo;
 import pymongo.collection
@@ -7,7 +8,6 @@ from MemoryManager import MemoryManager, DEBUG, SESSION_ID, UID_ENTRY;
 
 # The root for all things som related.
 SERVICE_ROOT = "som/";
-
 
 class TypesCollection:
     def __init__(self, 
@@ -48,25 +48,32 @@ class CollectionManager:
         self.memory_manager:MemoryManager = memory_manager;
 
         # Makes sure the collection is added to the memory manager.
-        self.collection:pymongo.collection.Collection = memory_manager.addCollection(self.service_name);
+        self.collection:pymongo.collection.Collection = memory_manager.addCollection(self.service_name);        
+
+        self.collection_input_callbacks = [];
 
         self.setupServices();
-        
 
-    def addItemToCollection(self, adding):
-        adding_dict:dict = utils.obj_to_dict(adding, ignore_default=False);
-
+    def addItemToCollectionDict(self, adding_dict:dict) -> pymongo.collection.ObjectId:
         adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
 
         if (DEBUG):
             rospy.logdebug("adding object...");
             print(adding_dict);
 
+        # This is for inserting stuff into the higher level system.
+        for callback in self.collection_input_callbacks:
+            callback(adding_dict);
+
         result = self.collection.insert_one(adding_dict);
 
-        result_id = result.inserted_id;
+        result_id:pymongo.collection.ObjectId = result.inserted_id;
         # print(result_id);
         return result_id;
+
+    def addItemToCollection(self, adding) -> pymongo.collection.ObjectId:
+        adding_dict:dict = utils.obj_to_dict(adding, ignore_default=False);
+        return self.addItemToCollectionDict(adding_dict);
 
     def rosPushToCollection(self, pushing): # -> self.types.input_response
         pushing_attr = utils.get_attributes(pushing);
@@ -78,6 +85,23 @@ class CollectionManager:
         response.UID = str(uid);
         return response;
         
+    def updateEntry(self, uid:pymongo.collection.ObjectId, update_to:dict):
+        """
+        https://www.w3schools.com/python/python_mongodb_update.asp
+
+        So we can use
+        set = { "$set": { "address": "Canyon 123" } }
+        to set the address of the entry to.
+
+        My guess is that you can update the entire entry by simply having
+        set = { "address": "Canyon 123" }
+        but this is a guess at present.
+
+        Note also, _id is an internal mongodb convention
+        """
+
+        self.collection.update_one({"_id":uid}, update_to);
+        pass
 
 
     def queryIntoCollection(self, query_dict) -> list:

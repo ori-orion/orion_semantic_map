@@ -21,4 +21,9 @@ The whole aim of the new system is to generalise the memory system s.t. it can b
  - We want to keep this as abstract and general as possible.
  - We need some sort of observer functionality on additions into the collection you want to do the consistency checking for.
    - Note that we'll call the collection we're cross-referencing `based_off`.
-   - Maybe some sort of callback function within the CollectionManager is in order.
+   - We will use a callback function within CollectionManager to then add to the ConsistencyChecker.
+
+
+
+Keytravel
+   - Fly out on the Saturday (16th)
