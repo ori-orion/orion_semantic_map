@@ -4,7 +4,7 @@ import pymongo;
 import pymongo.collection
 import rospy;
 import genpy;
-from MemoryManager import MemoryManager, DEBUG, SESSION_ID, UID_ENTRY;
+from MemoryManager import MemoryManager, DEBUG, SESSION_ID, CROSS_REF_UID;
 
 # The root for all things som related.
 SERVICE_ROOT = "som/";
@@ -62,8 +62,15 @@ class CollectionManager:
             print(adding_dict);
 
         # This is for inserting stuff into the higher level system.
+        # If we're cross referencing entries in the dictionary, we're going to need to log this!        
+        obj_id = None;
         for callback in self.collection_input_callbacks:
-            callback(adding_dict);
+            obj_id = callback(adding_dict);
+
+        # If no obj_id was returned from the callback, then we assume there is no cross-referencing
+        # and thus nothing to add here!
+        if (obj_id != None):
+            adding_dict[CROSS_REF_UID] = obj_id;
 
         result = self.collection.insert_one(adding_dict);
 

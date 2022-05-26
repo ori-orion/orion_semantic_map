@@ -8,6 +8,7 @@ import datetime
 
 SESSION_ID = "SESSION_NUM";
 UID_ENTRY = "UID";
+CROSS_REF_UID = "CRSS_REF_UID";
 GLOBAL_TIME_STAMP_ENTRY = "global_timestamp";
 
 
