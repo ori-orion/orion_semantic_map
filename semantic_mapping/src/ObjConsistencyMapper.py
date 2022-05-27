@@ -1,6 +1,7 @@
 import math
 import numpy;
 import utils;
+from MemoryManager import CROSS_REF_UID;
 from CollectionManager import CollectionManager, TypesCollection;
 import pymongo.collection
 
@@ -42,17 +43,44 @@ class ConsistencyChecker(CollectionManager):
 
         self.collection_input_callbacks.append(self.push_item_to_pushing_to);
 
-
+    # The point here is that we could get either a pose or a point as input. 
+    # We therefore want to separate these out.
+    def getPoint(self, obj:dict) -> numpy.array:
+        if "position" in obj:
+            obj = obj["position"];
+        return numpy.asarray([obj["x"], obj["y"], obj["z"]]);
+    def setPoint(self, obj:dict, new_pt:numpy.array) -> dict:
+        obj_nested = obj["position"] if ("position" in obj) else obj;
+        obj_nested['x'] = new_pt[0];
+        obj_nested['y'] = new_pt[1];
+        obj_nested['z'] = new_pt[2];
+        return obj;
+    
     # The function for actually adding something to the other collection.
     def createNewConsistentObj(self, adding:dict) -> str:
         
         # Maybe do some fun stuff looking at size here??
 
-        return str(self.addItemToCollectionDict(adding));
+        return str(self.pushing_to.addItemToCollectionDict(adding));
 
     def updateConsistentObj(self, updating_info:dict, obj_id_to_update:pymongo.collection.ObjectId):
 
-        self.updateEntry(obj_id_to_update, updating_info);
+        previously_added:list = self.queryIntoCollection({CROSS_REF_UID, obj_id_to_update})
+
+        points = [];
+        point_av = self.getPoint(updating_info[self.consistency_args.position_attr]);
+        num_points = 1;
+        for element in previously_added:
+            points.append(self.getPoint(element[self.consistency_args.position_attr]));
+            point_av += points[len(points) - 1];
+            num_points += 1;
+            
+        point_av /= num_points;
+
+        updating_info[self.consistency_args.position_attr] = \
+            self.setPoint(updating_info[self.consistency_args.position_attr], point_av);
+
+        self.pushing_to.updateEntry(obj_id_to_update, updating_info);
         pass;
 
 
@@ -68,18 +96,11 @@ class ConsistencyChecker(CollectionManager):
         if len(possible_results) == 0:
             return self.createNewConsistentObj(adding);
 
-        # The point here is that we could get either a pose or a point as input. 
-        # We therefore want to separate these out.
-        def getPoint(obj:dict) -> numpy.array:
-            if "position" in obj:
-                obj = obj["position"];
-            return numpy.asarray([obj["x"], obj["y"], obj["z"]]);
-
         max_distance = self.consistency_args.max_distance;
-        adding_pos = getPoint(adding[self.consistency_args.position_attr]);
+        adding_pos = self.getPoint(adding[self.consistency_args.position_attr]);
         updating = None;
         for element in possible_results:
-            element_pos = getPoint(element[self.consistency_args.position_attr]);
+            element_pos = self.getPoint(element[self.consistency_args.position_attr]);
             dist = numpy.linalg.norm(adding_pos - element_pos);
             if (dist < max_distance):
                 updating = element;
