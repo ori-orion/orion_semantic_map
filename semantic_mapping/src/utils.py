@@ -1,8 +1,11 @@
 import rospy;
 import genpy;
 
-SESSION_ID = "session_num";
-UID_ENTRY = "entry_uid";
+# SESSION_ID = "session_num";
+# UID_ENTRY = "entry_uid";
+SESSION_ID = "SESSION_NUM";
+UID_ENTRY = "UID";
+CROSS_REF_UID = "CRSS_REF_UID";
 
 PYMONGO_ID_SPECIFIER = "_id";
 
@@ -163,18 +166,23 @@ def dict_to_obj(dictionary:dict, objFillingOut):
                 carry = [];
                 for element in dictionary[key]:
                     carry.append(dict_to_obj(element));
+                # print("Setting", key, "=", carry);
                 setattr(objFillingOut, key, carry);
                 pass;
             elif isinstance(getattr(objFillingOut, key), rospy.Time):   # Needs to be checked
                 # print("rospy.Time element found.");
+                # print("Setting",key, "[time]");
                 setattr(objFillingOut, key, numericalTimeToROSTime(dictionary[key]));
             elif isinstance(getattr(objFillingOut, key), rospy.Duration):   # Needs to be checked
                 # print("rospy.Duration element found.");
+                # print("Setting",key, "[time]");
                 setattr(objFillingOut, key, numericalTimeToROSDuration(dictionary[key]));
             elif isinstance(getattr(objFillingOut, key), genpy.rostime.Time):   # Needs to be checked
                 # print("rospy.Duration element found.");
+                # print("Setting",key, "[time]");
                 setattr(objFillingOut, key, numericalTimeToROSDuration(dictionary[key]));
-            else:                
+            else:
+                # print("Setting",key,"=", dictionary[key]);
                 setattr(objFillingOut, key, dictionary[key]);
     
     # print(objFillingOut);

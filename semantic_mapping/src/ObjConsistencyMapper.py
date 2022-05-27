@@ -1,7 +1,6 @@
 import math
 import numpy;
 import utils;
-from MemoryManager import CROSS_REF_UID;
 from CollectionManager import CollectionManager, TypesCollection;
 import pymongo.collection
 
@@ -50,10 +49,14 @@ class ConsistencyChecker(CollectionManager):
             obj = obj["position"];
         return numpy.asarray([obj["x"], obj["y"], obj["z"]]);
     def setPoint(self, obj:dict, new_pt:numpy.array) -> dict:
-        obj_nested = obj["position"] if ("position" in obj) else obj;
-        obj_nested['x'] = new_pt[0];
-        obj_nested['y'] = new_pt[1];
-        obj_nested['z'] = new_pt[2];
+        if ("position" in obj):
+            obj["position"]['x'] = new_pt[0];
+            obj["position"]['y'] = new_pt[1];
+            obj["position"]['z'] = new_pt[2];
+        else:
+            obj['x'] = new_pt[0];
+            obj['y'] = new_pt[1];
+            obj['z'] = new_pt[2];
         return obj;
     
     # The function for actually adding something to the other collection.
@@ -63,16 +66,17 @@ class ConsistencyChecker(CollectionManager):
 
         return str(self.pushing_to.addItemToCollectionDict(adding));
 
-    def updateConsistentObj(self, updating_info:dict, obj_id_to_update:pymongo.collection.ObjectId):
+    def updateConsistentObj(self, updating_info:dict, obj_id_to_update:pymongo.collection.ObjectId):        
 
-        previously_added:list = self.queryIntoCollection({CROSS_REF_UID, obj_id_to_update})
+        previously_added:list = self.queryIntoCollection({utils.CROSS_REF_UID: str(obj_id_to_update)})        
 
         points = [];
         point_av = self.getPoint(updating_info[self.consistency_args.position_attr]);
         num_points = 1;
         for element in previously_added:
-            points.append(self.getPoint(element[self.consistency_args.position_attr]));
-            point_av += points[len(points) - 1];
+            pt = self.getPoint(element[self.consistency_args.position_attr])
+            points.append(pt);
+            point_av += pt;
             num_points += 1;
             
         point_av /= num_points;
@@ -80,7 +84,11 @@ class ConsistencyChecker(CollectionManager):
         updating_info[self.consistency_args.position_attr] = \
             self.setPoint(updating_info[self.consistency_args.position_attr], point_av);
 
-        self.pushing_to.updateEntry(obj_id_to_update, updating_info);
+        updateEntryInput = {};
+        updateEntryInput[self.consistency_args.position_attr] = \
+            updating_info[self.consistency_args.position_attr];
+
+        self.pushing_to.updateEntry(obj_id_to_update, updateEntryInput);
 
 
     # Returns the str id that the object has gone into.
@@ -90,12 +98,16 @@ class ConsistencyChecker(CollectionManager):
         for element in self.consistency_args.cross_ref_attr:
             query[element] = adding[element];
 
-        possible_results:list = self.queryIntoCollection(query);
+        possible_results:list = self.pushing_to.queryIntoCollection(query);
 
         if len(possible_results) == 0:
+            # print("No matches.")
             return self.createNewConsistentObj(adding);
 
+        # print("There were", len(possible_results), "possible matches");
+
         max_distance = self.consistency_args.max_distance;
+        # print("Max distance", max_distance);
         adding_pos = self.getPoint(adding[self.consistency_args.position_attr]);
         updating = None;
         for element in possible_results:
@@ -104,6 +116,7 @@ class ConsistencyChecker(CollectionManager):
             if (dist < max_distance):
                 updating = element;
                 max_distance = dist;
+
 
         if (updating == None):
             return self.createNewConsistentObj(adding);

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from matplotlib.collections import Collection
 from MemoryManager import MemoryManager;
 from CollectionManager import CollectionManager, TypesCollection;
 from ObjConsistencyMapper import ConsistencyChecker, ConsistencyArgs;

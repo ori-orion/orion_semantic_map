@@ -11,32 +11,58 @@ def test_observation_input():
     adding = orion_actions.srv.SOMAddObservationRequest();
     adding.adding.class_ = "bottle";
     adding.adding.category = "vessel";
-    adding.adding.obj_position.x = 0.1;
-    adding.adding.obj_position.y = 0;
-    adding.adding.obj_position.z = 0;
+    adding.adding.obj_position.position.x = 0.1;
+    adding.adding.obj_position.position.y = 0;
+    adding.adding.obj_position.position.z = 0;
+
+    obj_return = push_to_db_srv(adding);
+    print(obj_return);
+
+    get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
+
+    querying = orion_actions.srv.SOMQueryObjectsRequest();
+    querying.query.class_ = "bottle";
+    
+    query_return = get_obj_from_db_srv(querying);
+    print(query_return);
+
+    adding = orion_actions.srv.SOMAddObservationRequest();
+    adding.adding.class_ = "bottle";
+    adding.adding.category = "vessel";
+    adding.adding.obj_position.position.x = -0.05;
+    adding.adding.obj_position.position.y = 0;
+    adding.adding.obj_position.position.z = 0;
 
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
     adding = orion_actions.srv.SOMAddObservationRequest();
-    adding.adding.class_ = "bottle_2";
-    adding.adding.category = "vessel";
-    adding.adding.obj_position.x = -0.1;
-    adding.adding.obj_position.y = 0;
-    adding.adding.obj_position.z = 0;
+    adding.adding.class_ = "apple";
+    adding.adding.category = "fruit";
+    adding.adding.obj_position.position.x = -0.1;
+    adding.adding.obj_position.position.y = 0;
+    adding.adding.obj_position.position.z = 0;
 
     obj_return = push_to_db_srv(adding);
     print(obj_return);
     
 
-    get_from_db_srv = rospy.ServiceProxy('/som/observations/basic_query', orion_actions.srv.SOMGetObservations);
+    # get_obvs_from_db_srv = rospy.ServiceProxy('/som/observations/basic_query', orion_actions.srv.SOMQueryObservations);
 
-    querying = orion_actions.srv.SOMGetObservationsRequest();
-    querying.query.category = "vessel";
+    # querying = orion_actions.srv.SOMQueryObservationsRequest();
+    # querying.query.category = "vessel";
     
-    query_return = get_from_db_srv(querying);
+    # query_return = get_obvs_from_db_srv(querying);
+    # print(query_return);
+
+
+    get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
+
+    querying = orion_actions.srv.SOMQueryObjectsRequest();
+    querying.query.class_ = "bottle";
+    
+    query_return = get_obj_from_db_srv(querying);
     print(query_return);
-    print(len(query_return));
 
 
 

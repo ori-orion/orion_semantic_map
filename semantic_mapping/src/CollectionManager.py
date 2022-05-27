@@ -1,10 +1,9 @@
-from turtle import position
 import utils;
 import pymongo;
 import pymongo.collection
 import rospy;
 import genpy;
-from MemoryManager import MemoryManager, DEBUG, SESSION_ID, CROSS_REF_UID;
+from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, SESSION_ID;
 
 # The root for all things som related.
 SERVICE_ROOT = "som/";
@@ -58,8 +57,7 @@ class CollectionManager:
         adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
 
         if (DEBUG):
-            rospy.logdebug("adding object...");
-            print(adding_dict);
+            print("Adding an entry to", self.service_name ,"\n\t", adding_dict, "\n");
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!        
@@ -70,7 +68,7 @@ class CollectionManager:
         # If no obj_id was returned from the callback, then we assume there is no cross-referencing
         # and thus nothing to add here!
         if (obj_id != None):
-            adding_dict[CROSS_REF_UID] = obj_id;
+            adding_dict[utils.CROSS_REF_UID] = str(obj_id);
 
         result = self.collection.insert_one(adding_dict);
 
@@ -83,8 +81,9 @@ class CollectionManager:
         return self.addItemToCollectionDict(adding_dict);
 
     def rosPushToCollection(self, pushing): # -> self.types.input_response
-        pushing_attr = utils.get_attributes(pushing);
-        rospy.logdebug("obj adding has name " + pushing_attr[0] + ".");
+        pushing_attr = utils.get_attributes(pushing);        
+        if DEBUG:
+            print("Pushing obj to", self.service_name);
         uid = self.addItemToCollection(getattr(pushing, pushing_attr[0]));
 
         response = self.types.input_response();
@@ -107,19 +106,25 @@ class CollectionManager:
         Note also, _id is an internal mongodb convention
         """
 
-        self.collection.update_one({utils.PYMONGO_ID_SPECIFIER:uid}, update_to);
-        pass
+        self.collection.update_one(
+            {utils.PYMONGO_ID_SPECIFIER:uid}, 
+            { "$set": update_to}
+        );
+        
+        if (DEBUG):
+            print("Updating ", uid, "within", self.service_name, "with", update_to);
 
 
     def queryIntoCollection(self, query_dict) -> list:
         # query_dict = utils.obj_to_dict(query, ignore_default=True);
 
         if (DEBUG):
-            rospy.logdebug("querying object...");
-            print(query_dict);
+            print("Querying into", self.service_name, ":\t", query_dict);
 
         if SESSION_ID not in query_dict:
             query_dict[SESSION_ID] = self.memory_manager.current_session_id;
+
+        # print(query_dict);
 
         query_result:pymongo.cursor.Cursor = self.collection.find(query_dict);
         query_result_list = list(query_result);
@@ -144,7 +149,9 @@ class CollectionManager:
 
         for element in response:
             if DEBUG:
-                print(element);
+                print("Query response: \n\t",element);
+
+            element[UID_ENTRY] = str(element[utils.PYMONGO_ID_SPECIFIER]);
 
             appending = self.types.base_ros_type();
             appending = utils.dict_to_obj(element, appending);

@@ -5,10 +5,7 @@ import datetime
 # import rospy
 
 # import utils
-
-SESSION_ID = "SESSION_NUM";
-UID_ENTRY = "UID";
-CROSS_REF_UID = "CRSS_REF_UID";
+from utils import UID_ENTRY, SESSION_ID
 GLOBAL_TIME_STAMP_ENTRY = "global_timestamp";
 
 
@@ -18,7 +15,7 @@ DEBUG = True;
 class MemoryManager:
     def __init__(self, root="localhost", port=27017):
         self.client = pymongo.MongoClient(root, port);
-        # self.clear_db();
+        self.clear_db();
         self.database = self.client.database_test;
 
         self.collections:dict = {};
