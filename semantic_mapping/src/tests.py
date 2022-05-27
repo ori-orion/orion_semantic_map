@@ -11,6 +11,9 @@ def test_observation_input():
     adding = orion_actions.srv.SOMAddObservationRequest();
     adding.adding.class_ = "bottle";
     adding.adding.category = "vessel";
+    adding.adding.obj_position.x = 0.1;
+    adding.adding.obj_position.y = 0;
+    adding.adding.obj_position.z = 0;
 
     obj_return = push_to_db_srv(adding);
     print(obj_return);
@@ -18,6 +21,9 @@ def test_observation_input():
     adding = orion_actions.srv.SOMAddObservationRequest();
     adding.adding.class_ = "bottle_2";
     adding.adding.category = "vessel";
+    adding.adding.obj_position.x = -0.1;
+    adding.adding.obj_position.y = 0;
+    adding.adding.obj_position.z = 0;
 
     obj_return = push_to_db_srv(adding);
     print(obj_return);
@@ -31,6 +37,8 @@ def test_observation_input():
     query_return = get_from_db_srv(querying);
     print(query_return);
     print(len(query_return));
+
+
 
     pass;
 

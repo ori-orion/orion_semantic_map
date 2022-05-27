@@ -81,7 +81,6 @@ class ConsistencyChecker(CollectionManager):
             self.setPoint(updating_info[self.consistency_args.position_attr], point_av);
 
         self.pushing_to.updateEntry(obj_id_to_update, updating_info);
-        pass;
 
 
     # Returns the str id that the object has gone into.

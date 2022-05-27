@@ -20,7 +20,9 @@ def setup_system():
     mem_manager:MemoryManager = MemoryManager();
     
     object_types:TypesCollection = TypesCollection(
-        base_ros_type=orion_actions.msg.SOMObject_new
+        base_ros_type=orion_actions.msg.SOMObject_new,
+        query_parent=orion_actions.srv.SOMQueryObjects,
+        query_response=orion_actions.srv.SOMQueryObjectsResponse
     );
     object_manager:CollectionManager = CollectionManager(
         object_types,
@@ -32,8 +34,8 @@ def setup_system():
         base_ros_type=orion_actions.msg.SOMObservation,
         input_parent=orion_actions.srv.SOMAddObservation,
         input_response=orion_actions.srv.SOMAddObservationResponse,
-        query_parent=orion_actions.srv.SOMGetObservations,
-        query_response=orion_actions.srv.SOMGetObservationsResponse
+        query_parent=orion_actions.srv.SOMQueryObservations,
+        query_response=orion_actions.srv.SOMQueryObservationsResponse
     );
     observation_arg_name_defs:ConsistencyArgs = ConsistencyArgs(
         position_attr="obj_position",

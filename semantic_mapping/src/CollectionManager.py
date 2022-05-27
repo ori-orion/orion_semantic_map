@@ -118,6 +118,9 @@ class CollectionManager:
             rospy.logdebug("querying object...");
             print(query_dict);
 
+        if SESSION_ID not in query_dict:
+            query_dict[SESSION_ID] = self.memory_manager.current_session_id;
+
         query_result:pymongo.cursor.Cursor = self.collection.find(query_dict);
         query_result_list = list(query_result);
 
