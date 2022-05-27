@@ -14,9 +14,12 @@ def test_observation_input():
     adding.adding.obj_position.position.x = 0.1;
     adding.adding.obj_position.position.y = 0;
     adding.adding.obj_position.position.z = 0;
+    adding.adding.observed_at = rospy.Time.now();
 
     obj_return = push_to_db_srv(adding);
     print(obj_return);
+
+    rospy.sleep(2);
 
     get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
 
@@ -32,9 +35,12 @@ def test_observation_input():
     adding.adding.obj_position.position.x = -0.05;
     adding.adding.obj_position.position.y = 0;
     adding.adding.obj_position.position.z = 0;
+    adding.adding.observed_at = rospy.Time.now();
 
     obj_return = push_to_db_srv(adding);
     print(obj_return);
+
+    rospy.sleep(2);
 
     adding = orion_actions.srv.SOMAddObservationRequest();
     adding.adding.class_ = "bottle";
@@ -42,10 +48,12 @@ def test_observation_input():
     adding.adding.obj_position.position.x = 1;
     adding.adding.obj_position.position.y = 0;
     adding.adding.obj_position.position.z = 0;
+    adding.adding.observed_at = rospy.Time.now();
 
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
+    rospy.sleep(2);
 
     adding = orion_actions.srv.SOMAddObservationRequest();
     adding.adding.class_ = "apple";
@@ -53,6 +61,7 @@ def test_observation_input():
     adding.adding.obj_position.position.x = -0.1;
     adding.adding.obj_position.position.y = 0;
     adding.adding.obj_position.position.z = 0;
+    adding.adding.observed_at = rospy.Time.now();
 
     obj_return = push_to_db_srv(adding);
     print(obj_return);
