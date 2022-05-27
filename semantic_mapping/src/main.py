@@ -42,6 +42,9 @@ def setup_system():
     );
     observation_arg_name_defs.cross_ref_attr.append("class_");
     observation_arg_name_defs.max_distance = 0.3;
+    observation_arg_name_defs.first_observed_attr = "first_observed_at";
+    observation_arg_name_defs.last_observed_attr = "last_observed_at";
+    observation_arg_name_defs.observed_at_attr = "observed_at";
     observation_manager:ConsistencyChecker = ConsistencyChecker(
         pushing_to=object_manager,
         types=observation_types,

@@ -37,6 +37,17 @@ def test_observation_input():
     print(obj_return);
 
     adding = orion_actions.srv.SOMAddObservationRequest();
+    adding.adding.class_ = "bottle";
+    adding.adding.category = "vessel";
+    adding.adding.obj_position.position.x = 1;
+    adding.adding.obj_position.position.y = 0;
+    adding.adding.obj_position.position.z = 0;
+
+    obj_return = push_to_db_srv(adding);
+    print(obj_return);
+
+
+    adding = orion_actions.srv.SOMAddObservationRequest();
     adding.adding.class_ = "apple";
     adding.adding.category = "fruit";
     adding.adding.obj_position.position.x = -0.1;

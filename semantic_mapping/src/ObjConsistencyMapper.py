@@ -18,6 +18,16 @@ class ConsistencyArgs:
         # This is currently a simple distance check. Maybe link it to the size of an object?
         self.max_distance = math.inf;
 
+        # Temporal value names.
+        self.first_observed_attr = None;
+        self.last_observed_attr = None;
+        self.observed_at_attr = None;
+
+        # Not yet implemented
+        self.average_back_to_batch = 0;
+
+        self.positional_covariance_attr = None;
+
 
 # So this is the base layer, that then pushes to pushing_to
 class ConsistencyChecker(CollectionManager):
@@ -63,6 +73,10 @@ class ConsistencyChecker(CollectionManager):
     def createNewConsistentObj(self, adding:dict) -> str:
         
         # Maybe do some fun stuff looking at size here??
+        adding[self.consistency_args.first_observed_attr] = \
+            adding[self.consistency_args.observed_at_attr];
+        adding[self.consistency_args.last_observed_attr] = \
+            adding[self.consistency_args.observed_at_attr];
 
         return str(self.pushing_to.addItemToCollectionDict(adding));
 
@@ -84,11 +98,14 @@ class ConsistencyChecker(CollectionManager):
         updating_info[self.consistency_args.position_attr] = \
             self.setPoint(updating_info[self.consistency_args.position_attr], point_av);
 
-        updateEntryInput = {};
-        updateEntryInput[self.consistency_args.position_attr] = \
+        update_entry_input = {};
+        update_entry_input[self.consistency_args.position_attr] = \
             updating_info[self.consistency_args.position_attr];
 
-        self.pushing_to.updateEntry(obj_id_to_update, updateEntryInput);
+        update_entry_input[self.consistency_args.last_observed_attr] = \
+            updating_info[self.consistency_args.observed_at_attr];
+
+        self.pushing_to.updateEntry(obj_id_to_update, update_entry_input);
 
 
     # Returns the str id that the object has gone into.
