@@ -1,3 +1,4 @@
+import numpy
 import utils;
 import pymongo;
 import pymongo.collection
@@ -5,10 +6,19 @@ import rospy;
 import genpy;
 from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, SESSION_ID;
 
+from geometry_msgs.msg import Pose, Point
+
+# The only reference to the outside system, but it has to be done to
+# make it work :(. 
+from orion_actions.msg import Relation;
+
 # The root for all things som related.
 SERVICE_ROOT = "som/";
 
 class TypesCollection:
+    """
+    To define all the types we're looking at for the queries.
+    """
     def __init__(self, 
         base_ros_type:type, 
         input_parent:type=None,
@@ -34,14 +44,17 @@ class CollectionManager:
     This will be the collection level interface into pymongo, as well as dealing with the basic
     service queries in and out of the collection.
 
-    ros_type        - The base ROS type that this inherits from. Can be None (in the case where
-                        we are taking observations and so need to do stuff with it beforehand).
+    types           - The base ROS type that this inherits from, and the derived service types for 
+                        querying and adding into the system. Note that the types within this can be
+                        None, but the type itself cannot be.
     service_name    - The rossrv list name of the service. This is the service name that you
                         will be able to send stuff to in order to add it to this collection.
                         Note that this will also be the name of the pymongo collection.    
-    memory_manager  - The interface through which the basic memory mangement will happen.                            
+    memory_manager  - The interface through which the basic memory mangement will happen.  
+    positional_attr - For relations, we want to know what entry determines the position of an object.
+                        This will also be used within the ObjConsistencyChecker.                           
     """
-    def __init__(self, types:TypesCollection, service_name:str, memory_manager:MemoryManager):
+    def __init__(self, types:TypesCollection, service_name:str, memory_manager:MemoryManager, positional_attr=None):
         self.types:TypesCollection = types;
         self.service_name:str = service_name;        
         self.memory_manager:MemoryManager = memory_manager;
@@ -51,9 +64,16 @@ class CollectionManager:
 
         self.collection_input_callbacks = [];
 
+        self.positional_attr = positional_attr;
+
         self.setupServices();
 
+
     def addItemToCollectionDict(self, adding_dict:dict) -> pymongo.collection.ObjectId:
+        """
+        Add items to the collection via a dictionary.
+        """
+
         adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
 
         if (DEBUG):
@@ -90,7 +110,8 @@ class CollectionManager:
         # this needs to have the field UID in it!
         response.UID = str(uid);
         return response;
-        
+
+
     def updateEntry(self, uid:pymongo.collection.ObjectId, update_to:dict):
         """
         https://www.w3schools.com/python/python_mongodb_update.asp
@@ -116,6 +137,9 @@ class CollectionManager:
 
 
     def queryIntoCollection(self, query_dict) -> list:
+        """
+        Query into the system through a dictionary.
+        """
         # query_dict = utils.obj_to_dict(query, ignore_default=True);
 
         if (DEBUG):
@@ -124,14 +148,17 @@ class CollectionManager:
         if SESSION_ID not in query_dict:
             query_dict[SESSION_ID] = self.memory_manager.current_session_id;
 
-        # print(query_dict);
-
         query_result:pymongo.cursor.Cursor = self.collection.find(query_dict);
         query_result_list = list(query_result);
 
         return query_result_list;
 
     def rosQueryEntrypoint(self, ros_query):    # -> self.types.query_response
+        """
+        Query into the database via a ROS query.
+
+        Translates the ROS query into a dictionary, and then gets the list response using self.queryIntoCollection(...)
+        """
         ros_query_dict:dict = utils.obj_to_dict(
             ros_query, 
             ignore_default=True,
@@ -160,7 +187,67 @@ class CollectionManager:
         return ros_response;        
 
     
+    def get_relation_dict(self, cur_robot_pose:Pose, obj1:dict, obj2:dict) -> Relation:
+        """
+        HEAVILY inspired by Mark Richter's relational code from the old system.
+        """
+
+        dist_thr = 2;
+
+        output_relation:Relation = Relation();
+        robot_pos = utils.getPoint(utils.obj_to_dict(cur_robot_pose.position));
+        obj_one_pos = utils.getPoint(obj1[self.positional_attr]);
+        obj_two_pos = utils.getPoint(obj2[self.positional_attr]);
+
+        print(robot_pos);
+        print(obj_one_pos);
+        print(obj_two_pos);
+
+        robot_to_two = obj_two_pos - robot_pos
+        two_to_one = obj_one_pos - obj_two_pos
+
+        # if the distance between the two objects is greater than the threshold then none of the relations are true
+        if numpy.linalg.norm(obj_one_pos - obj_two_pos) > dist_thr:
+            output_relation.not_near = True
+            return output_relation
+        else:
+            output_relation.near = True
+        # near, not_near set.
+
+        # vertical relation
+        eps = 0.001 # use tolerance otherwise comparing relations of object to itself returns true for some fields
+        if obj_one_pos[2] > obj_two_pos[2] + eps:
+            output_relation.above = True
+        elif obj_one_pos[2] < obj_two_pos[2] - eps:
+            output_relation.below = True
+        # near, not_near, above, below set.
+
+        # forwards and backwards
+        if numpy.dot(robot_to_two, two_to_one) > eps:
+            output_relation.behind = True
+        elif numpy.dot(robot_to_two, two_to_one) < -eps:
+            output_relation.frontof = True
+        # near, not_near, above, below, behind, frontof set.
+
+        # left and right
+        cross_pr = numpy.cross(robot_to_two, two_to_one)
+        if cross_pr[2] > eps:
+            output_relation.left = True
+        elif cross_pr[2] < -eps:
+            output_relation.right = True
+        # near, not_near, above, below, behind, frontof, left, right set.
+        
+        # All that is now needed is left_most and right_most, 
+        # but that won't happen here (because we're only looking at two objects, not
+        # the whole set).
+
+        return output_relation        
+
+
     def setupServices(self):
+        """
+        Setup all the services associated with this object.
+        """
 
         if (self.types.input_parent != None):
             rospy.Service(

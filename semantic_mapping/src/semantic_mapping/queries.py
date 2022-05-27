@@ -173,7 +173,7 @@ def get_left_most_match(matches:list, cur_robot_pose) -> list:
 def get_right_most_match(matches:list, cur_robot_pose) -> list:
     return _get_extreme_match(matches, cur_robot_pose, right_most=True)
 
-def _get_extreme_match(matches:list, cur_robot_pose, left_most = False, right_most = False) -> list:
+def _get_extreme_match(matches:list, cur_robot_pose:Pose, left_most = False, right_most = False) -> list:
     robot_pos = np.array([cur_robot_pose.position.x, cur_robot_pose.position.y, cur_robot_pose.position.z])
     max_angle = -float('inf')
     min_angle = float('inf')
@@ -237,11 +237,11 @@ def _mongo_som_objects_matching_template(query_dict, mongo_object_store, ontolog
         results = [i[0] for i in response]
     return results
 
-def spatial_relation(cur_robot_pose, som_obj_one, som_obj_two):
+def spatial_relation(cur_robot_pose:Pose, som_obj_one, som_obj_two):
     """
     This should return the relation ~ that makes the statement
     "som_obj_one ~ som_obj_two" true.
-uples
+    uples
     We assume that only one spatial relation can be true at a time?
 
     This can likely be computed using dot products, and checking which

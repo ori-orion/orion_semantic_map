@@ -1,5 +1,6 @@
 import rospy;
 import genpy;
+import numpy;
 
 # SESSION_ID = "session_num";
 # UID_ENTRY = "entry_uid";
@@ -25,6 +26,26 @@ def numericalTimeToROSDuration(time:int) -> rospy.Duration:
     output.secs = int((time - output.nsecs) / 1e9);
     # print(output.secs);
     return output;
+
+
+# The point here is that we could get either a pose or a point as input. 
+# We therefore want to separate these out.
+# We also know that the dict obj we might be trying to decipher is a ROS
+# Pose object, so we know that "position" is the string we want.
+def getPoint(obj:dict) -> numpy.array:
+    if "position" in obj:
+        obj = obj["position"];
+    return numpy.asarray([obj["x"], obj["y"], obj["z"]]);
+def setPoint(obj:dict, new_pt:numpy.array) -> dict:
+    if ("position" in obj):
+        obj["position"]['x'] = new_pt[0];
+        obj["position"]['y'] = new_pt[1];
+        obj["position"]['z'] = new_pt[2];
+    else:
+        obj['x'] = new_pt[0];
+        obj['y'] = new_pt[1];
+        obj['z'] = new_pt[2];
+    return obj;
 
 
 #removes attributes of a ROS msg that we're not interested in.

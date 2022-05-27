@@ -26,7 +26,8 @@ def setup_system():
     object_manager:CollectionManager = CollectionManager(
         object_types,
         "objects",
-        memory_manager=mem_manager
+        memory_manager=mem_manager,
+        positional_attr="obj_position"
     );
 
     observation_types:TypesCollection = TypesCollection(
@@ -37,7 +38,6 @@ def setup_system():
         query_response=orion_actions.srv.SOMQueryObservationsResponse
     );
     observation_arg_name_defs:ConsistencyArgs = ConsistencyArgs(
-        position_attr="obj_position",
         size_attr="size"
     );
     observation_arg_name_defs.cross_ref_attr.append("class_");
@@ -49,7 +49,8 @@ def setup_system():
         pushing_to=object_manager,
         types=observation_types,
         service_name="observations",
-        consistency_args=observation_arg_name_defs
+        consistency_args=observation_arg_name_defs,
+        positional_attr="obj_position"        
     );
 
 
