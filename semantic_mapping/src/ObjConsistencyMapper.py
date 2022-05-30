@@ -9,7 +9,8 @@ import pymongo.collection
 # of an object is the position, which is the size, etc.
 # This is a first attempt at defining this.
 class ConsistencyArgs:
-    def __init__(self, size_attr=None):        
+    def __init__(self, position_attr=None, size_attr=None):
+        self.position_attr = position_attr;     
         self.size_attr = size_attr;
 
         self.cross_ref_attr = [];
@@ -35,21 +36,19 @@ class ConsistencyChecker(CollectionManager):
             pushing_to:CollectionManager, 
             types:TypesCollection, 
             service_name:str,
-            consistency_args:ConsistencyArgs=ConsistencyArgs(),
-            positional_attr=None):
+            consistency_args:ConsistencyArgs=ConsistencyArgs()):
         
         super(ConsistencyChecker, self).__init__(
             types=types, 
             service_name=service_name, 
-            memory_manager=pushing_to.memory_manager,
-            positional_attr=positional_attr);
+            memory_manager=pushing_to.memory_manager);
 
         self.pushing_to = pushing_to;
 
         # We don't really want hard coded values here, BUT, in order to average over 
         # position in an intelligent way (using \Sigma), we're going to start to need
         # to define parameters. This does this!
-        self.consistency_args = consistency_args;
+        self.consistency_args:ConsistencyArgs = consistency_args;
 
         self.collection_input_callbacks.append(self.push_item_to_pushing_to);
     
@@ -66,28 +65,26 @@ class ConsistencyChecker(CollectionManager):
 
     def updateConsistentObj(self, updating_info:dict, obj_id_to_update:pymongo.collection.ObjectId):        
         # updating_info is an observation, rather than an object.
-        # Thus self.positional_attr is the correct system to use for cross referencing positional
-        # information within updating_info.
 
         previously_added:list = self.queryIntoCollection({utils.CROSS_REF_UID: str(obj_id_to_update)})        
 
         points = [];
-        point_av = utils.getPoint(updating_info[self.positional_attr]);
+        point_av = utils.getPoint(updating_info[self.consistency_args.position_attr]);
         num_points = 1;
         for element in previously_added:
-            pt = utils.getPoint(element[self.positional_attr])
+            pt = utils.getPoint(element[self.consistency_args.position_attr])
             points.append(pt);
             point_av += pt;
             num_points += 1;
             
         point_av /= num_points;
 
-        updating_info[self.positional_attr] = \
-            utils.setPoint(updating_info[self.positional_attr], point_av);
+        updating_info[self.consistency_args.position_attr] = \
+            utils.setPoint(updating_info[self.consistency_args.position_attr], point_av);
 
         update_entry_input = {};
-        update_entry_input[self.pushing_to.positional_attr] = \
-            updating_info[self.positional_attr];
+        update_entry_input[self.consistency_args.position_attr] = \
+            updating_info[self.consistency_args.position_attr];
 
         update_entry_input[self.consistency_args.last_observed_attr] = \
             updating_info[self.consistency_args.observed_at_attr];
@@ -112,10 +109,10 @@ class ConsistencyChecker(CollectionManager):
 
         max_distance = self.consistency_args.max_distance;
         # print("Max distance", max_distance);
-        adding_pos = utils.getPoint(adding[self.positional_attr]);
+        adding_pos = utils.getPoint(adding[self.consistency_args.position_attr]);
         updating = None;
         for element in possible_results:
-            element_pos = utils.getPoint(element[self.positional_attr]);
+            element_pos = utils.getPoint(element[self.consistency_args.position_attr]);
             dist = numpy.linalg.norm(adding_pos - element_pos);
             if (dist < max_distance):
                 updating = element;
