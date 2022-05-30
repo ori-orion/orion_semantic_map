@@ -26,8 +26,7 @@ def setup_system():
     object_manager:CollectionManager = CollectionManager(
         object_types,
         "objects",
-        memory_manager=mem_manager,
-        positional_attr="obj_position"
+        memory_manager=mem_manager        
     );
 
     observation_types:TypesCollection = TypesCollection(
@@ -38,6 +37,7 @@ def setup_system():
         query_response=orion_actions.srv.SOMQueryObservationsResponse
     );
     observation_arg_name_defs:ConsistencyArgs = ConsistencyArgs(
+        position_attr="obj_position",
         size_attr="size"
     );
     observation_arg_name_defs.cross_ref_attr.append("class_");
@@ -49,8 +49,38 @@ def setup_system():
         pushing_to=object_manager,
         types=observation_types,
         service_name="observations",
-        consistency_args=observation_arg_name_defs,
-        positional_attr="obj_position"        
+        consistency_args=observation_arg_name_defs           
+    );
+
+
+    human_types:TypesCollection = TypesCollection(
+        base_ros_type=orion_actions.msg.Human,
+        query_parent=orion_actions.srv.SOMQueryHumans,
+        query_response=orion_actions.srv.SOMQueryHumansResponse
+    );
+    human_manager:CollectionManager = CollectionManager(
+        types=human_types,
+        service_name="humans",
+        memory_manager=mem_manager
+    );
+
+    human_observation_types:TypesCollection = TypesCollection(
+        base_ros_type=orion_actions.msg.HumanObservation,
+        input_parent=orion_actions.srv.SOMAddHumanObs,
+        input_response=orion_actions.srv.SOMAddHumanObsResponse
+    );
+    human_observation_manager_args:ConsistencyArgs = ConsistencyArgs(
+        position_attr="obj_position"
+    );
+    human_observation_manager_args.first_observed_attr = "first_observed_at";
+    human_observation_manager_args.last_observed_attr = "last_observed_at";
+    human_observation_manager_args.observed_at_attr = "observed_at";
+    human_observation_manager_args.cross_ref_attr.append("task_role");
+    human_observation_manager:ConsistencyChecker = ConsistencyChecker(
+        pushing_to=human_manager,
+        types=human_observation_types,
+        service_name="human_observations",
+        consistency_args=human_observation_manager_args
     );
 
 
