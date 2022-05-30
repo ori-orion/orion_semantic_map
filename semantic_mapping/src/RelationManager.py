@@ -1,11 +1,85 @@
+"""
+Defines the infrastructure around getting the relation between objects.
+"""
 import numpy;
 import utils;
+import rospy;
 
 from orion_actions.msg import Relation;
+from geometry_msgs.msg import Pose, Point;
+
+from CollectionManager import CollectionManager, SERVICE_ROOT;
 
 class RelationManager:
-    def __init__(self, positional_attr:str):
+    """
+    positional_attr     - The attribute name for the position of an
+                            object within the collection managed by operating_on.
+    service_base        - The base type for the service call.
+    service_response    - The return type for the service call.
+    operating_on        - The wrapper class for the mongodb collection we're operating on. 
+
+    Required fields within input field for the relational services.
+        - obj1                  - The first object
+        - obj2                  - The second object
+        - relation              - The relational query between obj1 and obj2.
+                                    (Note that we're looking for matches to [obj] [relation] [obj2])
+        - current_robot_pose    - The goemetry_msgs/Pose of the robot (so that we can work out 
+                                    left/right and behind/infront matches.)
+    Note that there should be a single output field of an array of matches (those being defined with the following fields):
+        - obj1
+        - obj2
+        - relation
+        where everything is defined as before.
+    There is no naming constraint on this last outermost variable, it being the only one necessary for the output.
+    """
+    def __init__(self, positional_attr:str, service_base:type, service_response:type, match_type:type, operating_on:CollectionManager):
         self.positional_attr = positional_attr;
+
+        self.service_base:type = service_base;
+        self.match_type:type = match_type;
+        self.service_response:type = service_response;
+
+        self.operating_on = operating_on;
+
+
+    def ROS_perform_relational_query(self, input):
+        obj1_dict = utils.obj_to_dict(input.obj1);
+        obj2_dict = utils.obj_to_dict(input.obj2);
+        return self.perform_relational_query(obj1_dict, obj2_dict, input.relation, input.current_robot_pose);
+
+
+    def perform_relational_query(self, obj1:dict, obj2:dict, relation:Relation, cur_robot_pose:Pose):
+        obj1_query_result:list = self.operating_on.queryIntoCollection(obj1);
+        obj2_query_result:list = self.operating_on.queryIntoCollection(obj2);
+
+        querying_relation_dict = utils.obj_to_dict(relation);
+
+        def compare_relational_dicts(comparing_with:dict) -> bool:
+            output = True
+            for key in querying_relation_dict.keys():
+                if querying_relation_dict[key] == True and comparing_with[key] == False:
+                    return False;
+            return output;
+
+        matches = [];
+        for o1 in obj1_query_result:
+            for o2 in obj2_query_result:
+                relation_out:Relation = self.get_relation_dict(cur_robot_pose, o1, o2);
+                relation_out_dict = utils.obj_to_dict(relation_out);
+
+                if compare_relational_dicts(relation_out_dict):
+                    match_appending = self.match_type();                    
+                    match_appending.obj1 = utils.dict_to_obj(o1, match_appending.obj1);
+                    match_appending.obj2 = utils.dict_to_obj(o2, match_appending.obj2);
+                    match_appending.relation = relation_out;
+
+                    matches.append(match_appending);
+
+                pass;
+        
+        output = self.service_response();
+        setattr(output, utils.get_attributes(output)[0], matches);
+        return output;        
 
     
     def get_relation_dict(self, cur_robot_pose:Pose, obj1:dict, obj2:dict) -> Relation:
@@ -65,4 +139,9 @@ class RelationManager:
         return output_relation        
 
 
-    pass;
+    def setup_ROS_services(self):
+
+        rospy.Service(
+            SERVICE_ROOT + self.operating_on.service_name + '/relational', 
+            self.service_base, 
+            self.ROS_perform_relational_query);
