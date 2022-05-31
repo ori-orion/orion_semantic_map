@@ -38,13 +38,13 @@ def setup_system():
     );
     observation_arg_name_defs:ConsistencyArgs = ConsistencyArgs(
         position_attr="obj_position",
-        size_attr="size"
+        size_attr="size",
+        max_distance=0.3,
+        first_observed_attr="first_observed_at",
+        last_observed_attr="last_observed_at",
+        observed_at_attr="observed_at"
     );
     observation_arg_name_defs.cross_ref_attr.append("class_");
-    observation_arg_name_defs.max_distance = 0.3;
-    observation_arg_name_defs.first_observed_attr = "first_observed_at";
-    observation_arg_name_defs.last_observed_attr = "last_observed_at";
-    observation_arg_name_defs.observed_at_attr = "observed_at";
     observation_manager:ConsistencyChecker = ConsistencyChecker(
         pushing_to=object_manager,
         types=observation_types,
@@ -70,11 +70,11 @@ def setup_system():
         input_response=orion_actions.srv.SOMAddHumanObsResponse
     );
     human_observation_manager_args:ConsistencyArgs = ConsistencyArgs(
-        position_attr="obj_position"
+        position_attr="obj_position",
+        first_observed_attr="first_observed_at",
+        last_observed_attr="last_observed_at",
+        observed_at_attr="observed_at"
     );
-    human_observation_manager_args.first_observed_attr = "first_observed_at";
-    human_observation_manager_args.last_observed_attr = "last_observed_at";
-    human_observation_manager_args.observed_at_attr = "observed_at";
     human_observation_manager_args.cross_ref_attr.append("task_role");
     human_observation_manager:ConsistencyChecker = ConsistencyChecker(
         pushing_to=human_manager,
@@ -82,8 +82,6 @@ def setup_system():
         service_name="human_observations",
         consistency_args=human_observation_manager_args
     );
-
-
 
     rospy.loginfo("Memory systems set up!");
 
