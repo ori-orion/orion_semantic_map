@@ -88,7 +88,54 @@ def test_observation_input():
 
     pass;
 
+
+def test_human_observation_input():
+    human_input:rospy.Service = rospy.ServiceProxy('/som/human_observations/input', orion_actions.srv.SOMAddHumanObs);
+    human_query:rospy.Service = rospy.ServiceProxy('/som/humans/basic_query', orion_actions.srv.SOMQueryHumans);
+
+    human_1:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
+    human_1.adding.task_role = "Operator";
+    human_1.adding.obj_position.position.x = 1;
+    human_1.adding.obj_position.position.y = 2;
+    human_1.adding.obj_position.position.z = 3;
+    human_1.adding.observed_at = rospy.Time.now();
+
+    response = human_input(human_1);
+    print(response);
+
+    rospy.sleep(1);
+
+    human_2:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
+    human_2.adding.task_role = "Operator";
+    human_2.adding.obj_position.position.x = 1;
+    human_2.adding.obj_position.position.y = 4;
+    human_2.adding.obj_position.position.z = 3;
+    human_2.adding.observed_at = rospy.Time.now();
+
+    response = human_input(human_2);
+    print(response);
+
+    human_3:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
+    human_3.adding.task_role = "unknown";
+    human_3.adding.obj_position.position.x = 1;
+    human_3.adding.obj_position.position.y = 5;
+    human_3.adding.obj_position.position.z = 3;
+    human_3.adding.observed_at = rospy.Time.now();
+
+    response = human_input(human_3);
+    print(response);
+
+
+    human_query_in:orion_actions.srv.SOMQueryHumansRequest = orion_actions.srv.SOMQueryHumansRequest();
+    human_query_in.query.task_role = "Operator";
+    response = human_query(human_query_in);
+    print(response);
+
+    pass;
+
+
 if __name__ == '__main__':
     rospy.init_node('som_test_node');
 
     test_observation_input();
+    test_human_observation_input();
