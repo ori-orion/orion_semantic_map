@@ -17,6 +17,9 @@ class ConsistencyArgs:
 
         # This is currently a simple distance check. Maybe link it to the size of an object?
         self.max_distance = math.inf;
+        # So for humans for instance, we're expecting them to move around a lot.
+        # Thus doing any averaging over position is actually counter productive.
+        self.use_running_average_position = True;
 
         # Temporal value names.
         self.first_observed_attr = None;
@@ -67,22 +70,24 @@ class ConsistencyChecker(CollectionManager):
         # updating_info is an observation, rather than an object.
 
         previously_added:list = self.queryIntoCollection({utils.CROSS_REF_UID: str(obj_id_to_update)})        
-
-        points = [];
-        point_av = utils.getPoint(updating_info[self.consistency_args.position_attr]);
-        num_points = 1;
-        for element in previously_added:
-            pt = utils.getPoint(element[self.consistency_args.position_attr])
-            points.append(pt);
-            point_av += pt;
-            num_points += 1;
-            
-        point_av /= num_points;
-
-        updating_info[self.consistency_args.position_attr] = \
-            utils.setPoint(updating_info[self.consistency_args.position_attr], point_av);
-
         update_entry_input = {};
+
+        if self.consistency_args.use_running_average_position:
+            points = [];
+            point_av = utils.getPoint(updating_info[self.consistency_args.position_attr]);
+            num_points = 1;
+            for element in previously_added:
+                pt = utils.getPoint(element[self.consistency_args.position_attr])
+                points.append(pt);
+                point_av += pt;
+                num_points += 1;
+                
+            point_av /= num_points;
+
+            updating_info[self.consistency_args.position_attr] = \
+                utils.setPoint(updating_info[self.consistency_args.position_attr], point_av);
+
+
         update_entry_input[self.consistency_args.position_attr] = \
             updating_info[self.consistency_args.position_attr];
 

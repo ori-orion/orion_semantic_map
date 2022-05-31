@@ -75,6 +75,7 @@ def setup_system():
     human_observation_manager_args.first_observed_attr = "first_observed_at";
     human_observation_manager_args.last_observed_attr = "last_observed_at";
     human_observation_manager_args.observed_at_attr = "observed_at";
+    human_observation_manager_args.use_running_average_position = False;
     human_observation_manager_args.cross_ref_attr.append("task_role");
     human_observation_manager:ConsistencyChecker = ConsistencyChecker(
         pushing_to=human_manager,
