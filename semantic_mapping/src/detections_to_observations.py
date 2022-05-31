@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import datetime
 from orion_actions.msg import *
 from orion_actions.srv import *
 from geometry_msgs.msg import PoseStamped, Point, Pose
@@ -94,11 +93,13 @@ class DetectToObserve:
             # forwarding.header.frame_id = self.global_frame;#.encode("ascii", "ignore");                
         
             
-            service_output:SOMObserveResponse = self.observe_obj_srv(forwarding);    
-            addition_successful = service_output.result;
-            obj_id_returned = service_output.obj_id;
+            service_output:SOMObserveResponse = self.observe_obj_srv(forwarding);
+            print(forwarding.class_);
+            # addition_successful = service_output.obj_id;
+            # obj_id_returned = service_output.obj_id;
 
-            print(obj_id_returned);
+            # print(obj_id_returned);
+        print("--------------------------------");
 
 
 if __name__ == '__main__':

@@ -161,6 +161,10 @@ Find empty space for where to put down an object?
 It would be nice to be able to say that object has now moved.
     - Implemented as a average_back_to_batch on an object?
 
+TODO:
+    leftmost/rightmost needs to be implemented.
+    Regions.
+    Ontology.
 
 Manip will stick with tf publishing for size and position identification. 
 
