@@ -51,28 +51,16 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  # SOMObject.msg
-  # SOMObservation.msg
-  # SOMROIObject.msg
-  # PoseEstimate.msg
-  # Relation.msg
-  # Match.msg
-)
+# add_message_files(
+#   FILES
+#   # Message1.msg
+# )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  # SOMAddObservation.srv
-  # SOMGetObservations.srv
-  # SOMDelete.srv
-  # SOMObserve.srv
-  # SOMQuery.srv
-  # SOMLookup.srv
-  # SOMClearDatabase.srv
-  # SOMGetAllObjects.srv
-)
+# add_service_files(
+#   FILES
+#   # Service1.srv
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
