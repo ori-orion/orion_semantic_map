@@ -4,6 +4,7 @@ Defines the infrastructure around getting the relation between objects.
 import numpy;
 import utils;
 import rospy;
+import genpy;
 
 from orion_actions.msg import Relation;
 from geometry_msgs.msg import Pose, Point;
@@ -45,8 +46,15 @@ class RelationManager:
 
 
     def ROS_perform_relational_query(self, input):
-        obj1_dict = utils.obj_to_dict(input.obj1);
-        obj2_dict = utils.obj_to_dict(input.obj2);
+        obj1_dict = utils.obj_to_dict(
+            input.obj1, 
+            ignore_default=True,
+            ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time]);
+        obj2_dict = utils.obj_to_dict(
+            input.obj2, 
+            ignore_default=True,
+            ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time]);
+        
         return self.perform_relational_query(obj1_dict, obj2_dict, input.relation, input.current_robot_pose);
 
 
@@ -76,8 +84,6 @@ class RelationManager:
                     match_appending.relation = relation_out;
 
                     matches.append(match_appending);
-
-                pass;
         
         output = self.service_response();
         setattr(output, utils.get_attributes(output)[0], matches);
@@ -96,9 +102,9 @@ class RelationManager:
         obj_one_pos = utils.getPoint(obj1[self.positional_attr]);
         obj_two_pos = utils.getPoint(obj2[self.positional_attr]);
 
-        print(robot_pos);
-        print(obj_one_pos);
-        print(obj_two_pos);
+        # print(robot_pos);
+        # print(obj_one_pos);
+        # print(obj_two_pos);
 
         robot_to_two = obj_two_pos - robot_pos
         two_to_one = obj_one_pos - obj_two_pos
@@ -144,6 +150,6 @@ class RelationManager:
     def setup_ROS_services(self):
 
         rospy.Service(
-            SERVICE_ROOT + self.operating_on.service_name + '/relational', 
+            SERVICE_ROOT + self.operating_on.service_name + '/relational_query', 
             self.service_base, 
             self.ROS_perform_relational_query);
