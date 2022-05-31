@@ -19,7 +19,7 @@ def setup_system():
     mem_manager:MemoryManager = MemoryManager();
     
     object_types:TypesCollection = TypesCollection(
-        base_ros_type=orion_actions.msg.SOMObject_new,
+        base_ros_type=orion_actions.msg.SOMObject,
         query_parent=orion_actions.srv.SOMQueryObjects,
         query_response=orion_actions.srv.SOMQueryObjectsResponse
     );
