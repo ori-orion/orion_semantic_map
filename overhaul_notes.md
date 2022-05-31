@@ -165,6 +165,8 @@ TODO:
     leftmost/rightmost needs to be implemented.
     Regions.
     Ontology.
+    Looking at how inputs having the same batch number influences the system.
+    
 
 Manip will stick with tf publishing for size and position identification. 
 
