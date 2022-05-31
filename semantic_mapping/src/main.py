@@ -3,6 +3,7 @@
 from MemoryManager import MemoryManager;
 from CollectionManager import CollectionManager, TypesCollection;
 from ObjConsistencyMapper import ConsistencyChecker, ConsistencyArgs;
+from RelationManager import RelationManager;
 
 import rospy;
 
@@ -52,6 +53,13 @@ def setup_system():
         consistency_args=observation_arg_name_defs           
     );
 
+    object_relational_manager:RelationManager = RelationManager(
+        operating_on=object_manager,
+        positional_attr="obj_position",
+        service_base=orion_actions.srv.SOMRelObjQuery,
+        service_response=orion_actions.srv.SOMRelObjQueryResponse,
+        match_type=orion_actions.msg.Match
+    );
 
     human_types:TypesCollection = TypesCollection(
         base_ros_type=orion_actions.msg.Human,

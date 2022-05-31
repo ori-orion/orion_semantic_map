@@ -32,7 +32,7 @@ class RelationManager:
         where everything is defined as before.
     There is no naming constraint on this last outermost variable, it being the only one necessary for the output.
     """
-    def __init__(self, positional_attr:str, service_base:type, service_response:type, match_type:type, operating_on:CollectionManager):
+    def __init__(self, operating_on:CollectionManager, positional_attr:str, service_base:type, service_response:type, match_type:type):
         self.positional_attr = positional_attr;
 
         self.service_base:type = service_base;
@@ -40,6 +40,8 @@ class RelationManager:
         self.service_response:type = service_response;
 
         self.operating_on = operating_on;
+
+        self.setup_ROS_services();
 
 
     def ROS_perform_relational_query(self, input):
