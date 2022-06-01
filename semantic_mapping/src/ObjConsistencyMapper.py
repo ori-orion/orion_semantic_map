@@ -22,6 +22,8 @@ class ConsistencyArgs:
         self.position_attr = position_attr;     
         self.size_attr = size_attr;
 
+        self.use_running_average_position = True;
+
         self.cross_ref_attr = [];
 
         # This is currently a simple distance check. Maybe link it to the size of an object?
