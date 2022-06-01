@@ -29,12 +29,6 @@ tmux select-window -t $SESSION:0
 tmux -u send-keys "mongod --dbpath /home/$USER/orion_ws/db" C-m
 
 tmux select-window -t $SESSION:1
-<<<<<<< HEAD
-$PREFIX
-[ -f $DEVELOPMENT_WS_ROBOT ] && `$_SRC_ENV_ROBOT` && `$CLEAR_PANE`
-tmux -u send-keys "rosrun semantic_mapping main.py" C-m
-
-=======
 [ -f $DEVELOPMENT_WS_ROBOT ] && `$_SRC_ENV_ROBOT` && `$CLEAR_PANE`
 tmux -u send-keys "rosrun semantic_mapping main.py" C-m
 
@@ -42,7 +36,6 @@ tmux select-window -t $SESSION:2
 [ -f $DEVELOPMENT_WS_ROBOT ] && `$_SRC_ENV_ROBOT` && `$CLEAR_PANE`
 tmux -u send-keys "rosrun semantic_mapping detections_to_observations.py" C-m
 
->>>>>>> matthew_munks
 # Set default window
 tmux select-window -t $SESSION:1
 
