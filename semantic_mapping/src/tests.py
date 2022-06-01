@@ -162,12 +162,15 @@ def test_obj_relational_query():
     assert(match0.relation.above == True);
     assert(match0.relation.below == False);
 
+    print("Behind query");
     query2 = orion_actions.srv.SOMRelObjQueryRequest();
     query2.obj1.class_ = "window_rel";
     query2.relation.behind = True;
     query2_output:orion_actions.srv.SOMRelObjQueryResponse = relational_query_srv(query2);
     print(query2_output);
-    assert(False);
+    for element in query2_output.matches:
+        element:orion_actions.msg.Match;
+        assert(element.relation.behind == True);
 
     pass;
 
