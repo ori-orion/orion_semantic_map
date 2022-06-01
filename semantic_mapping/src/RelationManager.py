@@ -63,6 +63,7 @@ class RelationManager:
         obj2_query_result:list = self.operating_on.queryIntoCollection(obj2);
 
         querying_relation_dict = utils.obj_to_dict(relation);
+        print(querying_relation_dict);
 
         def compare_relational_dicts(comparing_with:dict) -> bool:
             output = True
@@ -76,8 +77,10 @@ class RelationManager:
             for o2 in obj2_query_result:
                 relation_out:Relation = self.get_relation_dict(cur_robot_pose, o1, o2);
                 relation_out_dict = utils.obj_to_dict(relation_out);
+                print(relation_out_dict);
 
                 if compare_relational_dicts(relation_out_dict):
+                    print("Added!");
                     match_appending = self.match_type();                    
                     match_appending.obj1 = utils.dict_to_obj(o1, match_appending.obj1);
                     match_appending.obj2 = utils.dict_to_obj(o2, match_appending.obj2);

@@ -2,6 +2,8 @@
 
 import rospy
 
+import geometry_msgs.msg;
+
 import orion_actions.srv
 import orion_actions.msg
 
@@ -142,6 +144,7 @@ def test_obj_relational_query():
     query1 = orion_actions.srv.SOMRelObjQueryRequest();
     query1.obj1.class_ = "window_rel";
     query1.obj2.class_ = "banana_rel";
+    query1.current_robot_pose = geometry_msgs.msg.Pose();
     query1_output:orion_actions.srv.SOMRelObjQueryResponse = relational_query_srv(query1);
     print(query1_output);
 
@@ -158,6 +161,13 @@ def test_obj_relational_query():
     assert(match0.relation.behind == False);
     assert(match0.relation.above == True);
     assert(match0.relation.below == False);
+
+    query2 = orion_actions.srv.SOMRelObjQueryRequest();
+    query2.obj1.class_ = "window_rel";
+    query2.relation.behind = True;
+    query2_output:orion_actions.srv.SOMRelObjQueryResponse = relational_query_srv(query2);
+    print(query2_output);
+    assert(False);
 
     pass;
 
