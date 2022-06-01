@@ -4,6 +4,7 @@ Defines the infrastructure around getting the relation between objects.
 import numpy;
 import utils;
 import rospy;
+import genpy;
 
 from orion_actions.msg import Relation;
 from geometry_msgs.msg import Pose, Point;
@@ -32,7 +33,7 @@ class RelationManager:
         where everything is defined as before.
     There is no naming constraint on this last outermost variable, it being the only one necessary for the output.
     """
-    def __init__(self, positional_attr:str, service_base:type, service_response:type, match_type:type, operating_on:CollectionManager):
+    def __init__(self, operating_on:CollectionManager, positional_attr:str, service_base:type, service_response:type, match_type:type):
         self.positional_attr = positional_attr;
 
         self.service_base:type = service_base;
@@ -41,10 +42,19 @@ class RelationManager:
 
         self.operating_on = operating_on;
 
+        self.setup_ROS_services();
+
 
     def ROS_perform_relational_query(self, input):
-        obj1_dict = utils.obj_to_dict(input.obj1);
-        obj2_dict = utils.obj_to_dict(input.obj2);
+        obj1_dict = utils.obj_to_dict(
+            input.obj1, 
+            ignore_default=True,
+            ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time]);
+        obj2_dict = utils.obj_to_dict(
+            input.obj2, 
+            ignore_default=True,
+            ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time]);
+        
         return self.perform_relational_query(obj1_dict, obj2_dict, input.relation, input.current_robot_pose);
 
 
@@ -54,6 +64,8 @@ class RelationManager:
 
         querying_relation_dict = utils.obj_to_dict(relation);
 
+        # We only want to look at outputs for which the relations match up.
+        # I.e., see the logic below. 
         def compare_relational_dicts(comparing_with:dict) -> bool:
             output = True
             for key in querying_relation_dict.keys():
@@ -74,8 +86,6 @@ class RelationManager:
                     match_appending.relation = relation_out;
 
                     matches.append(match_appending);
-
-                pass;
         
         output = self.service_response();
         setattr(output, utils.get_attributes(output)[0], matches);
@@ -94,9 +104,9 @@ class RelationManager:
         obj_one_pos = utils.getPoint(obj1[self.positional_attr]);
         obj_two_pos = utils.getPoint(obj2[self.positional_attr]);
 
-        print(robot_pos);
-        print(obj_one_pos);
-        print(obj_two_pos);
+        # print(robot_pos);
+        # print(obj_one_pos);
+        # print(obj_two_pos);
 
         robot_to_two = obj_two_pos - robot_pos
         two_to_one = obj_one_pos - obj_two_pos
@@ -142,6 +152,6 @@ class RelationManager:
     def setup_ROS_services(self):
 
         rospy.Service(
-            SERVICE_ROOT + self.operating_on.service_name + '/relational', 
+            SERVICE_ROOT + self.operating_on.service_name + '/relational_query', 
             self.service_base, 
             self.ROS_perform_relational_query);

@@ -9,22 +9,28 @@ import pymongo.collection
 # of an object is the position, which is the size, etc.
 # This is a first attempt at defining this.
 class ConsistencyArgs:
-    def __init__(self, position_attr=None, size_attr=None):
+    def __init__(
+        self, 
+        position_attr=None, 
+        size_attr=None,
+        max_distance=math.inf,
+        first_observed_attr=None,
+        last_observed_attr = None,
+        observed_at_attr = None):
+
+
         self.position_attr = position_attr;     
         self.size_attr = size_attr;
 
         self.cross_ref_attr = [];
 
         # This is currently a simple distance check. Maybe link it to the size of an object?
-        self.max_distance = math.inf;
-        # So for humans for instance, we're expecting them to move around a lot.
-        # Thus doing any averaging over position is actually counter productive.
-        self.use_running_average_position = True;
+        self.max_distance = max_distance;
 
         # Temporal value names.
-        self.first_observed_attr = None;
-        self.last_observed_attr = None;
-        self.observed_at_attr = None;
+        self.first_observed_attr = first_observed_attr;
+        self.last_observed_attr = last_observed_attr;
+        self.observed_at_attr = observed_at_attr;
 
         # Not yet implemented
         self.average_back_to_batch = 0;

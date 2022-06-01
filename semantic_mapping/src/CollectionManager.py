@@ -134,14 +134,17 @@ class CollectionManager:
         """
         # query_dict = utils.obj_to_dict(query, ignore_default=True);
 
-        if (DEBUG):
-            print("Querying into", self.service_name, ":\t", query_dict);
-
         if SESSION_ID not in query_dict:
             query_dict[SESSION_ID] = self.memory_manager.current_session_id;
 
+        if (DEBUG):
+            print("Querying into", self.service_name, ":\t", query_dict);
+
         query_result:pymongo.cursor.Cursor = self.collection.find(query_dict);
         query_result_list = list(query_result);
+
+        if DEBUG:
+            print("\tresponse length =", len(query_result_list))
 
         return query_result_list;
 

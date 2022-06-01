@@ -3,6 +3,7 @@
 from MemoryManager import MemoryManager;
 from CollectionManager import CollectionManager, TypesCollection;
 from ObjConsistencyMapper import ConsistencyChecker, ConsistencyArgs;
+from RelationManager import RelationManager;
 
 import rospy;
 
@@ -19,7 +20,7 @@ def setup_system():
     mem_manager:MemoryManager = MemoryManager();
     
     object_types:TypesCollection = TypesCollection(
-        base_ros_type=orion_actions.msg.SOMObject_new,
+        base_ros_type=orion_actions.msg.SOMObject,
         query_parent=orion_actions.srv.SOMQueryObjects,
         query_response=orion_actions.srv.SOMQueryObjectsResponse
     );
@@ -38,13 +39,13 @@ def setup_system():
     );
     observation_arg_name_defs:ConsistencyArgs = ConsistencyArgs(
         position_attr="obj_position",
-        size_attr="size"
+        size_attr="size",
+        max_distance=0.3,
+        first_observed_attr="first_observed_at",
+        last_observed_attr="last_observed_at",
+        observed_at_attr="observed_at"
     );
     observation_arg_name_defs.cross_ref_attr.append("class_");
-    observation_arg_name_defs.max_distance = 0.3;
-    observation_arg_name_defs.first_observed_attr = "first_observed_at";
-    observation_arg_name_defs.last_observed_attr = "last_observed_at";
-    observation_arg_name_defs.observed_at_attr = "observed_at";
     observation_manager:ConsistencyChecker = ConsistencyChecker(
         pushing_to=object_manager,
         types=observation_types,
@@ -52,6 +53,13 @@ def setup_system():
         consistency_args=observation_arg_name_defs           
     );
 
+    object_relational_manager:RelationManager = RelationManager(
+        operating_on=object_manager,
+        positional_attr="obj_position",
+        service_base=orion_actions.srv.SOMRelObjQuery,
+        service_response=orion_actions.srv.SOMRelObjQueryResponse,
+        match_type=orion_actions.msg.Match
+    );
 
     human_types:TypesCollection = TypesCollection(
         base_ros_type=orion_actions.msg.Human,
@@ -70,12 +78,11 @@ def setup_system():
         input_response=orion_actions.srv.SOMAddHumanObsResponse
     );
     human_observation_manager_args:ConsistencyArgs = ConsistencyArgs(
-        position_attr="obj_position"
+        position_attr="obj_position",
+        first_observed_attr="first_observed_at",
+        last_observed_attr="last_observed_at",
+        observed_at_attr="observed_at"
     );
-    human_observation_manager_args.first_observed_attr = "first_observed_at";
-    human_observation_manager_args.last_observed_attr = "last_observed_at";
-    human_observation_manager_args.observed_at_attr = "observed_at";
-    human_observation_manager_args.use_running_average_position = False;
     human_observation_manager_args.cross_ref_attr.append("task_role");
     human_observation_manager:ConsistencyChecker = ConsistencyChecker(
         pushing_to=human_manager,
@@ -83,8 +90,6 @@ def setup_system():
         service_name="human_observations",
         consistency_args=human_observation_manager_args
     );
-
-
 
     rospy.loginfo("Memory systems set up!");
 
