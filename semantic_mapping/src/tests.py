@@ -143,6 +143,10 @@ def test_obj_relational_query():
     obj2.category = "b";
     push_to_db_srv(obj2);
 
+    obj1 = create_obs_instance("floor_rel", 1, 0,-0.2);
+    obj1.category = "a";
+    push_to_db_srv(obj1);
+
     query1 = orion_actions.srv.SOMRelObjQueryRequest();
     query1.obj1.class_ = "window_rel";
     query1.obj2.class_ = "banana_rel";
@@ -182,6 +186,10 @@ def test_obj_relational_query():
     query3.current_robot_pose = geometry_msgs.msg.Pose();
     query3_output:orion_actions.srv.SOMRelObjQueryResponse = relational_query_srv(query3);
     assert(len(query3_output.matches) == 1);
+    match0:orion_actions.msg.Match = query3_output.matches[0];
+    assert(match0.obj1.class_ == "window_rel");
+    assert(match0.obj2.class_ == "banana_rel");
+
 
     pass;
 
