@@ -47,6 +47,8 @@ class DetectToObserve:
         self.observation_pusher = rospy.Publisher('/ebb/observations', Observation, queue_size=queue_size)
 
         rospy.Subscriber('/vision/bbox_detections', DetectionArray, self.forwardDetectionsToSOM, queue_size=queue_size)
+
+        self.batch_num = 1;        
         pass;
 
     # We essentially want to forward detections from orion_recognition over to the SOM database. This should do that.
@@ -62,6 +64,7 @@ class DetectToObserve:
 
             # NOTE: Assuming SOMObservation.type is for the name of the object. This is most likely wrong!
             forwarding.class_ = detection.label.name;
+            forwarding.observation_batch_num = self.batch_num;
             forwarding.size = detection.size;
             # forwarding.timestamp = rospy.Time().now()
 
@@ -100,6 +103,7 @@ class DetectToObserve:
 
             # print(obj_id_returned);
         print("--------------------------------");
+        self.batch_num += 1;
 
 
 if __name__ == '__main__':
