@@ -136,9 +136,11 @@ def test_obj_relational_query():
     relational_query_srv = rospy.ServiceProxy('/som/objects/relational_query', orion_actions.srv.SOMRelObjQuery);
     
     obj1 = create_obs_instance("window_rel", 1, 0,0.2);
+    obj1.category = "a";
     push_to_db_srv(obj1);
 
     obj2 = create_obs_instance("banana_rel", 1.5, 0.2, 0);
+    obj2.category = "b";
     push_to_db_srv(obj2);
 
     query1 = orion_actions.srv.SOMRelObjQueryRequest();
@@ -171,6 +173,15 @@ def test_obj_relational_query():
     for element in query2_output.matches:
         element:orion_actions.msg.Match;
         assert(element.relation.behind == True);
+
+     
+    query3 = orion_actions.srv.SOMRelObjQueryRequest();
+    query3.obj1.category = "a";
+    query3.obj2.category = "b";
+    query3.relation.above = True;
+    query3.current_robot_pose = geometry_msgs.msg.Pose();
+    query3_output:orion_actions.srv.SOMRelObjQueryResponse = relational_query_srv(query3);
+    assert(len(query3_output.matches) == 1);
 
     pass;
 
