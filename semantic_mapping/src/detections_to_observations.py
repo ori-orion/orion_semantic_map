@@ -57,7 +57,12 @@ class DetectToObserve:
 
 
             # NOTE: Assuming SOMObservation.type is for the name of the object. This is most likely wrong!
-            forwarding.class_ = detection.label.name;
+            if "/" in detection.label.name:
+                split_name = detection.label.name.split('/');
+                forwarding.class_ = split_name[len(split_name)-1];
+                forwarding.category = split_name[len(split_name)-2];
+            else:
+                forwarding.class_ = detection.label.name;
             forwarding.observation_batch_num = self.batch_num;
             forwarding.size = detection.size;
             # forwarding.timestamp = rospy.Time().now()
