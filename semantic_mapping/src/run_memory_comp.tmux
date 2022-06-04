@@ -26,7 +26,7 @@ tmux new-window -t $SESSION:2 -n 'detections_to_observations'
 
 tmux select-window -t $SESSION:0
 [ -f $DEVELOPMENT_WS_ROBOT ] && `$_SRC_ENV_ROBOT` && `$CLEAR_PANE`
-tmux -u send-keys "mongod --dbpath /home/$USER/orion_ws/db" C-m
+tmux -u send-keys "mongod --port 62345 --dbpath /home/$USER/orion_ws/db" C-m
 
 tmux select-window -t $SESSION:1
 [ -f $DEVELOPMENT_WS_ROBOT ] && `$_SRC_ENV_ROBOT` && `$CLEAR_PANE`

@@ -13,7 +13,7 @@ DEBUG = True;
 
 
 class MemoryManager:
-    def __init__(self, root="localhost", port=27017):
+    def __init__(self, root="localhost", port=62345):
         self.client = pymongo.MongoClient(root, port);
         self.clear_db();
         self.database = self.client.database_test;
