@@ -40,7 +40,8 @@ def test_observation_input():
 
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.class_ = "bottle";
-    query_return = get_obj_from_db_srv(querying);
+    query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
+    assert(len(query_return.returns) == 2);
     print(query_return);
 
     adding = create_obs_instance("bottle", -0.05, 0, 0, batch_num=1);
@@ -193,3 +194,7 @@ if __name__ == '__main__':
     test_observation_input();
     test_human_observation_input();
     test_obj_relational_query();
+    
+    t = rospy.Time.now();
+    print(t.secs);
+    print(t.nsecs);
