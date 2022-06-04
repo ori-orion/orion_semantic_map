@@ -114,10 +114,15 @@ def test_human_observation_input():
     response = human_input(human_3);
     print(response);
 
-
+    print("\tOperator query...");
     human_query_in:orion_actions.srv.SOMQueryHumansRequest = orion_actions.srv.SOMQueryHumansRequest();
     human_query_in.query.task_role = "Operator";
     response = human_query(human_query_in);
+    print(response);
+
+    print("\tEmpty query...");
+    human_empty_query:orion_actions.srv.SOMQueryHumansRequest = orion_actions.srv.SOMQueryHumansRequest();
+    response = human_query(human_empty_query);
     print(response);
 
     pass;

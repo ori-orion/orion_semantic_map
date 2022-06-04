@@ -160,7 +160,12 @@ class CollectionManager:
             ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time]
         );
 
-        response:list = self.queryIntoCollection(ros_query_dict[list(ros_query_dict.keys())[0]]);
+        # If all the fields are their default values, then no query will be generated, thus 
+        # causing the statement in the else statement to fail. Hence, we need this condition.
+        if (len(ros_query_dict.keys()) == 0):
+            response:list = self.queryIntoCollection({});
+        else:
+            response:list = self.queryIntoCollection(ros_query_dict[list(ros_query_dict.keys())[0]]);
 
         ros_response = self.types.query_response();
         query_response_attr = utils.get_attributes(ros_response)[0];
