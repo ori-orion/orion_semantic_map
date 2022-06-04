@@ -129,15 +129,15 @@ def test_obj_relational_query():
     relational_query_srv = rospy.ServiceProxy('/som/objects/relational_query', orion_actions.srv.SOMRelObjQuery);
     
     obj1 = create_obs_instance("window_rel", 1, 0,0.2);
-    obj1.category = "a";
+    obj1.adding.category = "a";
     push_to_db_srv(obj1);
 
     obj2 = create_obs_instance("banana_rel", 1.5, 0.2, 0);
-    obj2.category = "b";
+    obj2.adding.category = "b";
     push_to_db_srv(obj2);
 
     obj1 = create_obs_instance("floor_rel", 1, 0,-0.2);
-    obj1.category = "a";
+    obj1.adding.category = "a";
     push_to_db_srv(obj1);
 
     query1 = orion_actions.srv.SOMRelObjQueryRequest();

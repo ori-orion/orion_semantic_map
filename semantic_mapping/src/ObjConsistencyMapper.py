@@ -53,7 +53,7 @@ class ConsistencyArgs:
 
         self.positional_covariance_attr = None;
 
-    def check_batch_nums(self) -> bool:
+    def batch_nums_setup(self) -> bool:
         return self.observation_batch_num != None and self.last_observation_batch != None;
 
 
@@ -125,8 +125,9 @@ class ConsistencyChecker(CollectionManager):
         update_entry_input[self.consistency_args.last_observed_attr] = \
             updating_info[self.consistency_args.observed_at_attr];
 
-        update_entry_input[self.consistency_args.last_observation_batch] = \
-            updating_info[self.consistency_args.observation_batch_num];
+        if self.consistency_args.batch_nums_setup():
+            update_entry_input[self.consistency_args.last_observation_batch] = \
+                updating_info[self.consistency_args.observation_batch_num];
 
         self.pushing_to.updateEntry(obj_id_to_update, update_entry_input);
 
@@ -140,7 +141,7 @@ class ConsistencyChecker(CollectionManager):
 
         # This means we have a greedy implementation that just takes the closest 
         # option each time. This is almost certainly fine (bar for really uncertain cases).
-        if self.consistency_args.check_batch_nums():
+        if self.consistency_args.batch_nums_setup():
             query[self.consistency_args.last_observation_batch] = \
                 {"$lt" : adding[self.consistency_args.observation_batch_num]}
 
