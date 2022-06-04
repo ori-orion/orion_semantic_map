@@ -10,9 +10,6 @@ from orion_actions.msg import DetectionArray, Detection
 from tf import TransformListener;
 import std_msgs.msg;
 
-# import mongo as MongoInt;
-from ebbhrd_msgs.msg import EBBQueryBase, Observation;
-
 
 class DetectToObserve:
     def __init__(self):
@@ -42,9 +39,6 @@ class DetectToObserve:
         # where forwarding is of the type SOMObservation[] and is what gets sent across som/observe
         # This feels more foolproof than doing a query (as well as potentially being more time efficient) 
         # self.previous_detections = {};
-
-        # self.mongodb_client = MongoInt.MongoDBInterface();
-        self.observation_pusher = rospy.Publisher('/ebb/observations', Observation, queue_size=queue_size)
 
         rospy.Subscriber('/vision/bbox_detections', DetectionArray, self.forwardDetectionsToSOM, queue_size=queue_size)
         pass;
