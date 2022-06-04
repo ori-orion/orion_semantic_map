@@ -8,12 +8,13 @@ import orion_actions.srv
 import orion_actions.msg
 
 
-def create_obs_instance(class_, x, y, z) -> orion_actions.srv.SOMAddObservationRequest:
+def create_obs_instance(class_, x, y, z, batch_num=0) -> orion_actions.srv.SOMAddObservationRequest:
     output = orion_actions.srv.SOMAddObservationRequest();
     output.adding.class_ = class_;
     output.adding.obj_position.position.x = x;
     output.adding.obj_position.position.y = y;
     output.adding.obj_position.position.z = z;
+    output.adding.observation_batch_num = batch_num
     output.adding.observed_at = rospy.Time.now();
     
     return output;
@@ -23,9 +24,13 @@ def create_obs_instance(class_, x, y, z) -> orion_actions.srv.SOMAddObservationR
 def test_observation_input():
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
 
-    adding = create_obs_instance("bottle", 0.1, 0, 0);    
+    adding = create_obs_instance("bottle", 0.1, 0, 0, batch_num=0);    
     adding.adding.category = "vessel";
-    
+    obj_return = push_to_db_srv(adding);
+    print(obj_return);
+
+    adding = create_obs_instance("bottle", 0.25,0,0, batch_num=0);
+    adding.adding.category = "vessel";
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
@@ -35,21 +40,11 @@ def test_observation_input():
 
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.class_ = "bottle";
-    
     query_return = get_obj_from_db_srv(querying);
     print(query_return);
 
-    adding = create_obs_instance("bottle", -0.05, 0, 0);
+    adding = create_obs_instance("bottle", -0.05, 0, 0, batch_num=1);
     adding.adding.category = "vessel";
-    
-    obj_return = push_to_db_srv(adding);
-    print(obj_return);
-
-    rospy.sleep(2);
-
-    adding = create_obs_instance("bottle", 1,0,0);
-    adding.adding.category = "vessel";
-    
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
@@ -78,8 +73,6 @@ def test_observation_input():
     
     query_return = get_obj_from_db_srv(querying);
     print(query_return);
-
-
 
     pass;
 
@@ -136,10 +129,16 @@ def test_obj_relational_query():
     relational_query_srv = rospy.ServiceProxy('/som/objects/relational_query', orion_actions.srv.SOMRelObjQuery);
     
     obj1 = create_obs_instance("window_rel", 1, 0,0.2);
+    obj1.category = "a";
     push_to_db_srv(obj1);
 
     obj2 = create_obs_instance("banana_rel", 1.5, 0.2, 0);
+    obj2.category = "b";
     push_to_db_srv(obj2);
+
+    obj1 = create_obs_instance("floor_rel", 1, 0,-0.2);
+    obj1.category = "a";
+    push_to_db_srv(obj1);
 
     query1 = orion_actions.srv.SOMRelObjQueryRequest();
     query1.obj1.class_ = "window_rel";
@@ -171,6 +170,19 @@ def test_obj_relational_query():
     for element in query2_output.matches:
         element:orion_actions.msg.Match;
         assert(element.relation.behind == True);
+
+     
+    query3 = orion_actions.srv.SOMRelObjQueryRequest();
+    query3.obj1.category = "a";
+    query3.obj2.category = "b";
+    query3.relation.above = True;
+    query3.current_robot_pose = geometry_msgs.msg.Pose();
+    query3_output:orion_actions.srv.SOMRelObjQueryResponse = relational_query_srv(query3);
+    assert(len(query3_output.matches) == 1);
+    match0:orion_actions.msg.Match = query3_output.matches[0];
+    assert(match0.obj1.class_ == "window_rel");
+    assert(match0.obj2.class_ == "banana_rel");
+
 
     pass;
 
