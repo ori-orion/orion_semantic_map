@@ -165,10 +165,18 @@ TODO:
     leftmost/rightmost needs to be implemented.
     Regions.
     Ontology.
-    Looking at how inputs having the same batch number influences the system.
     Humans aren't moving!!!
         Ensure there aren't 20 humans in the SOM system.
-    -> noetic-som-upgrade.        
+    Order the responses w.r.t. time last observerd (or last batch number?)
+        And then within that, closest to the robot?
+    Size stuff.
+    Uncertainty stuff.
+    Check UID, SESSION_NUM queries work.
+    Check SOMROIObject.msg - where is this in use?
+SEMI-DONE:
+    Looking at how inputs having the same batch number influences the system.
+DONE:
+    -> noetic-som-upgrade.
     
 
 Manip will stick with tf publishing for size and position identification. 
