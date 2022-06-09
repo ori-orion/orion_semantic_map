@@ -9,6 +9,8 @@ import pymongo.collection
 # of an object is the position, which is the size, etc.
 # This is a first attempt at defining this.
 class ConsistencyArgs:
+    DEFAULT_PARAM = "default";
+
     def __init__(
         self, 
         position_attr=None, 
@@ -18,7 +20,8 @@ class ConsistencyArgs:
         last_observed_attr = None,
         observed_at_attr = None,
         observation_batch_num = None,
-        last_observation_batch = None):
+        last_observation_batch = None,
+        class_identifier = None):
 
 
         self.position_attr = position_attr;     
@@ -30,6 +33,11 @@ class ConsistencyArgs:
 
         # This is currently a simple distance check. Maybe link it to the size of an object?
         self.max_distance = max_distance;
+        if type(self.max_distance) is dict:
+            if ConsistencyArgs.DEFAULT_PARAM not in self.max_distance.keys():
+                self.max_distance[ConsistencyArgs.DEFAULT_PARAM] = math.inf;
+        self.class_identifier = class_identifier; 
+
 
         # Temporal value names.
         self.first_observed_attr = first_observed_attr;
@@ -78,7 +86,9 @@ class ConsistencyChecker(CollectionManager):
         # to define parameters. This does this!
         self.consistency_args:ConsistencyArgs = consistency_args;
 
-        self.collection_input_callbacks.append(self.push_item_to_pushing_to);    
+        self.collection_input_callbacks.append(self.push_item_to_pushing_to);
+
+        print(self.service_name, ": max distance =", self.consistency_args.max_distance);
     
     # The function for actually adding something to the other collection.
     def createNewConsistentObj(self, adding:dict) -> str:
@@ -88,6 +98,11 @@ class ConsistencyChecker(CollectionManager):
             adding[self.consistency_args.observed_at_attr];
         adding[self.consistency_args.last_observed_attr] = \
             adding[self.consistency_args.observed_at_attr];
+
+        if self.consistency_args.batch_nums_setup():
+            adding[self.consistency_args.last_observation_batch] = \
+                adding[self.consistency_args.observation_batch_num];
+            del adding[self.consistency_args.observation_batch_num];
 
         return str(self.pushing_to.addItemToCollectionDict(adding));
 
@@ -125,6 +140,7 @@ class ConsistencyChecker(CollectionManager):
         update_entry_input[self.consistency_args.last_observed_attr] = \
             updating_info[self.consistency_args.observed_at_attr];
 
+        print("Batch nums set up...", self.consistency_args.batch_nums_setup());
         if self.consistency_args.batch_nums_setup():
             update_entry_input[self.consistency_args.last_observation_batch] = \
                 updating_info[self.consistency_args.observation_batch_num];
@@ -150,13 +166,20 @@ class ConsistencyChecker(CollectionManager):
         possible_results:list = self.pushing_to.queryIntoCollection(query);
 
         if len(possible_results) == 0:
-            # print("No matches.")
             return adding, self.createNewConsistentObj(adding);
 
         # print("There were", len(possible_results), "possible matches");
 
         max_distance = self.consistency_args.max_distance;
-        # print("Max distance", max_distance);
+        if type(max_distance) is dict and self.consistency_args.class_identifier != None:
+            max_distance:dict;
+            obj_class = adding[self.consistency_args.class_identifier];
+            if obj_class in max_distance.keys():
+                max_distance = max_distance[obj_class];
+            else:
+                max_distance = max_distance[ConsistencyArgs.DEFAULT_PARAM];
+
+        print("Max distance", max_distance);
         adding_pos = utils.getPoint(adding[self.consistency_args.position_attr]);
         updating = None;
         for element in possible_results:
@@ -173,5 +196,3 @@ class ConsistencyChecker(CollectionManager):
             # Update an existing entry.
             self.updateConsistentObj(adding, updating[utils.PYMONGO_ID_SPECIFIER]);
             return adding, str(updating[utils.PYMONGO_ID_SPECIFIER]);
-
-    pass;

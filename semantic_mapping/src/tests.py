@@ -8,7 +8,7 @@ import orion_actions.srv
 import orion_actions.msg
 
 
-def create_obs_instance(class_, x, y, z, batch_num=0) -> orion_actions.srv.SOMAddObservationRequest:
+def create_obs_instance(class_, x, y, z, batch_num=0, category="") -> orion_actions.srv.SOMAddObservationRequest:
     output = orion_actions.srv.SOMAddObservationRequest();
     output.adding.class_ = class_;
     output.adding.obj_position.position.x = x;
@@ -23,31 +23,41 @@ def create_obs_instance(class_, x, y, z, batch_num=0) -> orion_actions.srv.SOMAd
 
 def test_observation_input():
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
+    get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
 
-    adding = create_obs_instance("bottle", 0.1, 0, 0, batch_num=0);    
-    adding.adding.category = "vessel";
+    adding = create_obs_instance("bottle", 0.1, 0, 0, batch_num=0, category="vessel");    
     obj_return = push_to_db_srv(adding);
-    print(obj_return);
+    adding = create_obs_instance("bottle", 0.25,0,0, batch_num=0, category="vessel");
+    obj_return = push_to_db_srv(adding);
 
-    adding = create_obs_instance("bottle", 0.25,0,0, batch_num=0);
-    adding.adding.category = "vessel";
+    adding = create_obs_instance("person", 0,2,0, batch_num=0);
     obj_return = push_to_db_srv(adding);
-    print(obj_return);
 
     rospy.sleep(2);
 
-    get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
+    # Note that this is within the 1m distance for a person but further away than the 1m distance
+    # given for persons but greater than the 0.3m distance given for other objects.
+    adding = create_obs_instance("person", 0,2.7,0, batch_num=1);
+    obj_return = push_to_db_srv(adding);
+    adding = create_obs_instance("person", 0,3,0, batch_num=1);
+    obj_return = push_to_db_srv(adding);
 
+    adding = create_obs_instance("bottle", -0.05, 0, 0, batch_num=1, category="vessel");
+    obj_return = push_to_db_srv(adding);
+    print(obj_return);
+    
+    print("first query for bottle. Expecting 2 returns.")
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.class_ = "bottle";
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
     assert(len(query_return.returns) == 2);
-    print(query_return);
 
-    adding = create_obs_instance("bottle", -0.05, 0, 0, batch_num=1);
-    adding.adding.category = "vessel";
-    obj_return = push_to_db_srv(adding);
-    print(obj_return);
+    print("first query for person. Expecting 2 returns.")
+    querying = orion_actions.srv.SOMQueryObjectsRequest();
+    querying.query.class_ = "person";
+    query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
+    print(query_return.returns);
+    assert(len(query_return.returns) == 2);
 
     rospy.sleep(2);
 

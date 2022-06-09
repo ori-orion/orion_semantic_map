@@ -23,6 +23,15 @@ The whole aim of the new system is to generalise the memory system s.t. it can b
    - Note that we'll call the collection we're cross-referencing `based_off`.
    - We will use a callback function within CollectionManager to then add to the ConsistencyChecker.
 
+### Notes on the implementation of distance checking within ObjConsistencyMapper.py.
+So we want something that can be object specific, but also something with a default case. I therefore propose the following: 
+ - ConsistencyArgs::max_distance can simply be inputted as a number.
+ - ConsistencyArgs::max_distance can also be a dictionary.
+   - If it's of type dictionary, then it must have a field max_distance["default"].
+      - If it doesn't, this should be automatically filled with math.inf.
+      - This will be the field that gets used in the most general case.
+   - Otherwise, max_distance[class_identifier] will be used to obtain the minimum consistent distance, where class_identifier is yet another field to set in main.py.
+
 
 
 Keytravel
