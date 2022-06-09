@@ -229,6 +229,12 @@ def uid_input_test():
     print(query_return.returns);
     assert(len(query_return.returns) == 1);
 
+    print("Checking SESSION_NUM queries work.")
+    querying = orion_actions.srv.SOMQueryObjectsRequest();
+    querying.query.SESSION_NUM = 1; # The first session.
+    query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
+    print(query_return.returns);
+    assert(len(query_return.returns) != 0);
 
 if __name__ == '__main__':
     rospy.init_node('som_test_node');

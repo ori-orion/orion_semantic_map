@@ -169,7 +169,6 @@ TODO:
         And then within that, closest to the robot?
     Size stuff.
     Uncertainty stuff.
-    Check UID, SESSION_NUM queries work.
 SEMI-DONE:
     Looking at how inputs having the same batch number influences the system.
 DONE:
@@ -178,6 +177,7 @@ DONE:
         Ensure there aren't 20 humans in the SOM system.
         (Is now setup s.t. the distances for human consistency are much greater than those for object consistency.)
     Check SOMROIObject.msg - where is this in use?
+    Check UID, SESSION_NUM queries work.
     
 
 Manip will stick with tf publishing for size and position identification. 

@@ -171,8 +171,7 @@ class CollectionManager:
         else:
             ros_query_dict = ros_query_dict[list(ros_query_dict.keys())[0]];
 
-        print(ros_query_dict);
-        print(utils.UID_ENTRY in ros_query_dict);
+        # Enabling the querying by UID.
         if utils.UID_ENTRY in ros_query_dict:
             ros_query_dict[utils.PYMONGO_ID_SPECIFIER] = pymongo.collection.ObjectId(ros_query_dict[utils.UID_ENTRY]);
             del ros_query_dict[utils.UID_ENTRY];
