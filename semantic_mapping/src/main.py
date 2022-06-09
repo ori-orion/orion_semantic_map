@@ -4,6 +4,7 @@ from MemoryManager import MemoryManager;
 from CollectionManager import CollectionManager, TypesCollection;
 from ObjConsistencyMapper import ConsistencyChecker, ConsistencyArgs;
 from RelationManager import RelationManager;
+from RegionManager import RegionManager;
 
 import rospy;
 
@@ -63,6 +64,19 @@ def setup_system():
         match_type=orion_actions.msg.Match
     );
 
+    # object_region_types = TypesCollection(
+    #     base_ros_type=orion_actions.msg.SOMBoxRegion
+    # );
+    # object_region_manager:RegionManager = RegionManager(
+    #     memory_manager=mem_manager,
+    #     types=object_region_types,
+    #     service_name="object_regions",
+    #     corner_location="corner_loc",
+    #     dimension="dimension"
+    # );
+
+
+
     human_types:TypesCollection = TypesCollection(
         base_ros_type=orion_actions.msg.Human,
         query_parent=orion_actions.srv.SOMQueryHumans,
@@ -94,6 +108,8 @@ def setup_system():
         service_name="human_observations",
         consistency_args=human_observation_manager_args
     );
+
+
 
     rospy.loginfo("Memory systems set up!");
 
