@@ -70,10 +70,6 @@ def query(som_template_one:SOMObservation, relation:Relation, som_template_two:S
     print(query_dict1);
     print(query_dict2);
 
-    # If there are no matches then we want to return an empty array.
-    if (len(query_dict1) == 0 and len(query_dict2) == 0):
-        return [];
-
     # if only a single object is specified
     if (len(query_dict1) == 0 or len(query_dict2) == 0) and unspecified_relation(relation):
         query_dict = query_dict1 if len(query_dict1) > 0 else query_dict2

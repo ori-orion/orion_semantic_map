@@ -56,6 +56,18 @@ def test_observation_input():
     
     obj_return = push_to_db_srv(adding);
     print(obj_return);
+
+    rospy.sleep(2);
+    adding = create_obs_instance("person", 0,0,0);
+    adding.adding.category = "person";
+    obj_return = push_to_db_srv(adding);
+    print(obj_return);
+
+    rospy.sleep(2);
+    adding = create_obs_instance("person", 1,1,0);
+    adding.adding.category = "person";
+    obj_return = push_to_db_srv(adding);
+    print(obj_return);
     
 
     # get_obvs_from_db_srv = rospy.ServiceProxy('/som/observations/basic_query', orion_actions.srv.SOMQueryObservations);
