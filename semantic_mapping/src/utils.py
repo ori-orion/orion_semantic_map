@@ -1,6 +1,7 @@
 import rospy;
 import genpy;
 import numpy;
+import geometry_msgs.msg
 
 # SESSION_ID = "session_num";
 # UID_ENTRY = "entry_uid";
@@ -46,6 +47,7 @@ def setPoint(obj:dict, new_pt:numpy.array) -> dict:
         obj['y'] = new_pt[1];
         obj['z'] = new_pt[2];
     return obj;
+
 
 
 #removes attributes of a ROS msg that we're not interested in.
