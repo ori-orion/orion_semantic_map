@@ -34,7 +34,7 @@ class ConsistencyArgs:
         # This is currently a simple distance check. Maybe link it to the size of an object?
         self.max_distance = max_distance;
         if type(self.max_distance) is dict:
-            if ConsistencyArgs.DEFAULT_PARAM not in self.max_distance.keys():
+            if ConsistencyArgs.DEFAULT_PARAM not in self.max_distance:
                 self.max_distance[ConsistencyArgs.DEFAULT_PARAM] = math.inf;
         self.class_identifier = class_identifier; 
 
@@ -174,7 +174,7 @@ class ConsistencyChecker(CollectionManager):
         if type(max_distance) is dict and self.consistency_args.class_identifier != None:
             max_distance:dict;
             obj_class = adding[self.consistency_args.class_identifier];
-            if obj_class in max_distance.keys():
+            if obj_class in max_distance:
                 max_distance = max_distance[obj_class];
             else:
                 max_distance = max_distance[ConsistencyArgs.DEFAULT_PARAM];

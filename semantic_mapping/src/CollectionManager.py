@@ -128,7 +128,7 @@ class CollectionManager:
             print("Updating ", uid, "within", self.service_name, "with", update_to);
 
 
-    def queryIntoCollection(self, query_dict) -> list:
+    def queryIntoCollection(self, query_dict:dict) -> list:
         """
         Query into the system through a dictionary.
         """
@@ -154,18 +154,30 @@ class CollectionManager:
 
         Translates the ROS query into a dictionary, and then gets the list response using self.queryIntoCollection(...)
         """
+
         ros_query_dict:dict = utils.obj_to_dict(
             ros_query, 
             ignore_default=True,
-            ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time]
+            ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time],
+            convert_caps=True
         );
 
+        # This is currently in the srv Request bit. We need to look in one level. 
         # If all the fields are their default values, then no query will be generated, thus 
         # causing the statement in the else statement to fail. Hence, we need this condition.
+        # We are assuming there is only one request field here!
         if (len(ros_query_dict.keys()) == 0):
-            response:list = self.queryIntoCollection({});
+            ros_query_dict = {};
         else:
-            response:list = self.queryIntoCollection(ros_query_dict[list(ros_query_dict.keys())[0]]);
+            ros_query_dict = ros_query_dict[list(ros_query_dict.keys())[0]];
+
+        print(ros_query_dict);
+        print(utils.UID_ENTRY in ros_query_dict);
+        if utils.UID_ENTRY in ros_query_dict:
+            ros_query_dict[utils.PYMONGO_ID_SPECIFIER] = pymongo.collection.ObjectId(ros_query_dict[utils.UID_ENTRY]);
+            del ros_query_dict[utils.UID_ENTRY];
+        
+        response:list = self.queryIntoCollection(ros_query_dict);
 
         ros_response = self.types.query_response();
         query_response_attr = utils.get_attributes(ros_response)[0];

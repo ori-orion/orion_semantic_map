@@ -25,7 +25,7 @@ def test_observation_input():
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
     get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
 
-    adding = create_obs_instance("bottle", 0.1, 0, 0, batch_num=0, category="vessel");    
+    adding = create_obs_instance("bottle", 0.1, 0, 0, batch_num=0, category="vessel");
     obj_return = push_to_db_srv(adding);
     adding = create_obs_instance("bottle", 0.25,0,0, batch_num=0, category="vessel");
     obj_return = push_to_db_srv(adding);
@@ -215,13 +215,30 @@ def test_obj_relational_query():
     pass;
 
 
+def uid_input_test():
+    push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
+    get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
+
+    adding = create_obs_instance("uid_test_input_obj", 0.1, 0, 0, batch_num=0);
+    obj_return:orion_actions.srv.SOMAddObservationResponse = push_to_db_srv(adding);
+
+    print("Checking UID queries work.")
+    querying = orion_actions.srv.SOMQueryObjectsRequest();
+    querying.query.UID = obj_return.UID;
+    query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
+    print(query_return.returns);
+    assert(len(query_return.returns) == 1);
+
+
 if __name__ == '__main__':
     rospy.init_node('som_test_node');
 
     test_observation_input();
     test_human_observation_input();
     test_obj_relational_query();
-    
+    uid_input_test();
+
+
     t = rospy.Time.now();
     print(t.secs);
     print(t.nsecs);

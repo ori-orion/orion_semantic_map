@@ -78,7 +78,15 @@ def get_attributes(obj) -> list:
 # Main set of infrastructure to convert ROS types to and from dictionaries.
 #   should be able to push almost anything into a dictionary (There may well be some as 
 #   yet unknown types that need to be dealt with)!
-def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:bool=False, ignore_of_type=[]) -> dict:
+def obj_to_dict(
+    obj, 
+    attributes:list=None, 
+    session_id:int=-1, 
+    ignore_default:bool=False, 
+    ignore_of_type=[],
+    convert_caps=False) -> dict:
+    
+    
     """
     This will transfer an arbitrary ROS object into a dictionary.
 
@@ -137,7 +145,8 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
                     element, 
                     attributes=attributes_recursive_in, 
                     ignore_default=ignore_default, 
-                    ignore_of_type=ignore_of_type);
+                    ignore_of_type=ignore_of_type,
+                    convert_caps=convert_caps);
 
                 output_type = dict;
         
@@ -152,7 +161,7 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
         attr:str;
 
         # We don't want to look at constants, and constants are all upper case.
-        if attr[0].isupper(): 
+        if attr[0].isupper() and not convert_caps: 
             continue;
 
         element = getattr(obj, attr);
