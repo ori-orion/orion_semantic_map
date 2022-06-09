@@ -5,6 +5,7 @@ from CollectionManager import CollectionManager, TypesCollection;
 from ObjConsistencyMapper import ConsistencyChecker, ConsistencyArgs;
 from RelationManager import RelationManager;
 from RegionManager import RegionManager;
+import Ontology;
 
 import rospy;
 
@@ -20,6 +21,9 @@ def setup_system():
 
     mem_manager:MemoryManager = MemoryManager();
     
+    # ontology_tree:Ontology.ontology_member = Ontology.read_file(
+    #     "/home/$USER/orion_ws/src/orion_semantic_map/semantic_mapping/src/labels.txt");
+
     object_types:TypesCollection = TypesCollection(
         base_ros_type=orion_actions.msg.SOMObject,
         query_parent=orion_actions.srv.SOMQueryObjects,
