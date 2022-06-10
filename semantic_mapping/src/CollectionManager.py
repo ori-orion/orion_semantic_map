@@ -58,6 +58,8 @@ class CollectionManager:
 
         self.collection_input_callbacks = [];
 
+        self.sort_queries_by = None;
+
         self.setupServices();
 
 
@@ -146,6 +148,11 @@ class CollectionManager:
 
         query_result:pymongo.cursor.Cursor = self.collection.find(query_dict);
         query_result_list = list(query_result);
+
+        print(self.sort_queries_by);
+        if self.sort_queries_by != None:
+            print("\tSorting results by", self.sort_queries_by);
+            query_result_list.sort(key=lambda x:x[self.sort_queries_by], reverse=True);
 
         if DEBUG:
             print("\tresponse length =", len(query_result_list))

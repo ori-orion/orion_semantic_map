@@ -164,13 +164,12 @@ It would be nice to be able to say that object has now moved.
 TODO:
     leftmost/rightmost needs to be implemented.
     Regions.
-    Ontology.
-    Order the responses w.r.t. time last observerd (or last batch number?)
-        And then within that, closest to the robot?
+    Order stuff by closest to the robot? (within order of batch number).
     Size stuff.
     Uncertainty stuff.
 SEMI-DONE:
     Looking at how inputs having the same batch number influences the system.
+    Ontology.
 DONE:
     -> noetic-som-upgrade.
     Humans aren't moving!!!
@@ -178,6 +177,7 @@ DONE:
         (Is now setup s.t. the distances for human consistency are much greater than those for object consistency.)
     Check SOMROIObject.msg - where is this in use?
     Check UID, SESSION_NUM queries work.
+    Order the responses w.r.t. time last observerd (or last batch number?)
     
 
 Manip will stick with tf publishing for size and position identification. 

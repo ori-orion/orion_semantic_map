@@ -227,15 +227,23 @@ def uid_input_test():
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.UID = obj_return.UID;
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
-    print(query_return.returns);
+    # print(query_return.returns);
     assert(len(query_return.returns) == 1);
 
-    print("Checking SESSION_NUM queries work.")
+    print("Checking SESSION_NUM queries work and that they are ordered by latest batch number")
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.SESSION_NUM = 1; # The first session.
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
-    print(query_return.returns);
+    # print(query_return.returns);
     assert(len(query_return.returns) != 0);
+    return_batch_nums = [];
+    for element in query_return.returns:
+        element:orion_actions.msg.SOMObject;
+        return_batch_nums.append(element.last_observation_batch);
+        l = len(return_batch_nums);
+        if (l >= 2):
+            assert(return_batch_nums[l-2] >= return_batch_nums[l-1]);
+    print(return_batch_nums);
 
 def test_category_callback():
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);

@@ -90,6 +90,8 @@ class ConsistencyChecker(CollectionManager):
         self.collection_input_callbacks = collection_input_callbacks;
         self.collection_input_callbacks.append(self.push_item_to_pushing_to);
 
+        self.pushing_to.sort_queries_by = consistency_args.last_observation_batch;
+
         print(self.service_name, ": max distance =", self.consistency_args.max_distance);
     
     # The function for actually adding something to the other collection.
