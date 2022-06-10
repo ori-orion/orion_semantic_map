@@ -12,8 +12,12 @@ import rospy;
 import orion_actions.msg
 import orion_actions.srv
 
+import os;
+
 # import semantic_mapping.srv
 # import semantic_mapping.msg
+
+# print(__file__);
 
 def setup_system():
 
@@ -21,8 +25,21 @@ def setup_system():
 
     mem_manager:MemoryManager = MemoryManager();
     
-    # ontology_tree:Ontology.ontology_member = Ontology.read_file(
-    #     "/home/$USER/orion_ws/src/orion_semantic_map/semantic_mapping/src/labels.txt");
+    ontology_tree:Ontology.ontology_member = Ontology.read_file(
+        os.path.dirname(__file__) + "/labels.txt");
+    # This will be a callback within observations for assigning the category of an object.
+    def ontology_observation_getCategory_callback(adding_dict:dict, obj_id):
+        if (len(adding_dict["category"]) == 0):
+            ontological_result = ontology_tree.search_for_term(adding_dict["class_"]);
+            if (ontological_result == None):
+                ontology_tree.add_term(["unknown",adding_dict["class_"]]);
+                adding_dict["category"] = "unknown";
+            else:
+                print(ontological_result);
+                # So this will go [class, category, "Objs"];
+                adding_dict["category"] = ontological_result[1];
+        return adding_dict, obj_id;
+    # ontology_tree.print_graph();
 
     object_types:TypesCollection = TypesCollection(
         base_ros_type=orion_actions.msg.SOMObject,
@@ -58,7 +75,8 @@ def setup_system():
         pushing_to=object_manager,
         types=observation_types,
         service_name="observations",
-        consistency_args=observation_arg_name_defs           
+        consistency_args=observation_arg_name_defs,
+        collection_input_callbacks=[ontology_observation_getCategory_callback]
     );
 
     object_relational_manager:RelationManager = RelationManager(

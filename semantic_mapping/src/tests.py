@@ -236,6 +236,22 @@ def uid_input_test():
     print(query_return.returns);
     assert(len(query_return.returns) != 0);
 
+def test_category_callback():
+    push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
+    get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
+
+    adding = create_obs_instance("food_tray", 0,0,1);
+    push_to_db_srv(adding);
+
+    print("Checking category assignment");
+    querying = orion_actions.srv.SOMQueryObjectsRequest();
+    querying.query.class_ = "food_tray";
+    query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
+    assert(len(query_return.returns) != 0);
+    return_0:orion_actions.msg.SOMObject = query_return.returns[0];
+    assert(return_0.category == "containers");
+
+
 if __name__ == '__main__':
     rospy.init_node('som_test_node');
 
@@ -243,7 +259,7 @@ if __name__ == '__main__':
     test_human_observation_input();
     test_obj_relational_query();
     uid_input_test();
-
+    test_category_callback();
 
     t = rospy.Time.now();
     print(t.secs);

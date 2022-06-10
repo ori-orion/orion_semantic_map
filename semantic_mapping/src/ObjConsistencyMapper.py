@@ -72,7 +72,8 @@ class ConsistencyChecker(CollectionManager):
             pushing_to:CollectionManager, 
             types:TypesCollection, 
             service_name:str,
-            consistency_args:ConsistencyArgs=ConsistencyArgs()):
+            consistency_args:ConsistencyArgs=ConsistencyArgs(),
+            collection_input_callbacks:list = []):
         
         super(ConsistencyChecker, self).__init__(
             types=types, 
@@ -86,6 +87,7 @@ class ConsistencyChecker(CollectionManager):
         # to define parameters. This does this!
         self.consistency_args:ConsistencyArgs = consistency_args;
 
+        self.collection_input_callbacks = collection_input_callbacks;
         self.collection_input_callbacks.append(self.push_item_to_pushing_to);
 
         print(self.service_name, ": max distance =", self.consistency_args.max_distance);
