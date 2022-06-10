@@ -10,6 +10,7 @@ GLOBAL_TIME_STAMP_ENTRY = "global_timestamp";
 
 
 DEBUG = True;
+DEBUG_LONG = False;
 
 
 class MemoryManager:

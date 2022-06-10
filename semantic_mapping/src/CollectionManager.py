@@ -4,7 +4,7 @@ import pymongo;
 import pymongo.collection
 import rospy;
 import genpy;
-from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, SESSION_ID;
+from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, DEBUG_LONG, SESSION_ID;
 
 # The root for all things som related.
 SERVICE_ROOT = "som/";
@@ -68,8 +68,10 @@ class CollectionManager:
 
         adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
 
-        if (DEBUG):
+        if (DEBUG_LONG):
             print("Adding an entry to", self.service_name ,"\n\t", adding_dict, "\n");
+        elif(DEBUG):
+            print("Adding an entry to", self.service_name);
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!        
@@ -124,8 +126,10 @@ class CollectionManager:
             { "$set": update_to}
         );
         
-        if (DEBUG):
+        if (DEBUG_LONG):
             print("Updating ", uid, "within", self.service_name, "with", update_to);
+        elif (DEBUG):
+            print("Updating ", uid, "within", self.service_name);
 
 
     def queryIntoCollection(self, query_dict:dict) -> list:
@@ -186,7 +190,7 @@ class CollectionManager:
         assert(type(resp_array) is list);
 
         for element in response:
-            if DEBUG:
+            if DEBUG_LONG:
                 print("Query response: \n\t",element);
 
             element[UID_ENTRY] = str(element[utils.PYMONGO_ID_SPECIFIER]);

@@ -14,7 +14,8 @@ def create_obs_instance(class_, x, y, z, batch_num=0, category="") -> orion_acti
     output.adding.obj_position.position.x = x;
     output.adding.obj_position.position.y = y;
     output.adding.obj_position.position.z = z;
-    output.adding.observation_batch_num = batch_num
+    output.adding.observation_batch_num = batch_num;
+    output.adding.category = category;
     output.adding.observed_at = rospy.Time.now();
     
     return output;

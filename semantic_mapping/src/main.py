@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from MemoryManager import MemoryManager;
+from MemoryManager import DEBUG, MemoryManager;
 from CollectionManager import CollectionManager, TypesCollection;
 from ObjConsistencyMapper import ConsistencyChecker, ConsistencyArgs;
 from RelationManager import RelationManager;
@@ -35,9 +35,13 @@ def setup_system():
                 ontology_tree.add_term(["unknown",adding_dict["class_"]]);
                 adding_dict["category"] = "unknown";
             else:
-                print(ontological_result);
                 # So this will go [class, category, "Objs"];
                 adding_dict["category"] = ontological_result[1];
+                print(ontological_result);
+
+            if (DEBUG):
+                print("setting category to", adding_dict["category"]);
+
         return adding_dict, obj_id;
     # ontology_tree.print_graph();
 
