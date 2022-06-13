@@ -14,6 +14,69 @@ import pymongo.collection;
 import utils;
 
 
+class RvizVisualisationManager:
+    def __init__(self, 
+        im_server:InteractiveMarkerServer, 
+        colour_a, colour_r, colour_g, colour_b):
+
+        # Interactive Marker server.
+        self.im_server:InteractiveMarkerServer = im_server;
+        # self.coll_manager:CollectionManager.CollectionManager = coll_manager;
+
+        # In the range [0,1]
+        self.colour_a = colour_a;
+        self.colour_r = colour_r;
+        self.colour_g = colour_g;
+        self.colour_b = colour_b;
+
+    def delete_object(self, id):
+        self.im_server.erase(id);
+        self.im_server.applyChanges();
+
+    def handle_viz_input(self, input):
+        if (self.coll_manager == None):
+            return;
+
+        if (input.event_type == InteractiveMarkerFeedback.BUTTON_CLICK):
+            obj:list = self.coll_manager.queryIntoCollection(
+                {utils.PYMONGO_ID_SPECIFIER:pymongo.collection.ObjectId(input.marker_name)});
+
+            if len(obj) > 0:
+                rospy.loginfo(obj);
+                rospy.loginfo("\n\n\n");
+
+    def add_object(self, id:str, pose:Pose, size:Point, obj_class:str):
+        self.im_server.erase(id);
+
+        int_marker = InteractiveMarker()
+        int_marker.header.frame_id = "map"
+        int_marker.name = id;
+        int_marker.description = obj_class;
+        int_marker.pose = pose;
+
+        box_marker = Marker();
+        box_marker.type = Marker.CUBE;
+        box_marker.pose.orientation.w = 1;
+        
+        box_marker.scale.x = size.x if size.x > 0.05 else 0.05;
+        box_marker.scale.y = size.y if size.y > 0.05 else 0.05;
+        box_marker.scale.z = size.z if size.z > 0.05 else 0.05;
+        
+        box_marker.color.r = self.colour_r;
+        box_marker.color.g = self.colour_g;
+        box_marker.color.b = self.colour_b;
+        box_marker.color.a = self.colour_a;
+
+        button_control = InteractiveMarkerControl()
+        button_control.interaction_mode = InteractiveMarkerControl.BUTTON
+        button_control.always_visible = True
+        button_control.markers.append(box_marker);
+        int_marker.controls.append(button_control);
+
+        self.im_server.insert(int_marker, self.handle_viz_input)
+        self.im_server.applyChanges();
+        return
+
 
 class Visualisation(object):
     def __init__(self, coll_manager:CollectionManager.CollectionManager, server:InteractiveMarkerServer):
@@ -28,8 +91,8 @@ class Visualisation(object):
             rospy.loginfo("\n\n\n");
 
     def delete_object(self, id):
-        self.server.erase(id)
-        self.server.applyChanges()
+        self.server.erase(id);
+        self.server.applyChanges();
 
     def update_objects(self, object:SOMObject, id):
 
@@ -68,11 +131,11 @@ class Visualisation(object):
         button_control = InteractiveMarkerControl()
         button_control.interaction_mode = InteractiveMarkerControl.BUTTON
         button_control.always_visible = True
-        button_control.markers.append(box_marker)
-        int_marker.controls.append(button_control)
+        button_control.markers.append(box_marker);
+        int_marker.controls.append(button_control);
 
         self.server.insert(int_marker, self.handle_viz_input)
-        self.server.applyChanges()
+        self.server.applyChanges();
         return
 
     # def rois_to_marker_array(self, rois):

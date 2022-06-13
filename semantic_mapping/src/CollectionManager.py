@@ -2,6 +2,7 @@ import numpy
 import utils;
 import pymongo;
 import pymongo.collection
+import pymongo.cursor
 import rospy;
 import genpy;
 from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, DEBUG_LONG, SESSION_ID;
