@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
+
 from MemoryManager import DEBUG, MemoryManager;
 from CollectionManager import CollectionManager, TypesCollection;
 from ObjConsistencyMapper import ConsistencyChecker, ConsistencyArgs;
 from RelationManager import RelationManager;
 from RegionManager import RegionManager;
 import Ontology;
+from visualisation import RvizVisualisationManager;
 
 import rospy;
 
@@ -24,6 +27,8 @@ def setup_system():
     rospy.init_node('som_manager');
 
     mem_manager:MemoryManager = MemoryManager();
+
+    interactive_marker_server = InteractiveMarkerServer("som/obj_vis")
     
     ontology_tree:Ontology.ontology_member = Ontology.read_file(
         os.path.dirname(__file__) + "/labels.txt");
@@ -50,10 +55,16 @@ def setup_system():
         query_parent=orion_actions.srv.SOMQueryObjects,
         query_response=orion_actions.srv.SOMQueryObjectsResponse
     );
+    object_visualisation_manager:RvizVisualisationManager = RvizVisualisationManager(
+        im_server=interactive_marker_server,
+        colour_a=0.7, colour_r=0.0, colour_g=0.2, colour_b=1.0,
+        class_attr="class_", size_attr="size", position_attr="obj_position"
+    )
     object_manager:CollectionManager = CollectionManager(
         object_types,
         "objects",
-        memory_manager=mem_manager        
+        memory_manager=mem_manager,
+        visualisation_manager=object_visualisation_manager
     );
 
     observation_types:TypesCollection = TypesCollection(
