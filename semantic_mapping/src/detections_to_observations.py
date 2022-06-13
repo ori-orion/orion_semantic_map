@@ -50,6 +50,9 @@ class DetectToObserve:
     
         for detection in data.detections:
             detection:Detection;
+
+            if detection.confidence < 0.8:
+                continue;
             
             forwarding = SOMObservation();            
             # print(dir(forwarding))
@@ -68,7 +71,11 @@ class DetectToObserve:
             # forwarding.timestamp = rospy.Time().now()
 
             # Getting the robot pose:
-            camera_to_global:tf2_ros.TransformStamped = self.tfBuffer.lookup_transform(self.camera_frame, self.global_frame, rospy.Time());
+            camera_to_global:tf2_ros.TransformStamped = self.tfBuffer.lookup_transform(
+                self.camera_frame, 
+                self.global_frame, 
+                rospy.Time());
+            
             # forwarding.robot_pose = Pose();
             forwarding.camera_pose.position.x = camera_to_global.transform.translation.x;
             forwarding.camera_pose.position.y = camera_to_global.transform.translation.y;
@@ -81,7 +88,9 @@ class DetectToObserve:
             # Getting the position of the object in 3D space relative to the global frame.
             object_point = PoseStamped()
             object_point.header.frame_id = self.camera_frame
-            object_point.pose.position = Point(detection.translation_x, detection.translation_y, detection.translation_z);            
+            object_point.header.stamp = rospy.Time.now();
+            object_point.pose.position = Point(detection.translation_x, detection.translation_y, detection.translation_z);
+            # self.tfBuffer.transform(object_point, self.global_frame, new_type=Pose);
             p_global_frame:PoseStamped = self.tf_old.transformPose(self.global_frame, object_point);
             # transformed_obj_point:PoseStamped = self.tfBuffer.transform(object_point, camera_to_global.transform);
             # transformed_obj_point:PoseStamped = p_global_frame;

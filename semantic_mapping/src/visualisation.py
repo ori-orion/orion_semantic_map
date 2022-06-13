@@ -53,14 +53,21 @@ class RvizVisualisationManager:
     # NOTE: Assumption: the object position is a pose.
     # This acts both to add and to update a given entry.
     def add_obj_dict(self, adding_dict:dict, obj_id:str):
+        obj_pose = Pose();
+        obj_pose.orientation.w=1;
+
+        if "position" in adding_dict[self.size_attr]:
+            carry:Pose = utils.dict_to_obj(adding_dict[self.size_attr], Pose());
+            obj_size = carry.position;
+            obj_pose.orientation = carry.orientation;
+        else:
+            obj_size = utils.dict_to_obj(adding_dict[self.size_attr], Point());#
+        
         if "position" in adding_dict[self.position_attr]:
             obj_pose = utils.dict_to_obj(adding_dict[self.position_attr], Pose());
         else:
-            obj_pose = Pose();
-            obj_pose.orientation.w = 1;
-            obj_pose.position = utils.getPoint(adding_dict[self.position_attr]);
-
-        obj_size = utils.getPoint(adding_dict[self.size_attr]);
+            obj_pose.position = utils.dict_to_obj(adding_dict[self.position_attr], Point());
+        
         obj_class = adding_dict[self.class_attr];
 
         self.add_object(obj_id, obj_pose, obj_size, obj_class);
