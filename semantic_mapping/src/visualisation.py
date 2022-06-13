@@ -9,7 +9,7 @@ from interactive_markers.interactive_marker_server import InteractiveMarkerServe
 from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, InteractiveMarkerFeedback
 from orion_actions.msg import SOMObservation, SOMObject
 
-import CollectionManager;
+# import CollectionManager;
 import pymongo.collection;
 import utils;
 
@@ -17,7 +17,8 @@ import utils;
 class RvizVisualisationManager:
     def __init__(self, 
         im_server:InteractiveMarkerServer, 
-        colour_a, colour_r, colour_g, colour_b):
+        colour_a, colour_r, colour_g, colour_b,
+        class_attr:str, size_attr:str, position_attr:str):
 
         # Interactive Marker server.
         self.im_server:InteractiveMarkerServer = im_server;
@@ -28,6 +29,10 @@ class RvizVisualisationManager:
         self.colour_r = colour_r;
         self.colour_g = colour_g;
         self.colour_b = colour_b;
+
+        self.class_attr = class_attr;
+        self.size_attr = size_attr;
+        self.position_attr = position_attr;
 
     def delete_object(self, id):
         self.im_server.erase(id);
@@ -44,6 +49,21 @@ class RvizVisualisationManager:
             if len(obj) > 0:
                 rospy.loginfo(obj);
                 rospy.loginfo("\n\n\n");
+
+    # NOTE: Assumption: the object position is a pose.
+    # This acts both to add and to update a given entry.
+    def add_obj_dict(self, adding_dict:dict, obj_id:str):
+        if "position" in adding_dict[self.position_attr]:
+            obj_pose = utils.dict_to_obj(adding_dict[self.position_attr], Pose());
+        else:
+            obj_pose = Pose();
+            obj_pose.orientation.w = 1;
+            obj_pose.position = utils.getPoint(adding_dict[self.position_attr]);
+
+        obj_size = utils.getPoint(adding_dict[self.size_attr]);
+        obj_class = adding_dict[self.class_attr];
+
+        self.add_object(obj_id, obj_pose, obj_size, obj_class);
 
     def add_object(self, id:str, pose:Pose, size:Point, obj_class:str):
         self.im_server.erase(id);

@@ -151,6 +151,9 @@ class ConsistencyChecker(CollectionManager):
 
         self.pushing_to.updateEntry(obj_id_to_update, update_entry_input);
 
+        if self.pushing_to.visualisation_manager != None:
+            self.pushing_to.visualisation_manager.add_obj_dict(updating_info, str(obj_id_to_update));
+
 
     # Returns the str id that the object has gone into.
     # This is a callback within CollectionManager, and so must

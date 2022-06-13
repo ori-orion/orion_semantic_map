@@ -7,6 +7,8 @@ import rospy;
 import genpy;
 from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, DEBUG_LONG, SESSION_ID;
 
+import visualisation;
+
 # The root for all things som related.
 SERVICE_ROOT = "som/";
 
@@ -49,7 +51,12 @@ class CollectionManager:
     positional_attr - For relations, we want to know what entry determines the position of an object.
                         This will also be used within the ObjConsistencyChecker.                           
     """
-    def __init__(self, types:TypesCollection, service_name:str, memory_manager:MemoryManager):
+    def __init__(self, 
+        types:TypesCollection, 
+        service_name:str, 
+        memory_manager:MemoryManager, 
+        visualisation_manager:visualisation.RvizVisualisationManager=None):
+
         self.types:TypesCollection = types;
         self.service_name:str = service_name;        
         self.memory_manager:MemoryManager = memory_manager;
@@ -60,6 +67,8 @@ class CollectionManager:
         self.collection_input_callbacks = [];
 
         self.sort_queries_by = None;
+
+        self.visualisation_manager = visualisation_manager;
 
         self.setupServices();
 
@@ -90,7 +99,10 @@ class CollectionManager:
         result = self.collection.insert_one(adding_dict);
 
         result_id:pymongo.collection.ObjectId = result.inserted_id;
-        # print(result_id);
+
+        if (self.visualisation_manager != None):
+            self.visualisation_manager.add_obj_dict(adding_dict, str(result_id));
+
         return result_id;
 
     def addItemToCollection(self, adding) -> pymongo.collection.ObjectId:
