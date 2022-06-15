@@ -11,6 +11,9 @@ from tf import TransformListener;
 import std_msgs.msg;
 
 
+# import numpy;
+
+
 class DetectToObserve:
     def __init__(self):
         queue_size = 10;
@@ -22,7 +25,7 @@ class DetectToObserve:
         self.tfBuffer = tf2_ros.Buffer();
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
         #Uses tf rather than tf2_ros
-        self.tf_old = TransformListener()
+        self.tf_old = TransformListener();
 
         # Initialising the SOM services
         # rospy.wait_for_service('som/observe')
@@ -87,12 +90,17 @@ class DetectToObserve:
 
             # Getting the position of the object in 3D space relative to the global frame.
             object_point = PoseStamped()
-            object_point.header.frame_id = self.camera_frame
-            object_point.header.stamp = rospy.Time.now();
-            object_point.pose.position = Point(detection.translation_x, detection.translation_y, detection.translation_z);
-            # self.tfBuffer.transform(object_point, self.global_frame, new_type=Pose);
-            p_global_frame:PoseStamped = self.tf_old.transformPose(self.global_frame, object_point);
-            # transformed_obj_point:PoseStamped = self.tfBuffer.transform(object_point, camera_to_global.transform);
+            object_point.header.frame_id = self.camera_frame;
+            object_point.header.stamp = detection.timestamp;
+            object_point.pose.position = Point(
+                detection.translation_x, detection.translation_y, detection.translation_z);
+            # transformed_stamped = self.tfBuffer.transform(
+            #     object_point, self.global_frame, timeout=rospy.Duration(1));
+            
+            p_global_frame:PoseStamped = self.tf_old.transformPose(
+                self.global_frame, object_point);
+            # transformed_obj_point:PoseStamped = self.tfBuffer.transform(
+            #     object_point, camera_to_global.transform);
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;
 
