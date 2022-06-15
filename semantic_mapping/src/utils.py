@@ -1,3 +1,4 @@
+import math;
 import rospy;
 import genpy;
 import numpy;
@@ -48,7 +49,6 @@ def setPoint(obj:dict, new_pt:numpy.array) -> dict:
         obj['z'] = new_pt[2];
     return obj;
 
-
 def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
     """
     https://automaticaddison.com/how-to-convert-a-quaternion-to-a-rotation-matrix/
@@ -72,6 +72,30 @@ def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
     output[2,1] = 2 * (quat_array[2]*quat_array[3] + quat_array[0]*quat_array[1]);
     
     return output;
+
+def get_multi_probability(mean:numpy.array, covariance_matrix:numpy.matrix, location:numpy.array) -> numpy.float64:
+    exponent = -0.5 * numpy.dot((mean - location), numpy.matmul(numpy.linalg.inv(covariance_matrix), (mean-location)));
+    cov_det = numpy.linalg.det(covariance_matrix);
+    return (1/math.sqrt(2*math.pi * cov_det)) * math.exp(exponent);
+
+def get_mean_over_samples(means, covariances):
+    """
+    means           - An array of numpy.array[s]
+    covariances     - An array of numpy.matrix[s]
+    This will do x = (sum(inv(cov[i])))^(-1) * sum(inv(cov[i])*mean[i]), as per MLE.
+    """
+    assert(len(means) == len(covariances));
+
+    sum_inv_cov = numpy.zeros(numpy.shape([3,3]));
+    for i in range(len(means)):
+        covariances[i] = numpy.linalg.inv(covariances[i]);
+        sum_inv_cov += covariances[i];
+    
+    sum_invcov_mu = numpy.zeros([1,3]);
+    for i in range(len(means)):
+        sum_invcov_mu += numpy.matmul(covariances[i], means[i]);
+    
+    return numpy.matmul(numpy.linalg.inv(sum_inv_cov), sum_invcov_mu);
 
 
 #removes attributes of a ROS msg that we're not interested in.
@@ -97,7 +121,6 @@ def get_attributes(obj) -> list:
             i += 1;
 
     return attributes;
-
 
 # Main set of infrastructure to convert ROS types to and from dictionaries.
 #   should be able to push almost anything into a dictionary (There may well be some as 
@@ -202,7 +225,6 @@ def obj_to_dict(
         output[SESSION_ID] = session_id;
 
     return output;
-
 
 def dict_to_obj(dictionary:dict, objFillingOut):
     """

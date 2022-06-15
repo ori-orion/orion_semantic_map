@@ -16,12 +16,13 @@ class ConsistencyArgs:
         position_attr=None, 
         size_attr=None,
         max_distance=math.inf,
-        first_observed_attr=None,
-        last_observed_attr = None,
-        observed_at_attr = None,
-        observation_batch_num = None,
-        last_observation_batch = None,
-        class_identifier = None):
+        first_observed_attr:str=None,
+        last_observed_attr:str=None,
+        observed_at_attr:str=None,
+        observation_batch_num:str=None,
+        last_observation_batch:str=None,
+        class_identifier:str=None,
+        positional_covariance_attr:str=None):
 
 
         self.position_attr = position_attr;     
@@ -55,11 +56,10 @@ class ConsistencyArgs:
             observed_at_attr, position_attr, observation_batch_num
         ];
 
+        self.positional_covariance_attr = positional_covariance_attr;
 
         # Not yet implemented
         self.average_back_to_batch = 0;
-
-        self.positional_covariance_attr = None;
 
     def batch_nums_setup(self) -> bool:
         return self.observation_batch_num != None and self.last_observation_batch != None;
@@ -122,7 +122,17 @@ class ConsistencyChecker(CollectionManager):
             if (key not in self.consistency_args.dont_transfer):
                 update_entry_input[key] = updating_info[key];
 
-        if self.consistency_args.use_running_average_position:
+        if self.consistency_args.positional_covariance_attr != None and \
+            len(updating_info[self.consistency_args.positional_covariance_attr]) == 9:
+
+            means = [];
+            covariances = [];
+            for i in previously_added:
+                means.append(numpy.asarray(updating_info[self.consistency_args.position_attr]));
+                covariances.append(numpy.matrix(updating_info[self.consistency_args.positional_covariance_attr]));
+                
+
+        elif self.consistency_args.use_running_average_position:
             points = [];
             point_av = utils.getPoint(updating_info[self.consistency_args.position_attr]);
             num_points = 1;
