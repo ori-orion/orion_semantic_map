@@ -178,6 +178,8 @@ DONE:
     Check SOMROIObject.msg - where is this in use?
     Check UID, SESSION_NUM queries work.
     Order the responses w.r.t. time last observerd (or last batch number?)
+Issues:
+    There seems to be some sort of tf bug with getting the positions of objects.
     
 
 Manip will stick with tf publishing for size and position identification. 
