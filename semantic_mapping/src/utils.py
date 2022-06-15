@@ -49,6 +49,30 @@ def setPoint(obj:dict, new_pt:numpy.array) -> dict:
     return obj;
 
 
+def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
+    """
+    https://automaticaddison.com/how-to-convert-a-quaternion-to-a-rotation-matrix/
+    """
+    output = numpy.zeros((3,3));
+
+    quat_array = [quat.w, quat.x, quat.y, quat.z];
+    quat_0 = quat_array[0];
+    for i in range(0,3):
+        quat_ip1 = quat_array[i+1];
+        output[i,i] = 2 * (quat_0*quat_0 + quat_ip1*quat_ip1) - 1;
+    
+    # There's probably a nicer way to do this, but for now...
+    output[0,1] = 2 * (quat_array[1]*quat_array[2] - quat_array[0]*quat_array[3]);
+    output[1,0] = 2 * (quat_array[1]*quat_array[2] + quat_array[0]*quat_array[3]);
+
+    output[0,2] = 2 * (quat_array[1]*quat_array[3] + quat_array[0]*quat_array[2]);
+    output[2,0] = 2 * (quat_array[1]*quat_array[3] - quat_array[0]*quat_array[2]);
+
+    output[1,2] = 2 * (quat_array[2]*quat_array[3] - quat_array[0]*quat_array[1]);
+    output[2,1] = 2 * (quat_array[2]*quat_array[3] + quat_array[0]*quat_array[1]);
+    
+    return output;
+
 
 #removes attributes of a ROS msg that we're not interested in.
 def get_attributes(obj) -> list:
@@ -219,3 +243,8 @@ def dict_to_obj(dictionary:dict, objFillingOut):
     
     # print(objFillingOut);
     return objFillingOut;
+
+
+if __name__ == '__main__':
+    output = quaternion_to_rot_mat(geometry_msgs.msg.Quaternion(x=1,y=1));
+    print(output);

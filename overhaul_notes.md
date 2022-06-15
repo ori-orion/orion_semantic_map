@@ -162,6 +162,7 @@ It would be nice to be able to say that object has now moved.
     - Implemented as a average_back_to_batch on an object?
 
 TODO:
+    Rviz visualisations.
     leftmost/rightmost needs to be implemented.
     Regions.
     Order stuff by closest to the robot? (within order of batch number).
