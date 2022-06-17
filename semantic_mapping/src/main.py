@@ -83,7 +83,8 @@ def setup_system():
         last_observed_attr="last_observed_at",
         observed_at_attr="observed_at",
         observation_batch_num="observation_batch_num",
-        last_observation_batch="last_observation_batch"
+        last_observation_batch="last_observation_batch",
+        positional_covariance_attr="covariance_mat"
     );
     observation_arg_name_defs.cross_ref_attr.append("class_");
     observation_manager:ConsistencyChecker = ConsistencyChecker(
