@@ -110,7 +110,8 @@ def get_mean_over_samples(means, covariances) -> numpy.array:
     inv_sum_inv_cov = numpy.linalg.inv(sum_inv_cov);
     print(inv_sum_inv_cov);
     print(sum_invcov_mu);
-    return numpy.matmul(numpy.linalg.inv(sum_inv_cov), sum_invcov_mu);
+    output = numpy.matmul(numpy.linalg.inv(sum_inv_cov), sum_invcov_mu);
+    return [output[0,0], output[1,0], output[2,0]];
 
 
 #removes attributes of a ROS msg that we're not interested in.

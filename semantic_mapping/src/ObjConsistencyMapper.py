@@ -140,8 +140,8 @@ class ConsistencyChecker(CollectionManager):
 
             updating_info[self.consistency_args.position_attr] = \
                 utils.setPoint(updating_info[self.consistency_args.position_attr], utils.get_mean_over_samples(means, covariances));
-            updating_info[self.consistency_args.positional_covariance_attr] = \
-                list(numpy.zeros((3,3)));
+            # updating_info[self.consistency_args.positional_covariance_attr] = \
+            #     list(numpy.zeros((3,3)));
                 
 
         elif self.consistency_args.use_running_average_position:
@@ -170,6 +170,8 @@ class ConsistencyChecker(CollectionManager):
         if self.consistency_args.batch_nums_setup():
             update_entry_input[self.consistency_args.last_observation_batch] = \
                 updating_info[self.consistency_args.observation_batch_num];
+
+        print(update_entry_input);
 
         self.pushing_to.updateEntry(obj_id_to_update, update_entry_input);
 

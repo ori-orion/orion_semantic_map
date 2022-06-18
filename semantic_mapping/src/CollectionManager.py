@@ -96,6 +96,11 @@ class CollectionManager:
         if (obj_id != None):
             adding_dict[utils.CROSS_REF_UID] = str(obj_id);
 
+        if (DEBUG_LONG):
+            print("Adding an entry to", self.service_name ,"\n\t", adding_dict, "\n");
+        elif(DEBUG):
+            print("Adding an entry to", self.service_name);
+
         result = self.collection.insert_one(adding_dict);
 
         result_id:pymongo.collection.ObjectId = result.inserted_id;
