@@ -25,7 +25,8 @@ class ConsistencyArgs:
         positional_covariance_attr:str=None):
 
 
-        self.position_attr = position_attr;     
+        self.position_attr = position_attr;
+        self.positional_covariance_attr = positional_covariance_attr;
         self.size_attr = size_attr;
 
         self.use_running_average_position = True;
@@ -53,10 +54,9 @@ class ConsistencyArgs:
 
         # Which attributes don't you want transferred upon an observation?
         self.dont_transfer = [
-            observed_at_attr, position_attr, observation_batch_num
+            observed_at_attr, position_attr, observation_batch_num,
+            positional_covariance_attr
         ];
-
-        self.positional_covariance_attr = positional_covariance_attr;
 
         # Not yet implemented
         self.average_back_to_batch = 0;
@@ -125,6 +125,8 @@ class ConsistencyChecker(CollectionManager):
         if self.consistency_args.positional_covariance_attr != None and \
             len(updating_info[self.consistency_args.positional_covariance_attr]) == 9:
 
+            # Does the B14 stuff.
+
             means = [];
             covariances = [];
             for element in previously_added:
@@ -140,11 +142,9 @@ class ConsistencyChecker(CollectionManager):
 
             updating_info[self.consistency_args.position_attr] = \
                 utils.setPoint(updating_info[self.consistency_args.position_attr], utils.get_mean_over_samples(means, covariances));
-            # updating_info[self.consistency_args.positional_covariance_attr] = \
-            #     list(numpy.zeros((3,3)));
-                
 
         elif self.consistency_args.use_running_average_position:
+            # Executes a simple average. (To be used if B14 stuff is not to be!)
             points = [];
             point_av = utils.getPoint(updating_info[self.consistency_args.position_attr]);
             num_points = 1;
@@ -158,7 +158,6 @@ class ConsistencyChecker(CollectionManager):
 
             updating_info[self.consistency_args.position_attr] = \
                 utils.setPoint(updating_info[self.consistency_args.position_attr], point_av);
-
 
         update_entry_input[self.consistency_args.position_attr] = \
             updating_info[self.consistency_args.position_attr];

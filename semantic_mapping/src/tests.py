@@ -268,11 +268,11 @@ def test_covariance_method():
 
     obj_name = "covariance_test";
     adding_1 = create_obs_instance(obj_name, 0.1,0,0, 0);
-    adding_1.adding.covariance_mat = [10,0,0,0,1,0,0,0,1];
+    adding_1.adding.covariance_mat = [1,0,0,0,10,0,0,0,1];
     print("\tadding_obj_1");
     push_to_db_srv(adding_1);
     adding_2 = create_obs_instance(obj_name, 0,0.1,0, 1);
-    adding_2.adding.covariance_mat = [1,0,0,0,10,0,0,0,1];
+    adding_2.adding.covariance_mat = [10,0,0,0,1,0,0,0,1];
     print("\tadding_obj_1")
     push_to_db_srv(adding_2);
 
