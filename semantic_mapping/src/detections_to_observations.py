@@ -10,8 +10,9 @@ from orion_actions.msg import DetectionArray, Detection
 from tf import TransformListener;
 import std_msgs.msg;
 
+import utils;
 
-# import numpy;
+import numpy;
 
 
 class DetectToObserve:
@@ -110,7 +111,18 @@ class DetectToObserve:
             # forwarding.header.stamp = rospy.Time.now();
             # NOTE need to check frame ID in the header. (Could that be that of the camera?)
             # forwarding.header.frame_id = self.global_frame;#.encode("ascii", "ignore");                
-        
+
+            # Setting up the covariance stuff.
+            # Note that the covariance matrix is symmetric, so the order doesn't matter.
+            # Note also that the parameters here could probably be adjusted!
+            uncertainty_rot:numpy.matrix = utils.quaternion_to_rot_mat(camera_to_global.transform.rotation);
+            cov_mat = numpy.matrix([[3,0,0],[0,0.5,0],[0,0,0.5]]);
+            cov_transformed = numpy.matmul(uncertainty_rot.transpose(), numpy.matmul(cov_mat, uncertainty_rot));
+            cov_t_linear = [];
+            for i in range(3):
+                for j in range(3):
+                    cov_t_linear.append(cov_transformed[i,j]);
+            forwarding.covariance_mat = cov_t_linear;
             
             service_output:SOMObserveResponse = self.observe_obj_srv(forwarding);
             print(forwarding.class_);
