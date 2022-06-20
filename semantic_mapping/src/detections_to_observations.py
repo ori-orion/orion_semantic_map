@@ -55,7 +55,7 @@ class DetectToObserve:
         for detection in data.detections:
             detection:Detection;
 
-            if detection.confidence < 0.8:
+            if detection.label.confidence < 0.8:
                 continue;
             
             forwarding = SOMObservation();            
