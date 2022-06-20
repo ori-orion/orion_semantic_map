@@ -14,6 +14,8 @@ import utils;
 
 import numpy;
 
+import tf2_geometry_msgs
+
 
 class DetectToObserve:
     def __init__(self):
@@ -90,18 +92,24 @@ class DetectToObserve:
             forwarding.camera_pose.orientation.z = camera_to_global.transform.rotation.z;
 
             # Getting the position of the object in 3D space relative to the global frame.
-            object_point = PoseStamped()
-            object_point.header.frame_id = self.camera_frame;
-            object_point.header.stamp = detection.timestamp;
-            object_point.pose.position = Point(
+            obj_point_2 = tf2_geometry_msgs.PoseStamped();
+            obj_point_2.header.frame_id = self.camera_frame;
+            obj_point_2.header.stamp = detection.timestamp;
+            obj_point_2.pose.position = Point(
                 detection.translation_x, detection.translation_y, detection.translation_z);
+            
+            # object_point = PoseStamped()
+            # object_point.header.frame_id = self.camera_frame;
+            # object_point.header.stamp = detection.timestamp;
+            # object_point.pose.position = Point(
+            #     detection.translation_x, detection.translation_y, detection.translation_z);
             # transformed_stamped = self.tfBuffer.transform(
             #     object_point, self.global_frame, timeout=rospy.Duration(1));
             
-            p_global_frame:PoseStamped = self.tf_old.transformPose(
-                self.global_frame, object_point);
-            # transformed_obj_point:PoseStamped = self.tfBuffer.transform(
-            #     object_point, camera_to_global.transform);
+            # p_global_frame:PoseStamped = self.tf_old.transformPose(
+            #     self.global_frame, object_point);
+            p_global_frame:tf2_geometry_msgs.PoseStamped = self.tfBuffer.transform(
+                obj_point_2, camera_to_global.transform);
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;
 
