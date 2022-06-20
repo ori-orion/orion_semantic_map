@@ -55,7 +55,8 @@ class CollectionManager:
         types:TypesCollection, 
         service_name:str, 
         memory_manager:MemoryManager, 
-        visualisation_manager:visualisation.RvizVisualisationManager=None):
+        visualisation_manager:visualisation.RvizVisualisationManager=None,
+        sort_queries_by=None):
 
         self.types:TypesCollection = types;
         self.service_name:str = service_name;        
@@ -66,7 +67,7 @@ class CollectionManager:
 
         self.collection_input_callbacks = [];
 
-        self.sort_queries_by = None;
+        self.sort_queries_by = sort_queries_by;
 
         self.visualisation_manager = visualisation_manager;
 
@@ -79,11 +80,6 @@ class CollectionManager:
         """
 
         adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
-
-        if (DEBUG_LONG):
-            print("Adding an entry to", self.service_name ,"\n\t", adding_dict, "\n");
-        elif(DEBUG):
-            print("Adding an entry to", self.service_name);
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!        

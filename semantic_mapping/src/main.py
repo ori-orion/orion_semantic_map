@@ -59,12 +59,13 @@ def setup_system():
         im_server=interactive_marker_server,
         colour_a=0.7, colour_r=0.0, colour_g=0.2, colour_b=1.0,
         class_attr="class_", size_attr="size", position_attr="obj_position"
-    )
+    );
     object_manager:CollectionManager = CollectionManager(
         object_types,
         "objects",
         memory_manager=mem_manager,
-        visualisation_manager=object_visualisation_manager
+        visualisation_manager=object_visualisation_manager,
+        sort_queries_by="observation_batch_num"
     );
 
     observation_types:TypesCollection = TypesCollection(

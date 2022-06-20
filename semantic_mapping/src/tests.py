@@ -267,11 +267,11 @@ def test_covariance_method():
     get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
 
     obj_name = "covariance_test";
-    adding_1 = create_obs_instance(obj_name, 0.1,0,0, 0);
+    adding_1 = create_obs_instance(obj_name, 0.1,0,0, 2);
     adding_1.adding.covariance_mat = [1,0,0,0,10,0,0,0,1];
     print("\tadding_obj_1");
     push_to_db_srv(adding_1);
-    adding_2 = create_obs_instance(obj_name, 0,0.1,0, 1);
+    adding_2 = create_obs_instance(obj_name, 0,0.1,0, 3);
     adding_2.adding.covariance_mat = [10,0,0,0,1,0,0,0,1];
     print("\tadding_obj_1")
     push_to_db_srv(adding_2);
@@ -292,9 +292,11 @@ if __name__ == '__main__':
     test_observation_input();
     test_human_observation_input();
     test_obj_relational_query();
-    uid_input_test();
-    test_category_callback();
     test_covariance_method();
+    test_category_callback();
+    
+    uid_input_test();
+    
 
     t = rospy.Time.now();
     print(t.secs);

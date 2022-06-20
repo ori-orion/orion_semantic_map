@@ -161,22 +161,28 @@ Find empty space for where to put down an object?
 It would be nice to be able to say that object has now moved.
     - Implemented as a average_back_to_batch on an object?
 
+???
+    Getting objects at similar heights!!!
 TODO:
-    Rviz visualisations.
     leftmost/rightmost needs to be implemented.
     Regions.
     Order stuff by closest to the robot? (within order of batch number).
     Size stuff.
-    Uncertainty stuff.
+    reusable_states.py line 821 SaveOperatorToSOM
+        - This needs to be linked into the SOM system.
+        - branch noetic-som-upgrade 
 SEMI-DONE:
+    Rviz visualisations.
     Looking at how inputs having the same batch number influences the system.
     Ontology.
+    Uncertainty stuff.
 DONE:
-    -> noetic-som-upgrade.
+    Branch -> noetic-som-upgrade.
     Humans aren't moving!!!
-        Ensure there aren't 20 humans in the SOM system.
-        (Is now setup s.t. the distances for human consistency are much greater than those for object consistency.)
+        - Ensure there aren't 200 humans in the SOM system.
+        - (Is now setup s.t. the distances for human consistency are much greater than those for object consistency.)
     Check SOMROIObject.msg - where is this in use?
+        - Was deleted.
     Check UID, SESSION_NUM queries work.
     Order the responses w.r.t. time last observerd (or last batch number?)
 Issues:
@@ -192,4 +198,3 @@ Tasks
     Put away the groceries.
     Find my mates.
     Take out the trash (backup).
-
