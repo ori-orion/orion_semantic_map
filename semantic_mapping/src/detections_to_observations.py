@@ -109,7 +109,7 @@ class DetectToObserve:
             # p_global_frame:PoseStamped = self.tf_old.transformPose(
             #     self.global_frame, object_point);
             p_global_frame:tf2_geometry_msgs.PoseStamped = self.tfBuffer.transform(
-                obj_point_2, camera_to_global.transform);
+                self.global_frame, obj_point_2);
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;
 
