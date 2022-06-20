@@ -103,13 +103,13 @@ def get_mean_over_samples(means, covariances) -> numpy.array:
     print(sum_invcov_mu);
     for i in range(len(means)):
         temp = numpy.asarray(numpy.matmul(covariances[i], means[i])).reshape((3,1));
-        print(temp);
-        print(sum_invcov_mu);
+        #print(temp);
+        #print(sum_invcov_mu);
         sum_invcov_mu += temp;
 
     inv_sum_inv_cov = numpy.linalg.inv(sum_inv_cov);
-    print(inv_sum_inv_cov);
-    print(sum_invcov_mu);
+    #print(inv_sum_inv_cov);
+    #print(sum_invcov_mu);
     output = numpy.matmul(numpy.linalg.inv(sum_inv_cov), sum_invcov_mu);
     return [output[0,0], output[1,0], output[2,0]];
 

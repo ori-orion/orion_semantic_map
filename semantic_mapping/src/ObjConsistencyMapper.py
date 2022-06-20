@@ -133,12 +133,12 @@ class ConsistencyChecker(CollectionManager):
                 means.append(numpy.asarray(utils.getPoint(element[self.consistency_args.position_attr])));
                 cov_mat = utils.getMatrix(element[self.consistency_args.positional_covariance_attr]);
                 covariances.append(cov_mat);
-                print(cov_mat);
+                #print(cov_mat);
 
             means.append(numpy.asarray(utils.getPoint(updating_info[self.consistency_args.position_attr])));
             cov_mat = utils.getMatrix(updating_info[self.consistency_args.positional_covariance_attr])
             covariances.append(cov_mat);
-            print(cov_mat);
+            #print(cov_mat);
 
             updating_info[self.consistency_args.position_attr] = \
                 utils.setPoint(updating_info[self.consistency_args.position_attr], utils.get_mean_over_samples(means, covariances));
