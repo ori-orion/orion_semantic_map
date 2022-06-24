@@ -24,7 +24,8 @@ class ConsistencyArgs:
         observation_batch_num:str=None,
         last_observation_batch:str=None,
         class_identifier:str=None,
-        positional_covariance_attr:str=None):
+        positional_covariance_attr:str=None,
+        observation_counter_attr:str=None):
 
 
         self.position_attr = position_attr;
@@ -47,6 +48,9 @@ class ConsistencyArgs:
         self.first_observed_attr = first_observed_attr;
         self.last_observed_attr = last_observed_attr;
         self.observed_at_attr = observed_at_attr;
+
+        # How many observations of a given entity have been made?
+        self.observation_counter_attr = observation_counter_attr;
 
         # Batch information:
         # Batch number for the things you're pulling from.
@@ -110,6 +114,9 @@ class ConsistencyChecker(CollectionManager):
                 adding[self.consistency_args.observation_batch_num];
             del adding[self.consistency_args.observation_batch_num];
 
+        if self.consistency_args.observation_counter_attr != None:
+            adding[self.consistency_args.observation_counter_attr] = 1;
+
         return str(self.pushing_to.addItemToCollectionDict(adding));
 
     def updateConsistentObj(self, updating_info:dict, obj_id_to_update:pymongo.collection.ObjectId):        
@@ -172,10 +179,15 @@ class ConsistencyChecker(CollectionManager):
             update_entry_input[self.consistency_args.last_observation_batch] = \
                 updating_info[self.consistency_args.observation_batch_num];
         
+        increment_param=None;
+        if self.consistency_args.observation_counter_attr != None:
+            increment_param = {self.consistency_args.observation_counter_attr: 1};
+
         if (DEBUG_LONG):
+            pass;
             print(update_entry_input);
 
-        self.pushing_to.updateEntry(obj_id_to_update, update_entry_input);
+        self.pushing_to.updateEntry(obj_id_to_update, update_entry_input, increment_param);
 
         if self.pushing_to.visualisation_manager != None:
             self.pushing_to.visualisation_manager.add_obj_dict(updating_info, str(obj_id_to_update));

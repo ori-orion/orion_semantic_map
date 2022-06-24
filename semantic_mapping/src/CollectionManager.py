@@ -120,7 +120,7 @@ class CollectionManager:
         return response;
 
 
-    def updateEntry(self, uid:pymongo.collection.ObjectId, update_to:dict):
+    def updateEntry(self, uid:pymongo.collection.ObjectId, update_to:dict, increment:dict=None):
         """
         https://www.w3schools.com/python/python_mongodb_update.asp
 
@@ -135,10 +135,20 @@ class CollectionManager:
         Note also, _id is an internal mongodb convention
         """
 
+        if DEBUG:
+            print("Updating...");
+
         self.collection.update_one(
             {utils.PYMONGO_ID_SPECIFIER:uid}, 
             { "$set": update_to}
         );
+
+
+        if increment != None:
+            self.collection.update_one(
+                {utils.PYMONGO_ID_SPECIFIER:uid},
+                { "$inc": increment}
+            );
         
         if (DEBUG_LONG):
             print("Updating ", uid, "within", self.service_name, "with", update_to);
@@ -206,7 +216,7 @@ class CollectionManager:
 
         resp_array = getattr(ros_response, query_response_attr);
 
-        assert(type(resp_array) is list);
+        # assert(type(resp_array) is list);
 
         for element in response:
             if DEBUG_LONG:

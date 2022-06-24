@@ -85,7 +85,8 @@ def setup_system():
         observed_at_attr="observed_at",
         observation_batch_num="observation_batch_num",
         last_observation_batch="last_observation_batch",
-        positional_covariance_attr="covariance_mat"
+        positional_covariance_attr="covariance_mat",
+        observation_counter_attr="num_observations"
     );
     observation_arg_name_defs.dont_transfer.append("covariance_mat");
     observation_arg_name_defs.dont_transfer.append("transform_cov_to_diagonal");

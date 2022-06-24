@@ -21,7 +21,7 @@ SERVICE_ROOT = "som/";
 class MemoryManager:
     def __init__(self, root="localhost", port=62345):
         self.client = pymongo.MongoClient(root, port);
-        self.clear_db();
+        # self.clear_db();
         self.database = self.client.database_test;
 
         self.collections:dict = {};
@@ -54,11 +54,8 @@ class MemoryManager:
         self.client.drop_database('database_test');
 
     def clear_database_ROS_server(self, srv_input:std_srvs.srv.EmptyRequest):
-
         self.clear_db();
-
         return std_srvs.srv.EmptyResponse();
 
     def setup_services(self):
         rospy.Service(SERVICE_ROOT + "delete_databases", std_srvs.srv.Empty, self.clear_database_ROS_server);
-        pass;
