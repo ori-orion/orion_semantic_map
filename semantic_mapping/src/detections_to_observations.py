@@ -96,7 +96,7 @@ class DetectToObserve:
             obj_point_2.header.frame_id = self.camera_frame;
             obj_point_2.header.stamp = detection.timestamp;
             obj_point_2.pose.position = Point(
-                detection.translation_x, detection.translation_y, detection.translation_z);
+                detection.translation_x, detection.translation_y, detection.translation_z+forwarding.size.z/2);
             
             # object_point = PoseStamped()
             # object_point.header.frame_id = self.camera_frame;

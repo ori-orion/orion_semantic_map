@@ -1,5 +1,6 @@
 import math
-import numpy;
+import numpy
+from orion_semantic_map.semantic_mapping.src.MemoryManager import DEBUG_LONG;
 import utils;
 from CollectionManager import CollectionManager, TypesCollection;
 import pymongo.collection
@@ -169,8 +170,9 @@ class ConsistencyChecker(CollectionManager):
         if self.consistency_args.batch_nums_setup():
             update_entry_input[self.consistency_args.last_observation_batch] = \
                 updating_info[self.consistency_args.observation_batch_num];
-
-        print(update_entry_input);
+        
+        if (DEBUG_LONG):
+            print(update_entry_input);
 
         self.pushing_to.updateEntry(obj_id_to_update, update_entry_input);
 
