@@ -87,6 +87,8 @@ def setup_system():
         last_observation_batch="last_observation_batch",
         positional_covariance_attr="covariance_mat"
     );
+    observation_arg_name_defs.dont_transfer.append("covariance_mat");
+    observation_arg_name_defs.dont_transfer.append("transform_cov_to_diagonal");
     observation_arg_name_defs.cross_ref_attr.append("class_");
     observation_manager:ConsistencyChecker = ConsistencyChecker(
         pushing_to=object_manager,

@@ -5,12 +5,10 @@ import pymongo.collection
 import pymongo.cursor
 import rospy;
 import genpy;
-from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, DEBUG_LONG, SESSION_ID;
+from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, DEBUG_LONG, SESSION_ID, SERVICE_ROOT;
 
 import visualisation;
 
-# The root for all things som related.
-SERVICE_ROOT = "som/";
 
 class TypesCollection:
     """

@@ -78,7 +78,7 @@ def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
     
     return output;
 
-def get_multi_probability(mean:numpy.array, covariance_matrix:numpy.matrix, location:numpy.array) -> numpy.float64:
+def get_multi_likelihood(mean:numpy.array, covariance_matrix:numpy.matrix, location:numpy.array) -> numpy.float64:
     exponent = -0.5 * numpy.dot((mean - location), numpy.matmul(numpy.linalg.inv(covariance_matrix), (mean-location)));
     cov_det = numpy.linalg.det(covariance_matrix);
     return (1/math.sqrt(2*math.pi * cov_det)) * math.exp(exponent);

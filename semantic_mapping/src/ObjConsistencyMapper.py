@@ -1,9 +1,10 @@
 import math
 import numpy
-from orion_semantic_map.semantic_mapping.src.MemoryManager import DEBUG_LONG;
 import utils;
 from CollectionManager import CollectionManager, TypesCollection;
 import pymongo.collection
+
+from MemoryManager import DEBUG_LONG;
 
 # This contains all the arguments for checking object consistency.
 # So we want to be able to easily identify which attribute
@@ -202,6 +203,7 @@ class ConsistencyChecker(CollectionManager):
 
         # print("There were", len(possible_results), "possible matches");
 
+        # Working out what the max distance should be.
         max_distance = self.consistency_args.max_distance;
         if type(max_distance) is dict and self.consistency_args.class_identifier != None:
             max_distance:dict;
@@ -211,6 +213,7 @@ class ConsistencyChecker(CollectionManager):
             else:
                 max_distance = max_distance[ConsistencyArgs.DEFAULT_PARAM];
 
+        # Doing the filtering to work out which object you want to look at (if any).
         print("Max distance", max_distance);
         adding_pos = utils.getPoint(adding[self.consistency_args.position_attr]);
         updating = None;
