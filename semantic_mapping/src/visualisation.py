@@ -2,6 +2,7 @@
 From the old system (almost directly.)
 """
 
+import math;
 import rospy
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Pose
@@ -34,16 +35,15 @@ class RvizVisualisationManager:
         self.size_attr = size_attr;
         self.position_attr = position_attr;
 
+        self.query_callback = None;
+
     def delete_object(self, id):
         self.im_server.erase(id);
         self.im_server.applyChanges();
 
     def handle_viz_input(self, input):
-        if (self.coll_manager == None):
-            return;
-
-        if (input.event_type == InteractiveMarkerFeedback.BUTTON_CLICK):
-            obj:list = self.coll_manager.queryIntoCollection(
+        if (self.query_callback != None):
+            obj:list = self.query_callback(
                 {utils.PYMONGO_ID_SPECIFIER:pymongo.collection.ObjectId(input.marker_name)});
 
             if len(obj) > 0:
@@ -52,7 +52,7 @@ class RvizVisualisationManager:
 
     # NOTE: Assumption: the object position is a pose.
     # This acts both to add and to update a given entry.
-    def add_obj_dict(self, adding_dict:dict, obj_id:str):
+    def add_obj_dict(self, adding_dict:dict, obj_id:str, num_observations=math.inf):
         obj_pose = Pose();
         obj_pose.orientation.w=1;
 
@@ -70,9 +70,17 @@ class RvizVisualisationManager:
         
         obj_class = adding_dict[self.class_attr];
 
-        self.add_object(obj_id, obj_pose, obj_size, obj_class);
+        self.add_object(obj_id, obj_pose, obj_size, obj_class, num_observations);
 
-    def add_object(self, id:str, pose:Pose, size:Point, obj_class:str):
+    def add_object(self, id:str, pose:Pose, size:Point, obj_class:str, num_observations=math.inf):
+        """
+        Deals with the adding of an object to the visualisation server. 
+        id                  - The id of the object (and the id that rviz will use).
+        pose                - The pose of the object
+        size                - The size of the object
+        obj_class           - The label the object will be given in the visualisation.
+        num_observations    - The number of observations (will be used in a function for the alpha value of the object.)
+        """
         self.im_server.erase(id);
 
         int_marker = InteractiveMarker()
@@ -92,7 +100,9 @@ class RvizVisualisationManager:
         box_marker.color.r = self.colour_r;
         box_marker.color.g = self.colour_g;
         box_marker.color.b = self.colour_b;
-        box_marker.color.a = self.colour_a;
+        box_marker.color.a = self.colour_a * num_observations/10;
+        if box_marker.color.a > self.colour_a:
+            box_marker.color.a = self.colour_a;
 
         button_control = InteractiveMarkerControl()
         button_control.interaction_mode = InteractiveMarkerControl.BUTTON

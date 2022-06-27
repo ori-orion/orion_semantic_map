@@ -100,7 +100,7 @@ class CollectionManager:
         result_id:pymongo.collection.ObjectId = result.inserted_id;
 
         if (self.visualisation_manager != None):
-            self.visualisation_manager.add_obj_dict(adding_dict, str(result_id));
+            self.visualisation_manager.add_obj_dict(adding_dict, str(result_id), 1);
 
         return result_id;
 

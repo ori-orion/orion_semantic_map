@@ -119,7 +119,7 @@ class ConsistencyChecker(CollectionManager):
 
         return str(self.pushing_to.addItemToCollectionDict(adding));
 
-    def updateConsistentObj(self, updating_info:dict, obj_id_to_update:pymongo.collection.ObjectId):        
+    def updateConsistentObj(self, updating_info:dict, obj_id_to_update:pymongo.collection.ObjectId, num_observations=math.inf):
         # updating_info is an observation, rather than an object.
 
         previously_added:list = self.queryIntoCollection({utils.CROSS_REF_UID: str(obj_id_to_update)})        
@@ -151,7 +151,6 @@ class ConsistencyChecker(CollectionManager):
 
             updating_info[self.consistency_args.position_attr] = \
                 utils.setPoint(updating_info[self.consistency_args.position_attr], utils.get_mean_over_samples(means, covariances));
-
         elif self.consistency_args.use_running_average_position:
             # Executes a simple average. (To be used if B14 stuff is not to be!)
             points = [];
@@ -190,7 +189,7 @@ class ConsistencyChecker(CollectionManager):
         self.pushing_to.updateEntry(obj_id_to_update, update_entry_input, increment_param);
 
         if self.pushing_to.visualisation_manager != None:
-            self.pushing_to.visualisation_manager.add_obj_dict(updating_info, str(obj_id_to_update));
+            self.pushing_to.visualisation_manager.add_obj_dict(updating_info, str(obj_id_to_update), num_observations);
 
 
     # Returns the str id that the object has gone into.
@@ -229,11 +228,14 @@ class ConsistencyChecker(CollectionManager):
         print("Max distance", max_distance);
         adding_pos = utils.getPoint(adding[self.consistency_args.position_attr]);
         updating = None;
+        num_prev_observations = math.inf;
         for element in possible_results:
             element_pos = utils.getPoint(element[self.consistency_args.position_attr]);
             dist = numpy.linalg.norm(adding_pos - element_pos);
             if (dist < max_distance):
                 updating = element;
+                if self.consistency_args.observation_counter_attr != None:
+                    num_prev_observations = element[self.consistency_args.observation_counter_attr];
                 max_distance = dist;
 
 
@@ -241,5 +243,5 @@ class ConsistencyChecker(CollectionManager):
             return adding, self.createNewConsistentObj(adding);
         else:
             # Update an existing entry.
-            self.updateConsistentObj(adding, updating[utils.PYMONGO_ID_SPECIFIER]);
+            self.updateConsistentObj(adding, updating[utils.PYMONGO_ID_SPECIFIER], num_prev_observations);
             return adding, str(updating[utils.PYMONGO_ID_SPECIFIER]);
