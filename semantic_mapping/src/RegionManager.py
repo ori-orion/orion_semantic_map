@@ -3,8 +3,11 @@ import utils;
 from CollectionManager import CollectionManager, TypesCollection;
 from MemoryManager import MemoryManager;
 
+from orion_actions.msg import SOMBoxRegion;
+
 import rospy;
 import tf2_ros;
+import tf2_geometry_msgs;
 import geometry_msgs.msg;
 
 class RegionManager(CollectionManager):
@@ -32,20 +35,33 @@ class RegionManager(CollectionManager):
         self.static_tb = tf2_ros.StaticTransformBroadcaster();
         self.publisher:rospy.Publisher = self.static_tb.pub_tf;
 
+        self.tfBuffer = tf2_ros.Buffer();
+        self.listener = tf2_ros.TransformListener(self.tfBuffer);
+
         self.global_frame = "map";
 
+        # We don't want to blindly add transforms of random names into tf. This gives the prefix for these.
+        self.region_tf_prefix = "region_";
 
-        pose_in = geometry_msgs.msg.Pose();
-        pose_in_dict = utils.obj_to_dict(pose_in);
-        region_in = {self.corner_location:pose_in_dict};
-        point_in = geometry_msgs.msg.Point();
-        point_in.x = 1;
+        # Beginning to test stuff...
+        transform_in = geometry_msgs.msg.TransformStamped();
+        transform_in.transform.translation = geometry_msgs.msg.Vector3(1,0,0);
+        transform_in.transform.rotation = geometry_msgs.msg.Quaternion(0,0,0,1);
 
-        print(pose_in);
-        print(point_in);
-        self.point_in_region(region_in, point_in);
+        self.publish_transform(transform_in, "region_1");
+
+        self.point_in_region("region_1", point_in);
 
 
+    def create_region(self, transform:geometry_msgs.msg.TransformStamped, region_name:str, size:geometry_msgs.msg.Vector3):
+        self.publish_transform(transform, self.region_tf_prefix + region_name);
+
+        adding = SOMBoxRegion();
+        adding.corner_loc = transform;
+        adding.dimension = size;
+        adding.name = region_name;
+
+        self.addItemToCollectionDict(utils.obj_to_dict(adding));
     def publish_transform(self, transform:geometry_msgs.msg.TransformStamped, child_frame_id:str) -> None:
 
         transform.header.stamp = rospy.Time.now();
@@ -55,11 +71,28 @@ class RegionManager(CollectionManager):
         self.static_tb.sendTransform(transform);
 
 
-    def point_in_region(self, region:dict, point:geometry_msgs.msg.Point) -> bool:
-        transformed_pose = geometry_msgs.msg.Pose();
-        transformed_pose:geometry_msgs.msg.Pose() = utils.dict_to_obj(region[self.corner_location], transformed_pose);
+    def point_in_region(self, region:SOMBoxRegion, point:geometry_msgs.msg.Point) -> bool:
+        
+        point_tf2 = tf2_geometry_msgs.PointStamped();
+        point_tf2.point = point;
+        point_tf2.header.stamp = rospy.Time.now();
+        point_tf2.header.frame_id = self.global_frame;
 
-        transformed_point = transformed_pose * point;
-        print(transformed_point);
-        pass;
-    pass;
+        try:
+            transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
+                point_tf2, region.name);
+        except:
+            transformed_point = tf2_geometry_msgs.PointStamped();
+            rospy.logerr("transform raised an error!");
+
+        attr = ["x", "y", "z"];
+
+        # Iterates over the parameters of {x,y,z}.
+        for a in attr:
+            dim = getattr(transformed_point.point, a);
+            if dim < 0:
+                return False;
+            if dim > getattr(region.dimension, a):
+                return False;
+
+        return True;

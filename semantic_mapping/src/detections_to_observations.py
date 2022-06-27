@@ -26,9 +26,7 @@ class DetectToObserve:
         self.global_frame = "map"
 
         self.tfBuffer = tf2_ros.Buffer();
-        self.listener = tf2_ros.TransformListener(self.tfBuffer)
-        #Uses tf rather than tf2_ros
-        self.tf_old = TransformListener();
+        self.listener = tf2_ros.TransformListener(self.tfBuffer);
 
         # Initialising the SOM services
         # rospy.wait_for_service('som/observe')
@@ -106,13 +104,11 @@ class DetectToObserve:
             # transformed_stamped = self.tfBuffer.transform(
             #     object_point, self.global_frame, timeout=rospy.Duration(1));
             
-            # p_global_frame:PoseStamped = self.tf_old.transformPose(
-            #     self.global_frame, object_point);
             try:
                 p_global_frame:tf2_geometry_msgs.PoseStamped = self.tfBuffer.transform(
                     obj_point_2, self.global_frame);
             except:
-                p_global_frame = tf2_geometry_msgs.PointStamped();
+                p_global_frame = tf2_geometry_msgs.PoseStamped();
                 rospy.logerr("transform raised an error!");
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;
