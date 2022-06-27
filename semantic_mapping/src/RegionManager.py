@@ -3,9 +3,9 @@ import utils;
 from CollectionManager import CollectionManager, TypesCollection;
 from MemoryManager import MemoryManager;
 
-import tf;
+import rospy;
+import tf2_ros;
 import geometry_msgs.msg;
-
 
 class RegionManager(CollectionManager):
     """
@@ -29,7 +29,11 @@ class RegionManager(CollectionManager):
         self.corner_location = corner_location;
         self.dimension = dimension;
 
-        # self.transform_listener = tf.TransformListener();
+        self.static_tb = tf2_ros.StaticTransformBroadcaster();
+        self.publisher:rospy.Publisher = self.static_tb.pub_tf;
+
+        self.global_frame = "map";
+
 
         pose_in = geometry_msgs.msg.Pose();
         pose_in_dict = utils.obj_to_dict(pose_in);
@@ -41,6 +45,14 @@ class RegionManager(CollectionManager):
         print(point_in);
         self.point_in_region(region_in, point_in);
 
+
+    def publish_transform(self, transform:geometry_msgs.msg.TransformStamped, child_frame_id:str) -> None:
+
+        transform.header.stamp = rospy.Time.now();
+        transform.header.frame_id = self.global_frame;
+        transform.child_frame_id = child_frame_id;
+
+        self.static_tb.sendTransform(transform);
 
 
     def point_in_region(self, region:dict, point:geometry_msgs.msg.Point) -> bool:
