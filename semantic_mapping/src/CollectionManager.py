@@ -68,6 +68,8 @@ class CollectionManager:
         self.sort_queries_by = sort_queries_by;
 
         self.visualisation_manager = visualisation_manager;
+        if visualisation_manager != None:
+            self.visualisation_manager.query_callback = self.queryIntoCollection;
 
         self.setupServices();
 
