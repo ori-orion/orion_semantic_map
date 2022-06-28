@@ -179,6 +179,7 @@ DONE:
     Check SOMROIObject.msg - where is this in use?
     Check UID, SESSION_NUM queries work.
     Order the responses w.r.t. time last observerd (or last batch number?)
+    Clicking on the Rviz object doesn't print the result to the console.
 Issues:
     There seems to be some sort of tf bug with getting the positions of objects.
     
