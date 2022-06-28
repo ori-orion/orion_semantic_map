@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
+
 from MemoryManager import DEBUG, MemoryManager;
 from CollectionManager import CollectionManager, TypesCollection;
 from ObjConsistencyMapper import ConsistencyChecker, ConsistencyArgs;
 from RelationManager import RelationManager;
 from RegionManager import RegionManager;
 import Ontology;
+from visualisation import RvizVisualisationManager;
 
 import rospy;
 
@@ -24,6 +27,8 @@ def setup_system():
     rospy.init_node('som_manager');
 
     mem_manager:MemoryManager = MemoryManager();
+
+    interactive_marker_server = InteractiveMarkerServer("som/obj_vis")
     
     ontology_tree:Ontology.ontology_member = Ontology.read_file(
         os.path.dirname(__file__) + "/labels.txt");
@@ -50,10 +55,17 @@ def setup_system():
         query_parent=orion_actions.srv.SOMQueryObjects,
         query_response=orion_actions.srv.SOMQueryObjectsResponse
     );
+    object_visualisation_manager:RvizVisualisationManager = RvizVisualisationManager(
+        im_server=interactive_marker_server,
+        colour_a=0.7, colour_r=0.0, colour_g=0.2, colour_b=1.0,
+        class_attr="class_", size_attr="size", position_attr="obj_position"
+    );
     object_manager:CollectionManager = CollectionManager(
         object_types,
         "objects",
-        memory_manager=mem_manager        
+        memory_manager=mem_manager,
+        visualisation_manager=object_visualisation_manager,
+        sort_queries_by="observation_batch_num"
     );
 
     observation_types:TypesCollection = TypesCollection(
@@ -66,14 +78,18 @@ def setup_system():
     observation_arg_name_defs:ConsistencyArgs = ConsistencyArgs(
         position_attr="obj_position",
         size_attr="size",
-        max_distance={"default":0.3, "person":1},
+        max_distance={"default":1, "person":3},
         class_identifier="class_",
         first_observed_attr="first_observed_at",
         last_observed_attr="last_observed_at",
         observed_at_attr="observed_at",
         observation_batch_num="observation_batch_num",
-        last_observation_batch="last_observation_batch"
+        last_observation_batch="last_observation_batch",
+        positional_covariance_attr="covariance_mat",
+        observation_counter_attr="num_observations"
     );
+    observation_arg_name_defs.dont_transfer.append("covariance_mat");
+    observation_arg_name_defs.dont_transfer.append("transform_cov_to_diagonal");
     observation_arg_name_defs.cross_ref_attr.append("class_");
     observation_manager:ConsistencyChecker = ConsistencyChecker(
         pushing_to=object_manager,

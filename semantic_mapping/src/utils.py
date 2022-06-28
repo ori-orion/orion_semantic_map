@@ -1,3 +1,4 @@
+import math;
 import rospy;
 import genpy;
 import numpy;
@@ -48,6 +49,10 @@ def setPoint(obj:dict, new_pt:numpy.array) -> dict:
         obj['z'] = new_pt[2];
     return obj;
 
+def getMatrix(obj:list, num_rows:int=3) -> numpy.matrix:
+    obj_array = numpy.asarray(obj);
+    obj_2D = obj_array.reshape((num_rows, -1));
+    return numpy.matrix(obj_2D);
 
 def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
     """
@@ -73,6 +78,41 @@ def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
     
     return output;
 
+def get_multi_likelihood(mean:numpy.array, covariance_matrix:numpy.matrix, location:numpy.array) -> numpy.float64:
+    exponent = -0.5 * numpy.dot((mean - location), numpy.matmul(numpy.linalg.inv(covariance_matrix), (mean-location)));
+    cov_det = numpy.linalg.det(covariance_matrix);
+    return (1/math.sqrt(2*math.pi * cov_det)) * math.exp(exponent);
+
+def get_mean_over_samples(means, covariances) -> numpy.array:
+    """
+    means           - An array of numpy.array[s]
+    covariances     - An array of numpy.matrix[s]
+    This will do x = (sum(inv(cov[i])))^(-1) * sum(inv(cov[i])*mean[i]), as per MLE.
+    """
+    assert(len(means) == len(covariances));
+    print("get_mean_over_samples");
+
+    sum_inv_cov = numpy.zeros((3,3));
+    # print("\t", sum_inv_cov);
+    for i in range(len(means)):
+        covariances[i] = numpy.linalg.inv(covariances[i]);
+        sum_inv_cov += covariances[i];
+        # print("\t", sum_inv_cov);
+    
+    sum_invcov_mu = numpy.zeros((3,1));
+    # print(sum_invcov_mu);
+    for i in range(len(means)):
+        temp = numpy.asarray(numpy.matmul(covariances[i], means[i])).reshape((3,1));
+        #print(temp);
+        #print(sum_invcov_mu);
+        sum_invcov_mu += temp;
+
+    # inv_sum_inv_cov = numpy.linalg.inv(sum_inv_cov);
+    #print(inv_sum_inv_cov);
+    #print(sum_invcov_mu);
+    output = numpy.matmul(numpy.linalg.inv(sum_inv_cov), sum_invcov_mu);
+    return [output[0,0], output[1,0], output[2,0]];
+
 
 #removes attributes of a ROS msg that we're not interested in.
 def get_attributes(obj) -> list:
@@ -97,7 +137,6 @@ def get_attributes(obj) -> list:
             i += 1;
 
     return attributes;
-
 
 # Main set of infrastructure to convert ROS types to and from dictionaries.
 #   should be able to push almost anything into a dictionary (There may well be some as 
@@ -203,7 +242,6 @@ def obj_to_dict(
 
     return output;
 
-
 def dict_to_obj(dictionary:dict, objFillingOut):
     """
     The main idea here is that we may well want to convert an arbitrary dictionary to one of the ROS types
@@ -213,18 +251,24 @@ def dict_to_obj(dictionary:dict, objFillingOut):
     # print(dictionary);
     # print(type(objFillingOut));
 
+    temporal_types = [rospy.Time, rospy.Duration, genpy.rostime.Time];
+
     attributes = objFillingOut.__dir__();
     for key in dictionary.keys():
         if (key in attributes):
             if isinstance(dictionary[key], dict):                
                 dict_to_obj(dictionary[key], getattr(objFillingOut, key));
+                continue;
             elif isinstance(dictionary[key], list):
                 carry = [];
                 for element in dictionary[key]:
-                    carry.append(dict_to_obj(element));
+                    if element is dict:
+                        raise(Exception("The sub-class of a list is a dictionary. The type is not currently known."));
+                    else:
+                        carry.append(element);
                 # print("Setting", key, "=", carry);
                 setattr(objFillingOut, key, carry);
-                pass;
+                continue;
             elif isinstance(getattr(objFillingOut, key), rospy.Time):   # Needs to be checked
                 # print("rospy.Time element found.");
                 # print("Setting",key, "[time]");

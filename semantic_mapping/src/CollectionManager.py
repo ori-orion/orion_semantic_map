@@ -2,12 +2,13 @@ import numpy
 import utils;
 import pymongo;
 import pymongo.collection
+import pymongo.cursor
 import rospy;
 import genpy;
-from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, DEBUG_LONG, SESSION_ID;
+from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, DEBUG_LONG, SESSION_ID, SERVICE_ROOT;
 
-# The root for all things som related.
-SERVICE_ROOT = "som/";
+import visualisation;
+
 
 class TypesCollection:
     """
@@ -48,7 +49,13 @@ class CollectionManager:
     positional_attr - For relations, we want to know what entry determines the position of an object.
                         This will also be used within the ObjConsistencyChecker.                           
     """
-    def __init__(self, types:TypesCollection, service_name:str, memory_manager:MemoryManager):
+    def __init__(self, 
+        types:TypesCollection, 
+        service_name:str, 
+        memory_manager:MemoryManager, 
+        visualisation_manager:visualisation.RvizVisualisationManager=None,
+        sort_queries_by=None):
+
         self.types:TypesCollection = types;
         self.service_name:str = service_name;        
         self.memory_manager:MemoryManager = memory_manager;
@@ -58,7 +65,11 @@ class CollectionManager:
 
         self.collection_input_callbacks = [];
 
-        self.sort_queries_by = None;
+        self.sort_queries_by = sort_queries_by;
+
+        self.visualisation_manager = visualisation_manager;
+        if visualisation_manager != None:
+            self.visualisation_manager.query_callback = self.queryIntoCollection;
 
         self.setupServices();
 
@@ -69,11 +80,6 @@ class CollectionManager:
         """
 
         adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
-
-        if (DEBUG_LONG):
-            print("Adding an entry to", self.service_name ,"\n\t", adding_dict, "\n");
-        elif(DEBUG):
-            print("Adding an entry to", self.service_name);
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!        
@@ -86,10 +92,18 @@ class CollectionManager:
         if (obj_id != None):
             adding_dict[utils.CROSS_REF_UID] = str(obj_id);
 
+        if (DEBUG_LONG):
+            print("Adding an entry to", self.service_name ,"\n\t", adding_dict, "\n");
+        elif(DEBUG):
+            print("Adding an entry to", self.service_name);
+
         result = self.collection.insert_one(adding_dict);
 
         result_id:pymongo.collection.ObjectId = result.inserted_id;
-        # print(result_id);
+
+        if (self.visualisation_manager != None):
+            self.visualisation_manager.add_obj_dict(adding_dict, str(result_id), 1);
+
         return result_id;
 
     def addItemToCollection(self, adding) -> pymongo.collection.ObjectId:
@@ -108,7 +122,7 @@ class CollectionManager:
         return response;
 
 
-    def updateEntry(self, uid:pymongo.collection.ObjectId, update_to:dict):
+    def updateEntry(self, uid:pymongo.collection.ObjectId, update_to:dict, increment:dict=None):
         """
         https://www.w3schools.com/python/python_mongodb_update.asp
 
@@ -123,10 +137,20 @@ class CollectionManager:
         Note also, _id is an internal mongodb convention
         """
 
+        if DEBUG:
+            print("Updating...");
+
         self.collection.update_one(
             {utils.PYMONGO_ID_SPECIFIER:uid}, 
             { "$set": update_to}
         );
+
+
+        if increment != None:
+            self.collection.update_one(
+                {utils.PYMONGO_ID_SPECIFIER:uid},
+                { "$inc": increment}
+            );
         
         if (DEBUG_LONG):
             print("Updating ", uid, "within", self.service_name, "with", update_to);
@@ -149,7 +173,7 @@ class CollectionManager:
         query_result:pymongo.cursor.Cursor = self.collection.find(query_dict);
         query_result_list = list(query_result);
 
-        print(self.sort_queries_by);
+        #print("\tself.sort_queries_by=", self.sort_queries_by);
         if self.sort_queries_by != None:
             print("\tSorting results by", self.sort_queries_by);
             query_result_list.sort(key=lambda x:x[self.sort_queries_by], reverse=True);
@@ -194,7 +218,7 @@ class CollectionManager:
 
         resp_array = getattr(ros_response, query_response_attr);
 
-        assert(type(resp_array) is list);
+        # assert(type(resp_array) is list);
 
         for element in response:
             if DEBUG_LONG:

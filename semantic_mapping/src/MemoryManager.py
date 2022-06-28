@@ -2,7 +2,9 @@ import pymongo
 import pymongo.cursor
 import pymongo.collection
 import datetime
-# import rospy
+import rospy
+
+import std_srvs.srv;
 
 # import utils
 from utils import UID_ENTRY, SESSION_ID
@@ -12,11 +14,14 @@ GLOBAL_TIME_STAMP_ENTRY = "global_timestamp";
 DEBUG = True;
 DEBUG_LONG = False;
 
+# The root for all things som related.
+SERVICE_ROOT = "som/";
+
 
 class MemoryManager:
     def __init__(self, root="localhost", port=62345):
         self.client = pymongo.MongoClient(root, port);
-        self.clear_db();
+        # self.clear_db();
         self.database = self.client.database_test;
 
         self.collections:dict = {};
@@ -39,7 +44,7 @@ class MemoryManager:
         });
         #endregion
 
-        pass;
+        self.setup_services();
 
     def addCollection(self, collection_name:str) -> pymongo.collection.Collection:
         self.collections[collection_name] = self.database[collection_name];
@@ -47,4 +52,10 @@ class MemoryManager:
 
     def clear_db(self):
         self.client.drop_database('database_test');
-        pass;
+
+    def clear_database_ROS_server(self, srv_input:std_srvs.srv.EmptyRequest):
+        self.clear_db();
+        return std_srvs.srv.EmptyResponse();
+
+    def setup_services(self):
+        rospy.Service(SERVICE_ROOT + "delete_databases", std_srvs.srv.Empty, self.clear_database_ROS_server);

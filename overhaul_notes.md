@@ -157,32 +157,48 @@ Find empty space for where to put down an object?
     SIZE INFORMATION.
         Size have direction?
     Find the absence of an object?
-    
+
 It would be nice to be able to say that object has now moved.
     - Implemented as a average_back_to_batch on an object?
 
+???
+    Getting objects at similar heights!!!
 TODO:
-    Rviz visualisations.
     leftmost/rightmost needs to be implemented.
     Regions.
     Order stuff by closest to the robot? (within order of batch number).
     Size stuff.
-    Uncertainty stuff.
+    reusable_states.py line 821 SaveOperatorToSOM
+        - This needs to be linked into the SOM system.
+        - branch noetic-som-upgrade 
+    Get VISA application up to scratch.
+    state_machines tests.py file.
+    Bounding box centres at the centre of the actual object.
 SEMI-DONE:
+    Rviz visualisations.
     Looking at how inputs having the same batch number influences the system.
     Ontology.
+    Uncertainty stuff.
 DONE:
-    -> noetic-som-upgrade.
+    Branch -> noetic-som-upgrade.
     Humans aren't moving!!!
-        Ensure there aren't 20 humans in the SOM system.
-        (Is now setup s.t. the distances for human consistency are much greater than those for object consistency.)
+        - Ensure there aren't 200 humans in the SOM system.
+        - (Is now setup s.t. the distances for human consistency are much greater than those for object consistency.)
     Check SOMROIObject.msg - where is this in use?
+        - Was deleted.
     Check UID, SESSION_NUM queries work.
+        - uid_input_test function is where this is tested.
+        - This also tests that the responses are in order, and so should be run last out of all the tests.
     Order the responses w.r.t. time last observerd (or last batch number?)
     Clicking on the Rviz object doesn't print the result to the console.
 Issues:
     There seems to be some sort of tf bug with getting the positions of objects.
-    
+
+Notes for branches you need to change (to/from)
+    - orion_actions noetic <-> noetic-som-upgrade
+    - orion_recognition noetic <-> noetic-som-upgrade-...
+    - orion_semantic_map noetic <-> noetic-som-upgrade
+
 
 Manip will stick with tf publishing for size and position identification. 
 
@@ -193,4 +209,3 @@ Tasks
     Put away the groceries.
     Find my mates.
     Take out the trash (backup).
-
