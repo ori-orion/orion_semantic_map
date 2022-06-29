@@ -160,6 +160,8 @@ class CollectionManager:
             ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time]
         );
 
+        # rospy.loginfo("rosQueryEntrypoint started with ros_query: {}".format(ros_query))
+
         # If all the fields are their default values, then no query will be generated, thus 
         # causing the statement in the else statement to fail. Hence, we need this condition.
         if (len(ros_query_dict.keys()) == 0):

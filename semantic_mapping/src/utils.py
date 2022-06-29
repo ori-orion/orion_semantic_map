@@ -91,6 +91,8 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
     if (attributes == None):
         attributes = get_attributes(obj);
 
+    # print("Attributes: {}".format(attributes))
+
     if (len(attributes) == 0):
         return {};
 
@@ -118,11 +120,12 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
             if len(adding) == 0:
                 return None;
             return adding;        
-        
+
         for type_ in base_types:            
             if (type_ not in ignore_of_type) and isinstance(element, type_):
                 output = element;
                 output_type = type_;
+                # rospy.loginfo("Found element '{}', type '{}'".format(element, type_))
         
         if output == None:
             for type_ in temporal_types:
@@ -144,7 +147,8 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
         if ignore_default and output != None and output_type != None:            
             if output == output_type():
                 output = None;
-
+        
+        # rospy.loginfo("Ended with output: '{}'".format(output))
         return output;
     
     output:dict = {};
@@ -156,13 +160,15 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
             continue;
 
         element = getattr(obj, attr);
+        # rospy.loginfo("Element started as '{}', element: '{}'".format(element,attr));
+
         
         carry = pushObjToDict(element, ignore_default);
         if carry == None:
             # rospy.logwarn(attr + " of type " + str(type(element)) + "could not be added to an entry within the database. ");
             pass;
         else:
-            # print("\t", attr, "<-", carry);
+            # rospy.loginfo("\t" + attr + "<-" + str(carry));
             output[attr] = carry;
 
     if (session_id != -1):
