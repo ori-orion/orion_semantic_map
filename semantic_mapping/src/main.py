@@ -111,7 +111,7 @@ def setup_system():
     # This needs to be here because we need the callback to be called AFTER `obj_uid`
     # has been assigned by the observation_manager. Thus the Observation manager 
     # needs to be created first.
-    object_manager.collection_input_callbacks.append(push_person_callback);
+    observation_manager.collection_input_callbacks.append(push_person_callback);
 
     object_relational_manager:RelationManager = RelationManager(
         operating_on=object_manager,
