@@ -107,16 +107,19 @@ def setup_system():
         match_type=orion_actions.msg.Match
     );
 
-    # object_region_types = TypesCollection(
-    #     base_ros_type=orion_actions.msg.SOMBoxRegion
-    # );
-    # object_region_manager:RegionManager = RegionManager(
-    #     memory_manager=mem_manager,
-    #     types=object_region_types,
-    #     service_name="object_regions",
-    #     corner_location="corner_loc",
-    #     dimension="dimension"
-    # );
+
+    object_region_types = TypesCollection(
+        base_ros_type=orion_actions.msg.SOMBoxRegion,
+        input_parent=orion_actions.msg.SOMAddRegion,
+        input_response=orion_actions.msg.SOMAddRegionResponse
+    );
+    object_region_manager:RegionManager = RegionManager(
+        memory_manager=mem_manager,
+        types=object_region_types,
+        service_name="object_regions",
+        querying_within=object_manager,
+        positional_parameter="obj_position"
+    );
 
 
 

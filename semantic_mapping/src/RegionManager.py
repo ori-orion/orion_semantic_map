@@ -4,8 +4,10 @@ from CollectionManager import CollectionManager, TypesCollection;
 from MemoryManager import MemoryManager;
 
 from orion_actions.msg import SOMBoxRegion;
+import orion_actions.msg
 
 import rospy;
+import genpy;
 import tf2_ros;
 import tf2_geometry_msgs;
 import geometry_msgs.msg;
@@ -21,16 +23,23 @@ class RegionManager(CollectionManager):
         memory_manager:MemoryManager, 
         types:TypesCollection, 
         service_name:str,
-        corner_location:str,
-        dimension:str):
+        querying_within:CollectionManager,
+        positional_parameter:str):
         
         super(RegionManager, self).__init__(
             types=types, 
             service_name=service_name, 
             memory_manager=memory_manager);
 
-        self.corner_location = corner_location;
-        self.dimension = dimension;
+        # self.corner_location = corner_location;
+        # self.dimension = dimension;
+
+        # Let's say we're looking for objects within a given region.
+        # The region is defined by RegionManager. `querying_within`
+        # defines the set within which we are looking. 
+        self.querying_within:CollectionManager = querying_within;
+        # We also need to know what the positional parameter within `querying_within` actually is.
+        self.positional_parameter = positional_parameter;
 
         self.static_tb = tf2_ros.StaticTransformBroadcaster();
         self.publisher:rospy.Publisher = self.static_tb.pub_tf;
@@ -50,7 +59,7 @@ class RegionManager(CollectionManager):
 
         self.publish_transform(transform_in, "region_1");
 
-        self.point_in_region("region_1", point_in);
+        # self.point_in_region("region_1", point_in);
 
 
     def create_region(self, transform:geometry_msgs.msg.TransformStamped, region_name:str, size:geometry_msgs.msg.Vector3):
@@ -62,6 +71,7 @@ class RegionManager(CollectionManager):
         adding.name = region_name;
 
         self.addItemToCollectionDict(utils.obj_to_dict(adding));
+        
     def publish_transform(self, transform:geometry_msgs.msg.TransformStamped, child_frame_id:str) -> None:
 
         transform.header.stamp = rospy.Time.now();
@@ -96,3 +106,39 @@ class RegionManager(CollectionManager):
                 return False;
 
         return True;
+
+    def queryRegionROSEntryPoint(self, query:orion_actions.srv.SOMRegionQueryRequest):
+        """
+        Here is the entry point. query has two fields:
+            string region_name
+            SOMObject query
+        It should be noted that it is possible for multiple boxes to form a single region,
+         and thus multiple regions could be returned per query for `region_name`. 
+         We therefore want to iterate through all of these in our searching.  
+        """
+        region_name = query.region_name;
+        boxes = self.queryIntoCollection({"region_name":region_name});
+
+        # This is the query into the thing we're looking for the objects.
+        # This should mirror CollectionManager.rosQueryEntrypoint(...).
+        query_responses:list = self.querying_within.queryIntoCollection(
+            utils.obj_to_dict(
+                query.query, 
+                ignore_default=True,
+                ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time],
+                convert_caps=True));
+
+        for query_response in query_responses:
+            if self.positional_parameter in query_response:
+                if 'x' in query_response[self.positional_parameter]:
+                    pos = utils.dict_to_obj(query_response[self.positional_parameter], geometry_msgs.msg.Point());
+                else:
+                    pass;
+                for box in boxes:
+                    box_som_msg:SOMBoxRegion = utils.dict_to_obj(box, SOMBoxRegion());
+
+                pass;
+            pass;
+
+
+        pass;

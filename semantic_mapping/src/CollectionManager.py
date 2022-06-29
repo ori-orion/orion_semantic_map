@@ -161,6 +161,7 @@ class CollectionManager:
     def queryIntoCollection(self, query_dict:dict) -> list:
         """
         Query into the system through a dictionary.
+        This will return a list of dictionaries, each one corresponding to an entry.
         """
         # query_dict = utils.obj_to_dict(query, ignore_default=True);
 
