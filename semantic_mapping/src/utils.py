@@ -188,10 +188,13 @@ def dict_to_obj(dictionary:dict, objFillingOut):
             elif isinstance(dictionary[key], list):
                 carry = [];
                 for element in dictionary[key]:
-                    carry.append(dict_to_obj(element));
+                    if element is dict:
+                        raise(Exception("The sub-class of a list is a dictionary. The type is not currently known."));
+                    else:
+                        carry.append(element);
                 # print("Setting", key, "=", carry);
                 setattr(objFillingOut, key, carry);
-                pass;
+                continue;
             elif isinstance(getattr(objFillingOut, key), rospy.Time):   # Needs to be checked
                 # print("rospy.Time element found.");
                 # print("Setting",key, "[time]");

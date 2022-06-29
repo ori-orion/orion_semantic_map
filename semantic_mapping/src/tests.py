@@ -34,7 +34,7 @@ def test_observation_input():
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
-    rospy.sleep(2);
+    rospy.sleep(0.2);
 
     get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
 
@@ -49,7 +49,7 @@ def test_observation_input():
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
-    rospy.sleep(2);
+    rospy.sleep(0.2);
 
     adding = create_obs_instance("apple", -0.1,0,0);
     adding.adding.category = "fruit";
@@ -57,13 +57,13 @@ def test_observation_input():
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
-    rospy.sleep(2);
+    rospy.sleep(0.2);
     adding = create_obs_instance("person", 0,0,0);
     adding.adding.category = "person";
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
-    rospy.sleep(2);
+    rospy.sleep(0.2);
     adding = create_obs_instance("person", 1,1,0);
     adding.adding.category = "person";
     obj_return = push_to_db_srv(adding);
@@ -104,7 +104,7 @@ def test_human_observation_input():
     response = human_input(human_1);
     print(response);
 
-    rospy.sleep(1);
+    rospy.sleep(0.1);
 
     human_2:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
     human_2.adding.task_role = "Operator";
