@@ -92,7 +92,7 @@ def setup_system():
         consistency_args=observation_arg_name_defs           
     );
     
-    def push_person_callback(adding, obj_uid):
+    def push_person_callback(adding:dict, obj_uid:str):
         if adding["class_"] == "person":
             human_query:list = human_manager.queryIntoCollection({"object_uid":obj_uid});
             # So we want there to be one entry that's consistent with this object_uid.
@@ -109,7 +109,8 @@ def setup_system():
         return adding, obj_uid;
 
     # This needs to be here because we need the callback to be called AFTER `obj_uid`
-    # has been assigned by the observation_manager.
+    # has been assigned by the observation_manager. Thus the Observation manager 
+    # needs to be created first.
     object_manager.collection_input_callbacks.append(push_person_callback);
 
     object_relational_manager:RelationManager = RelationManager(

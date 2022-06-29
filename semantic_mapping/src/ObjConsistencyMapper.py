@@ -133,7 +133,7 @@ class ConsistencyChecker(CollectionManager):
 
 
     # Returns the str id that the object has gone into.
-    def push_item_to_pushing_to(self, adding:dict, obj_id) -> str:
+    def push_item_to_pushing_to(self, adding:dict, obj_id:str) -> str:
         
         query = {};
         for element in self.consistency_args.cross_ref_attr:
