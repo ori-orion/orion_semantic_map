@@ -106,6 +106,8 @@ def setup_system():
                 human_observation_manager.addItemToCollectionDict(
                     utils.obj_to_dict(adding_human));
 
+        return adding, obj_uid;
+
     # This needs to be here because we need the callback to be called AFTER `obj_uid`
     # has been assigned by the observation_manager.
     object_manager.collection_input_callbacks.append(push_person_callback);
