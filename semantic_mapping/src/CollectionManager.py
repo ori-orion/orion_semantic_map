@@ -155,7 +155,7 @@ class CollectionManager:
         Translates the ROS query into a dictionary, and then gets the list response using self.queryIntoCollection(...)
         """
         ros_query_dict:dict = utils.obj_to_dict(
-            ros_query, 
+            ros_query,
             ignore_default=True,
             ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time]
         );
@@ -163,6 +163,7 @@ class CollectionManager:
         # If all the fields are their default values, then no query will be generated, thus 
         # causing the statement in the else statement to fail. Hence, we need this condition.
         if (len(ros_query_dict.keys()) == 0):
+            print("\tNULL query.");
             response:list = self.queryIntoCollection({});
         else:
             response:list = self.queryIntoCollection(ros_query_dict[list(ros_query_dict.keys())[0]]);
