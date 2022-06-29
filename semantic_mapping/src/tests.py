@@ -96,6 +96,7 @@ def test_human_observation_input():
 
     human_1:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
     human_1.adding.task_role = "Operator";
+    human_1.adding.object_uid = "test_uid_1";
     human_1.adding.obj_position.position.x = 1;
     human_1.adding.obj_position.position.y = 2;
     human_1.adding.obj_position.position.z = 3;
@@ -108,6 +109,7 @@ def test_human_observation_input():
 
     human_2:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
     human_2.adding.task_role = "Operator";
+    human_2.adding.object_uid = "test_uid_2";
     human_2.adding.obj_position.position.x = 1;
     human_2.adding.obj_position.position.y = 4;
     human_2.adding.obj_position.position.z = 3;
@@ -118,6 +120,7 @@ def test_human_observation_input():
 
     human_3:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
     human_3.adding.task_role = "unknown";
+    human_3.adding.object_uid = "test_uid_3";
     human_3.adding.obj_position.position.x = 1;
     human_3.adding.obj_position.position.y = 5;
     human_3.adding.obj_position.position.z = 3;
