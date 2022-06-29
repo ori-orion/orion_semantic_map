@@ -9,11 +9,13 @@ from RelationManager import RelationManager;
 from RegionManager import RegionManager;
 import Ontology;
 from visualisation import RvizVisualisationManager;
+import utils;
 
 import rospy;
 
 import orion_actions.msg
 import orion_actions.srv
+import geometry_msgs.msg;
 
 import os;
 
@@ -49,6 +51,41 @@ def setup_system():
 
         return adding_dict, obj_id;
     # ontology_tree.print_graph();
+    
+    # The human stuff needs to be before the object stuff if we are to push
+    # humans as a result of seeing objects.
+    human_types:TypesCollection = TypesCollection(
+        base_ros_type=orion_actions.msg.Human,
+        query_parent=orion_actions.srv.SOMQueryHumans,
+        query_response=orion_actions.srv.SOMQueryHumansResponse
+    );
+    human_manager:CollectionManager = CollectionManager(
+        types=human_types,
+        service_name="humans",
+        memory_manager=mem_manager
+    );
+
+    human_observation_types:TypesCollection = TypesCollection(
+        base_ros_type=orion_actions.msg.HumanObservation,
+        input_parent=orion_actions.srv.SOMAddHumanObs,
+        input_response=orion_actions.srv.SOMAddHumanObsResponse
+    );
+    human_observation_manager_args:ConsistencyArgs = ConsistencyArgs(
+        position_attr="obj_position",
+        first_observed_attr="first_observed_at",
+        last_observed_attr="last_observed_at",
+        observed_at_attr="observed_at"
+    );
+    human_observation_manager_args.use_running_average_position = False;
+    # human_observation_manager_args.cross_ref_attr.append("task_role");
+    human_observation_manager_args.cross_ref_attr.append("object_uid");
+    human_observation_manager:ConsistencyChecker = ConsistencyChecker(
+        pushing_to=human_manager,
+        types=human_observation_types,
+        service_name="human_observations",
+        consistency_args=human_observation_manager_args
+    );
+    
 
     object_types:TypesCollection = TypesCollection(
         base_ros_type=orion_actions.msg.SOMObject,
@@ -98,6 +135,27 @@ def setup_system():
         consistency_args=observation_arg_name_defs,
         collection_input_callbacks=[ontology_observation_getCategory_callback]
     );
+    
+    def push_person_callback(adding:dict, obj_uid:str):
+        if adding["class_"] == "person":
+            human_query:list = human_manager.queryIntoCollection({"object_uid":obj_uid});
+            # So we want there to be one entry that's consistent with this object_uid.
+            # Note that "object_uid" is what is being checked for consistency so
+            # there should never be more than 1. 
+            if len(human_query) == 0:
+                adding_human = orion_actions.msg.HumanObservation();
+                adding_human.object_uid = obj_uid;
+                adding_human.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
+                adding_human.observed_at = utils.numericalTimeToROSTime(adding["observed_at"]);
+                human_observation_manager.addItemToCollectionDict(
+                    utils.obj_to_dict(adding_human));
+
+        return adding, obj_uid;
+
+    # This needs to be here because we need the callback to be called AFTER `obj_uid`
+    # has been assigned by the observation_manager. Thus the Observation manager 
+    # needs to be created first.
+    observation_manager.collection_input_callbacks.append(push_person_callback);
 
     object_relational_manager:RelationManager = RelationManager(
         operating_on=object_manager,
@@ -119,40 +177,6 @@ def setup_system():
         service_name="object_regions",
         querying_within=object_manager,
         positional_parameter="obj_position"
-    );
-
-
-
-    human_types:TypesCollection = TypesCollection(
-        base_ros_type=orion_actions.msg.Human,
-        query_parent=orion_actions.srv.SOMQueryHumans,
-        query_response=orion_actions.srv.SOMQueryHumansResponse
-    );
-    human_manager:CollectionManager = CollectionManager(
-        types=human_types,
-        service_name="humans",
-        memory_manager=mem_manager
-    );
-
-    human_observation_types:TypesCollection = TypesCollection(
-        base_ros_type=orion_actions.msg.HumanObservation,
-        input_parent=orion_actions.srv.SOMAddHumanObs,
-        input_response=orion_actions.srv.SOMAddHumanObsResponse
-    );
-    human_observation_manager_args:ConsistencyArgs = ConsistencyArgs(
-        position_attr="obj_position",
-        first_observed_attr="first_observed_at",
-        last_observed_attr="last_observed_at",
-        observed_at_attr="observed_at"
-    );
-    human_observation_manager_args.use_running_average_position = False;
-    # human_observation_manager_args.cross_ref_attr.append("task_role");
-    human_observation_manager_args.cross_ref_attr.append("object_uid");
-    human_observation_manager:ConsistencyChecker = ConsistencyChecker(
-        pushing_to=human_manager,
-        types=human_observation_types,
-        service_name="human_observations",
-        consistency_args=human_observation_manager_args
     );
 
 

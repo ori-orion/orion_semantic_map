@@ -193,9 +193,7 @@ class ConsistencyChecker(CollectionManager):
 
 
     # Returns the str id that the object has gone into.
-    # This is a callback within CollectionManager, and so must
-    # take adding, obj_id as both inputs and outputs.
-    def push_item_to_pushing_to(self, adding:dict, obj_id) -> str:
+    def push_item_to_pushing_to(self, adding:dict, obj_id:str) -> str:
         
         query = {};
         for element in self.consistency_args.cross_ref_attr:
@@ -210,6 +208,7 @@ class ConsistencyChecker(CollectionManager):
         possible_results:list = self.pushing_to.queryIntoCollection(query);
 
         if len(possible_results) == 0:
+            # print("No matches.")
             return adding, self.createNewConsistentObj(adding);
 
         # print("There were", len(possible_results), "possible matches");
@@ -245,3 +244,5 @@ class ConsistencyChecker(CollectionManager):
             # Update an existing entry.
             self.updateConsistentObj(adding, updating[utils.PYMONGO_ID_SPECIFIER], num_prev_observations);
             return adding, str(updating[utils.PYMONGO_ID_SPECIFIER]);
+
+    pass;

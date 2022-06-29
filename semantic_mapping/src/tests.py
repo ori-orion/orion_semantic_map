@@ -34,7 +34,7 @@ def test_observation_input():
     adding = create_obs_instance("person", 0,2,0, batch_num=0);
     obj_return = push_to_db_srv(adding);
 
-    rospy.sleep(2);
+    rospy.sleep(0.2);
 
     # Note that this is within the 1m distance for a person but further away than the 1m distance
     # given for persons but greater than the 0.3m distance given for other objects.
@@ -60,7 +60,7 @@ def test_observation_input():
     print(query_return.returns);
     assert(len(query_return.returns) == 2);
 
-    rospy.sleep(2);
+    rospy.sleep(0.2);
 
     adding = create_obs_instance("apple", -0.1,0,0);
     adding.adding.category = "fruit";
@@ -68,13 +68,13 @@ def test_observation_input():
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
-    rospy.sleep(2);
+    rospy.sleep(0.2);
     adding = create_obs_instance("person", 0,0,0);
     adding.adding.category = "person";
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
-    rospy.sleep(2);
+    rospy.sleep(0.2);
     adding = create_obs_instance("person", 1,1,0);
     adding.adding.category = "person";
     obj_return = push_to_db_srv(adding);
@@ -107,6 +107,7 @@ def test_human_observation_input():
 
     human_1:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
     human_1.adding.task_role = "Operator";
+    human_1.adding.object_uid = "test_uid_1";
     human_1.adding.obj_position.position.x = 1;
     human_1.adding.obj_position.position.y = 2;
     human_1.adding.obj_position.position.z = 3;
@@ -115,10 +116,11 @@ def test_human_observation_input():
     response = human_input(human_1);
     print(response);
 
-    rospy.sleep(1);
+    rospy.sleep(0.1);
 
     human_2:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
     human_2.adding.task_role = "Operator";
+    human_2.adding.object_uid = "test_uid_2";
     human_2.adding.obj_position.position.x = 1;
     human_2.adding.obj_position.position.y = 4;
     human_2.adding.obj_position.position.z = 3;
@@ -129,6 +131,7 @@ def test_human_observation_input():
 
     human_3:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
     human_3.adding.task_role = "unknown";
+    human_3.adding.object_uid = "test_uid_3";
     human_3.adding.obj_position.position.x = 1;
     human_3.adding.obj_position.position.y = 5;
     human_3.adding.obj_position.position.z = 3;

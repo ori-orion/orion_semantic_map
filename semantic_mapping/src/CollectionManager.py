@@ -83,7 +83,7 @@ class CollectionManager:
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!        
-        obj_id = None;
+        obj_id:str = None;
         for callback in self.collection_input_callbacks:
             adding_dict, obj_id = callback(adding_dict, obj_id);
 
@@ -192,7 +192,7 @@ class CollectionManager:
         """
 
         ros_query_dict:dict = utils.obj_to_dict(
-            ros_query, 
+            ros_query,
             ignore_default=True,
             ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time],
             convert_caps=True
