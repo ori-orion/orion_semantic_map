@@ -10,6 +10,7 @@ import rospy;
 
 import orion_actions.msg
 import orion_actions.srv
+import geometry_msgs.msg;
 
 # import semantic_mapping.srv
 # import semantic_mapping.msg
@@ -101,7 +102,7 @@ def setup_system():
             if len(human_query) == 0:
                 adding_human = orion_actions.msg.HumanObservation();
                 adding_human.object_uid = obj_uid;
-                adding_human.obj_position = adding["obj_position"];
+                adding_human.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
                 adding_human.observed_at = utils.numericalTimeToROSTime(adding["observed_at"]);
                 human_observation_manager.addItemToCollectionDict(
                     utils.obj_to_dict(adding_human));
