@@ -115,6 +115,8 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
             adding = [];
             for sub_element in element:
                 adding.append(pushObjToDict(sub_element, ignore_default));
+            if len(adding) == 0:
+                return None;
             return adding;        
         
         for type_ in base_types:            
