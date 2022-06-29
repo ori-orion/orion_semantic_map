@@ -1,6 +1,6 @@
 import numpy
 import utils;
-from CollectionManager import CollectionManager, TypesCollection;
+from CollectionManager import CollectionManager, TypesCollection, SERVICE_ROOT;
 from MemoryManager import MemoryManager;
 
 from orion_actions.msg import SOMBoxRegion;
@@ -52,6 +52,8 @@ class RegionManager(CollectionManager):
         # We don't want to blindly add transforms of random names into tf. This gives the prefix for these.
         self.region_tf_prefix = "region_";
 
+        self.setupROSServices();
+
 
     def create_region(self, transform:geometry_msgs.msg.TransformStamped, region_name:str, size:geometry_msgs.msg.Vector3):
         adding = SOMBoxRegion();
@@ -70,10 +72,9 @@ class RegionManager(CollectionManager):
 
         self.static_tb.sendTransform(transform);
 
-
     def point_in_region(self, region:SOMBoxRegion, point:geometry_msgs.msg.Point) -> bool:
         """
-        Returns whether the point is in the region indicated.
+        Returns whether the point is in the region.
         """
         point_tf2 = tf2_geometry_msgs.PointStamped();
         point_tf2.point = point;
@@ -139,3 +140,10 @@ class RegionManager(CollectionManager):
             pass;
         output.returns = output_list;
         return output;
+
+
+    def setupROSServices(self):
+        rospy.Service(
+            SERVICE_ROOT + self.service_name + "/region_query",
+            orion_actions.srv.SOMRegionQuery,
+            self.queryRegionROSEntryPoint);
