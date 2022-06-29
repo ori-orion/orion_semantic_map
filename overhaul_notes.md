@@ -174,6 +174,8 @@ TODO:
     Get VISA application up to scratch.
     state_machines tests.py file.
     Bounding box centres at the centre of the actual object.
+    Human positional stuff.
+    Query into regions themselves.
 SEMI-DONE:
     Rviz visualisations.
     Looking at how inputs having the same batch number influences the system.
