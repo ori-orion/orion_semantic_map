@@ -133,7 +133,7 @@ class ConsistencyChecker(CollectionManager):
 
 
     # Returns the str id that the object has gone into.
-    def push_item_to_pushing_to(self, adding:dict) -> str:
+    def push_item_to_pushing_to(self, adding:dict, obj_id) -> str:
         
         query = {};
         for element in self.consistency_args.cross_ref_attr:
@@ -149,7 +149,7 @@ class ConsistencyChecker(CollectionManager):
 
         if len(possible_results) == 0:
             # print("No matches.")
-            return self.createNewConsistentObj(adding);
+            return adding, self.createNewConsistentObj(adding);
 
         # print("There were", len(possible_results), "possible matches");
 
@@ -166,10 +166,10 @@ class ConsistencyChecker(CollectionManager):
 
 
         if (updating == None):
-            return self.createNewConsistentObj(adding);
+            return adding, self.createNewConsistentObj(adding);
         else:
             # Update an existing entry.
             self.updateConsistentObj(adding, updating[utils.PYMONGO_ID_SPECIFIER]);
-            return str(updating[utils.PYMONGO_ID_SPECIFIER]);
+            return adding, str(updating[utils.PYMONGO_ID_SPECIFIER]);
 
     pass;

@@ -73,9 +73,9 @@ class CollectionManager:
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!        
-        obj_id = None;
+        obj_id:str = None;
         for callback in self.collection_input_callbacks:
-            obj_id = callback(adding_dict);
+            adding_dict, obj_id = callback(adding_dict, obj_id);
 
         # If no obj_id was returned from the callback, then we assume there is no cross-referencing
         # and thus nothing to add here!
