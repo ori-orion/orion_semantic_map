@@ -90,7 +90,7 @@ class RegionManager(CollectionManager):
 
         try:
             transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
-                point_tf2, region.name);
+                point_tf2, region.UID);
         except:
             transformed_point = tf2_geometry_msgs.PointStamped();
             rospy.logerr("transform raised an error!");
@@ -114,7 +114,7 @@ class RegionManager(CollectionManager):
             SOMObject query
         It should be noted that it is possible for multiple boxes to form a single region,
          and thus multiple regions could be returned per query for `region_name`. 
-         We therefore want to iterate through all of these in our searching.  
+         We therefore want to iterate through all of these in our searching.
         """
         region_name = query.region_name;
         boxes = self.queryIntoCollection({"region_name":region_name});
@@ -128,17 +128,22 @@ class RegionManager(CollectionManager):
                 ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time],
                 convert_caps=True));
 
+        output = orion_actions.srv.SOMRegionQueryResponse();
+        output_list = [];
         for query_response in query_responses:
             if self.positional_parameter in query_response:
                 if 'x' in query_response[self.positional_parameter]:
-                    pos = utils.dict_to_obj(query_response[self.positional_parameter], geometry_msgs.msg.Point());
+                    pos:geometry_msgs.msg.Point = utils.dict_to_obj(query_response[self.positional_parameter], geometry_msgs.msg.Point());
                 else:
-                    pass;
+                    pos:geometry_msgs.msg.Point = utils.dict_to_obj(query_response[self.positional_parameter], geometry_msgs.msg.Pose()).position;
+
                 for box in boxes:
                     box_som_msg:SOMBoxRegion = utils.dict_to_obj(box, SOMBoxRegion());
 
+                    if self.point_in_region(box_som_msg, pos):
+                        output_list.append(utils.dict_to_obj(query_response, orion_actions.msg.SOMObject()));
+
                 pass;
             pass;
-
-
-        pass;
+        output.returns = output_list;
+        return output;
