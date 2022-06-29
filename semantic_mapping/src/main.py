@@ -168,8 +168,10 @@ def setup_system():
 
     object_region_types = TypesCollection(
         base_ros_type=orion_actions.msg.SOMBoxRegion,
-        input_parent=orion_actions.msg.SOMAddRegion,
-        input_response=orion_actions.msg.SOMAddRegionResponse
+        input_parent=orion_actions.srv.SOMAddRegion,
+        input_response=orion_actions.srv.SOMAddRegionResponse,
+        query_parent=orion_actions.srv.SOMQueryRegionsRequest,
+        query_response=orion_actions.srv.SOMQueryRegionsResponse
     );
     object_region_manager:RegionManager = RegionManager(
         memory_manager=mem_manager,

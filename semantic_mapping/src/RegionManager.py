@@ -52,28 +52,18 @@ class RegionManager(CollectionManager):
         # We don't want to blindly add transforms of random names into tf. This gives the prefix for these.
         self.region_tf_prefix = "region_";
 
-        # Beginning to test stuff...
-        transform_in = geometry_msgs.msg.TransformStamped();
-        transform_in.transform.translation = geometry_msgs.msg.Vector3(1,0,0);
-        transform_in.transform.rotation = geometry_msgs.msg.Quaternion(0,0,0,1);
-
-        self.publish_transform(transform_in, "region_1");
-
-        # self.point_in_region("region_1", point_in);
-
 
     def create_region(self, transform:geometry_msgs.msg.TransformStamped, region_name:str, size:geometry_msgs.msg.Vector3):
-        self.publish_transform(transform, self.region_tf_prefix + region_name);
-
         adding = SOMBoxRegion();
         adding.corner_loc = transform;
         adding.dimension = size;
         adding.name = region_name;
 
-        self.addItemToCollectionDict(utils.obj_to_dict(adding));
+        region_id:str = str(self.addItemToCollectionDict(utils.obj_to_dict(adding)));
+
+        self.publish_transform(transform, self.region_tf_prefix + region_id);
         
     def publish_transform(self, transform:geometry_msgs.msg.TransformStamped, child_frame_id:str) -> None:
-
         transform.header.stamp = rospy.Time.now();
         transform.header.frame_id = self.global_frame;
         transform.child_frame_id = child_frame_id;
@@ -82,7 +72,9 @@ class RegionManager(CollectionManager):
 
 
     def point_in_region(self, region:SOMBoxRegion, point:geometry_msgs.msg.Point) -> bool:
-        
+        """
+        Returns whether the point is in the region indicated.
+        """
         point_tf2 = tf2_geometry_msgs.PointStamped();
         point_tf2.point = point;
         point_tf2.header.stamp = rospy.Time.now();
@@ -90,7 +82,7 @@ class RegionManager(CollectionManager):
 
         try:
             transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
-                point_tf2, region.UID);
+                point_tf2, self.region_tf_prefix + region.UID);
         except:
             transformed_point = tf2_geometry_msgs.PointStamped();
             rospy.logerr("transform raised an error!");
