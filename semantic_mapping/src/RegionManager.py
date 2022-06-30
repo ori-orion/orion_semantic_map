@@ -1,3 +1,11 @@
+"""
+This is for querying within regions.
+Regions are defined by the type SOMBoxRegion, this defining a cuboid in space that can be queried.
+Each region is stored within the collection specified in the service name collection defined in main.py.
+Each region is also given a static tf named [self.region_tf_prefix][collection_uid].
+"""
+
+
 import numpy
 import utils;
 from CollectionManager import CollectionManager, TypesCollection, SERVICE_ROOT;

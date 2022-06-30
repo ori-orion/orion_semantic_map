@@ -35,7 +35,7 @@ def setup_system():
     ontology_tree:Ontology.ontology_member = Ontology.read_file(
         os.path.dirname(__file__) + "/labels.txt");
     # This will be a callback within observations for assigning the category of an object.
-    def ontology_observation_getCategory_callback(adding_dict:dict, obj_id):
+    def ontology_observation_getCategory_callback(adding_dict:dict, obj_id:str):
         if (len(adding_dict["category"]) == 0):
             ontological_result = ontology_tree.search_for_term(adding_dict["class_"]);
             if (ontological_result == None):
@@ -51,6 +51,14 @@ def setup_system():
 
         return adding_dict, obj_id;
     # ontology_tree.print_graph();
+
+    def pickupable_callback(adding_dict:dict, obj_id:str):
+        non_pickupable:list = ["table", "person"];
+        if adding_dict["class_"] in non_pickupable:
+            adding_dict["pickupable"] = False;
+        else:
+            adding_dict["pickupable"] = True;
+        return adding_dict, obj_id;
     
     # The human stuff needs to be before the object stuff if we are to push
     # humans as a result of seeing objects.
@@ -133,7 +141,7 @@ def setup_system():
         types=observation_types,
         service_name="observations",
         consistency_args=observation_arg_name_defs,
-        collection_input_callbacks=[ontology_observation_getCategory_callback]
+        collection_input_callbacks=[ontology_observation_getCategory_callback, pickupable_callback]
     );
     
     def push_person_callback(adding:dict, obj_uid:str):
@@ -142,7 +150,9 @@ def setup_system():
             # So we want there to be one entry that's consistent with this object_uid.
             # Note that "object_uid" is what is being checked for consistency so
             # there should never be more than 1. 
-            if len(human_query) == 0:
+            # NOTE: Maybe if True...
+            # We might want it updating position all the time.
+            if len(human_query) == 0:       
                 adding_human = orion_actions.msg.HumanObservation();
                 adding_human.object_uid = obj_uid;
                 adding_human.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
@@ -180,8 +190,6 @@ def setup_system():
         querying_within=object_manager,
         positional_parameter="obj_position"
     );
-
-
 
     rospy.loginfo("Memory systems set up!");
 
