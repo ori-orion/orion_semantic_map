@@ -49,6 +49,9 @@ class CollectionManager:
     positional_attr - For relations, we want to know what entry determines the position of an object.
                         This will also be used within the ObjConsistencyChecker.                           
     """
+
+    PRIOR_SESSION_ID = -1;
+
     def __init__(self, 
         types:TypesCollection, 
         service_name:str, 
@@ -63,6 +66,13 @@ class CollectionManager:
         # Makes sure the collection is added to the memory manager.
         self.collection:pymongo.collection.Collection = memory_manager.addCollection(self.service_name);        
 
+        # These are all in the form (action_dict, obj_id) -> (action_dict, obj_id), so that they can
+        # be called in series. obj_id is for cross referencing, and if it's not None, then 
+        # at the end, action_dict[utils.CROSS_REF_UID] will be set to obj_id. 
+        # The primary reason for the existance of these is for that of cross referencing between 
+        # collections. (Observations get amalgamated into Objects for instance.) 
+        # However, note that obj_id will propagate through all callbacks after it's assigned which in
+        # itself is quite useful.  
         self.collection_input_callbacks = [];
 
         self.sort_queries_by = sort_queries_by;
@@ -79,7 +89,9 @@ class CollectionManager:
         Add items to the collection via a dictionary.
         """
 
-        adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
+        # If SESSION_ID == CollectionManager.PRIOR_SESSION_ID, then it's a prior so...
+        if (SESSION_ID not in adding_dict) or (adding_dict[SESSION_ID] != CollectionManager.PRIOR_SESSION_ID):
+            adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!        
@@ -232,6 +244,7 @@ class CollectionManager:
             resp_array.append(appending);
 
         return ros_response;        
+
 
     def setupServices(self):
         """

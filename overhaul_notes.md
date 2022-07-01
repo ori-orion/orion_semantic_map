@@ -166,15 +166,15 @@ It would be nice to be able to say that object has now moved.
 TODO:
     leftmost/rightmost needs to be implemented.
     Regions.
+        - Get something to delete all regions. (Maybe even something to delete entries in general would be a good idea).
     Order stuff by closest to the robot? (within order of batch number).
     Size stuff.
     reusable_states.py line 821 SaveOperatorToSOM
         - This needs to be linked into the SOM system.
         - branch noetic-som-upgrade 
-    Get VISA application up to scratch.
-    state_machines tests.py file.
     Bounding box centres at the centre of the actual object.
     Human positional stuff.
+NEEDS TESTING:
     Query into regions themselves.
 SEMI-DONE:
     Rviz visualisations.
@@ -193,6 +193,7 @@ DONE:
         - This also tests that the responses are in order, and so should be run last out of all the tests.
     Order the responses w.r.t. time last observerd (or last batch number?)
     Clicking on the Rviz object doesn't print the result to the console.
+    state_machines tests.py file.
 Issues:
     There seems to be some sort of tf bug with getting the positions of objects.
 

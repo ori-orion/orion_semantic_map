@@ -3,13 +3,16 @@ This is for querying within regions.
 Regions are defined by the type SOMBoxRegion, this defining a cuboid in space that can be queried.
 Each region is stored within the collection specified in the service name collection defined in main.py.
 Each region is also given a static tf named [self.region_tf_prefix][collection_uid].
+Regions are entities we typically want to last the entire competition, and so are given 
+    SESSION_NUM = CollectionManager.PRIOR_SESSION_ID automatically. This will save them ad-infinitem (or until it's reset). Having a specific reset 
+    call might be a plan tbh.
 """
 
 
 import numpy
 import utils;
 from CollectionManager import CollectionManager, TypesCollection, SERVICE_ROOT;
-from MemoryManager import MemoryManager;
+from MemoryManager import MemoryManager, SESSION_ID;
 
 from orion_actions.msg import SOMBoxRegion;
 import orion_actions.msg
@@ -59,6 +62,12 @@ class RegionManager(CollectionManager):
 
         # We don't want to blindly add transforms of random names into tf. This gives the prefix for these.
         self.region_tf_prefix = "region_";
+
+        # We want every entry here to be a prior, so SESSION_ID = CollectionManager.PRIOR_SESSION_ID.
+        def session_num_to_prior(adding_dict:dict, obj_uid:str):
+            adding_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
+            return adding_dict, obj_uid;
+        self.collection_input_callbacks.append(session_num_to_prior);
 
         self.setupROSServices();
 
@@ -118,7 +127,10 @@ class RegionManager(CollectionManager):
          We therefore want to iterate through all of these in our searching.
         """
         region_name = query.region_name;
-        boxes = self.queryIntoCollection({"region_name":region_name});
+        # All regions are priors...
+        boxes = self.queryIntoCollection({
+            "region_name":region_name,
+            SESSION_ID: CollectionManager.PRIOR_SESSION_ID});
 
         # This is the query into the thing we're looking for the objects.
         # This should mirror CollectionManager.rosQueryEntrypoint(...).
@@ -144,8 +156,6 @@ class RegionManager(CollectionManager):
                     if self.point_in_region(box_som_msg, pos):
                         output_list.append(utils.dict_to_obj(query_response, orion_actions.msg.SOMObject()));
 
-                pass;
-            pass;
         output.returns = output_list;
         return output;
 

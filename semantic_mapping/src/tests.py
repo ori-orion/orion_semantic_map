@@ -289,6 +289,10 @@ def test_covariance_method():
 
     pass;
 
+def test_regions():
+
+    pass;
+
 if __name__ == '__main__':
     rospy.init_node('som_test_node');
 

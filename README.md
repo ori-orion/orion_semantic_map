@@ -3,7 +3,31 @@ ORIon Semantic Mapping.
 
 READMEs are included in each subfolder.
 
-Current active branch is `master`.
+Current active branch is `noetic`.
+
+# Notes on current implementation...
+
+## ROS message definitions:
+
+    - /som/human_observations
+        - For the adding of observations of humans.
+        - /input
+    - /som/humans
+        - For the storing of human entities.
+        - /basic_query
+    - /som/observations
+        - For the adding of observations of objects.
+        - /input
+        - /basic_query
+    - /som/objects
+        - For storing the object entities.
+        - /basic_query
+    - /som/object_regions
+        - For storing (and querying) regions.
+        - /input
+        - /basic_query
+        - /region_query
+    
 
 # Notes:
 

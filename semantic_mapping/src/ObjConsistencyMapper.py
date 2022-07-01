@@ -25,14 +25,20 @@ class ConsistencyArgs:
         last_observation_batch:str=None,
         class_identifier:str=None,
         positional_covariance_attr:str=None,
-        observation_counter_attr:str=None):
+        observation_counter_attr:str=None
+        use_running_average_position:bool=True):
 
 
         self.position_attr = position_attr;
         self.positional_covariance_attr = positional_covariance_attr;
         self.size_attr = size_attr;
-
-        self.use_running_average_position = True;
+        
+        # If the entry has the covariance stuff then that is used automatically.
+        # Otherwise, if the use_running_average_position flag is True, then it will average position over time.
+        #               (Useful for stationary objects.)
+        #            if the use_running_average_position flag is False, then it will take the most recent position
+        #               instead. (Useful for objects moving at high speed.)
+        self.use_running_average_position = use_running_average_position;
 
         self.cross_ref_attr = [];
 
