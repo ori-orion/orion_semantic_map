@@ -57,14 +57,13 @@ def test_observation_input():
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.class_ = "person";
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
-    print(query_return.returns);
+    # print(query_return.returns);
     assert(len(query_return.returns) == 2);
 
     rospy.sleep(0.2);
 
     adding = create_obs_instance("apple", -0.1,0,0);
     adding.adding.category = "fruit";
-    
     obj_return = push_to_db_srv(adding);
     print(obj_return);
 
@@ -94,9 +93,10 @@ def test_observation_input():
 
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.class_ = "bottle";
-    
     query_return = get_obj_from_db_srv(querying);
-    print(query_return);
+    # print(query_return);
+    assert(len(query_return.returns) != 0)
+    print("Length of returns for `bottle`:", len(query_return.returns));
 
     pass;
 
@@ -144,14 +144,14 @@ def test_human_observation_input():
     human_query_in:orion_actions.srv.SOMQueryHumansRequest = orion_actions.srv.SOMQueryHumansRequest();
     human_query_in.query.task_role = "Operator";
     response = human_query(human_query_in);
-    print(response);
+    assert(len(response.returns) != 0);
+    # print(response);
 
     print("\tEmpty query...");
     human_empty_query:orion_actions.srv.SOMQueryHumansRequest = orion_actions.srv.SOMQueryHumansRequest();
     response = human_query(human_empty_query);
-    print(response);
-
-    pass;
+    assert(len(response.returns) != 0);
+    # print(response);
 
 
 def test_obj_relational_query():
@@ -177,7 +177,8 @@ def test_obj_relational_query():
     query1.obj2.class_ = "banana_rel";
     query1.current_robot_pose = geometry_msgs.msg.Pose();
     query1_output:orion_actions.srv.SOMRelObjQueryResponse = relational_query_srv(query1);
-    print(query1_output);
+    print("Length of relational query 1: ", len(query1_output.matches));
+    # print(query1_output);
 
     # Note that here the window is infront of the banana. Also, the banana is to the right of the window 
     # (Construct a set of cartesian coordinates to show this.)
@@ -198,6 +199,7 @@ def test_obj_relational_query():
     query2.obj1.class_ = "window_rel";
     query2.relation.behind = True;
     query2_output:orion_actions.srv.SOMRelObjQueryResponse = relational_query_srv(query2);
+    print("Length of relational query 2: ", len(query2_output.matches));
     print(query2_output);
     for element in query2_output.matches:
         element:orion_actions.msg.Match;
@@ -214,9 +216,6 @@ def test_obj_relational_query():
     match0:orion_actions.msg.Match = query3_output.matches[0];
     assert(match0.obj1.class_ == "window_rel");
     assert(match0.obj2.class_ == "banana_rel");
-
-
-    pass;
 
 
 def uid_input_test():
@@ -277,7 +276,7 @@ def test_covariance_method():
     push_to_db_srv(adding_1);
     adding_2 = create_obs_instance(obj_name, 0,0.1,0, 3);
     adding_2.adding.covariance_mat = [10,0,0,0,1,0,0,0,1];
-    print("\tadding_obj_1")
+    print("\tadding_obj_2")
     push_to_db_srv(adding_2);
 
     query = orion_actions.srv.SOMQueryObjectsRequest();
@@ -286,9 +285,7 @@ def test_covariance_method():
     query_response:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(query);
     print(len(query_response.returns));
 
-    print(query_response);
-
-    pass;
+    # print(query_response);
 
 
 def test_regions():
@@ -352,6 +349,8 @@ if __name__ == '__main__':
     test_covariance_method();
     test_category_callback();
     
+    test_regions();
+
     uid_input_test();
     
 
