@@ -70,7 +70,7 @@ class ConsistencyArgs:
             positional_covariance_attr
         ];
 
-        # Not yet implemented
+        # -------------------- Not yet implemented --------------------
 
         # If we are averaging over position, this gives the number of batch numbers we go back by
         # for the averaging process. 
@@ -131,6 +131,12 @@ class ConsistencyChecker(CollectionManager):
         return str(self.pushing_to.addItemToCollectionDict(adding));
 
     def updateConsistentObj(self, updating_info:dict, obj_id_to_update:pymongo.collection.ObjectId, num_observations=math.inf):
+        """
+        Updates an object of uid `obj_id_to_update` with the dictionary `updating_info`.
+        This also does the positional updating averaging stuff/carries out the B14 stuff. 
+        `num_observations` gives the number of observations for the visualisation system. 
+            (There is no other purpose of this here.)
+        """
         # updating_info is an observation, rather than an object.
 
         previously_added:list = self.queryIntoCollection({utils.CROSS_REF_UID: str(obj_id_to_update)})        
@@ -142,11 +148,9 @@ class ConsistencyChecker(CollectionManager):
             if (key not in self.consistency_args.dont_transfer):
                 update_entry_input[key] = updating_info[key];
 
-        # Covariance implementation.
+        # Covariance implementation (using the B14 implementation).
         if self.consistency_args.positional_covariance_attr != None and \
             len(updating_info[self.consistency_args.positional_covariance_attr]) == 9:
-
-            # Does the B14 stuff.
 
             means = [];
             covariances = [];

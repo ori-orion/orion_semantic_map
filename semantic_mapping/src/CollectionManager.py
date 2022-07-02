@@ -9,6 +9,8 @@ from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, DEBUG_LONG, SESSION_I
 
 import visualisation;
 
+import std_srvs;
+
 
 class TypesCollection:
     """
@@ -252,6 +254,14 @@ class CollectionManager:
         return ros_response;        
 
 
+    def deleteAllEntries(self):
+        self.collection.delete_many({});
+
+    def rosDeleteAllEntries(self, srv_input:std_srvs.srv.EmptyRequest):
+        self.deleteAllEntries();
+        return std_srvs.srv.EmptyResponse();
+
+
     def setupServices(self):
         """
         Setup all the services associated with this object.
@@ -268,5 +278,10 @@ class CollectionManager:
                 SERVICE_ROOT + self.service_name + '/basic_query',
                 self.types.query_parent,
                 self.rosQueryEntrypoint);
+
+        rospy.Service(
+            SERVICE_ROOT + self.service_name + '/delete_entries',
+            std_srvs.srv.Empty,
+            self.rosDeleteAllEntries);
 
         pass;

@@ -167,7 +167,6 @@ TODO:
     leftmost/rightmost needs to be implemented.
     Regions.
         - Get something to delete all regions. (Maybe even something to delete entries in general would be a good idea).
-        - Visualisations. (These need to be accurate!)
     Order stuff by closest to the robot? (within order of batch number).
     Size stuff.
     reusable_states.py line 821 SaveOperatorToSOM
@@ -178,6 +177,8 @@ TODO:
 NEEDS TESTING:
     Query into regions themselves.
     Direct updating of objects by setting the UID within the update script.
+    Regions:
+        - Visualisations. (These need to be accurate!)
 SEMI-DONE:
     Rviz visualisations.
     Looking at how inputs having the same batch number influences the system.

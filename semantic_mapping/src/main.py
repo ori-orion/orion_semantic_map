@@ -208,5 +208,3 @@ def setup_system():
 
 if __name__ == '__main__':
     setup_system();
-
-    
