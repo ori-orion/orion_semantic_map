@@ -71,7 +71,12 @@ class ConsistencyArgs:
         ];
 
         # Not yet implemented
-        self.average_back_to_batch = 0;
+
+        # If we are averaging over position, this gives the number of batch numbers we go back by
+        # for the averaging process. 
+        #   - Is this a simple counter? (If we turn round having not seen the object for average_back_to_batch
+        #       batches, are we just going to update its position?)
+        self.average_back_to_batch = None;
 
     def batch_nums_setup(self) -> bool:
         return self.observation_batch_num != None and self.last_observation_batch != None;
@@ -137,6 +142,7 @@ class ConsistencyChecker(CollectionManager):
             if (key not in self.consistency_args.dont_transfer):
                 update_entry_input[key] = updating_info[key];
 
+        # Covariance implementation.
         if self.consistency_args.positional_covariance_attr != None and \
             len(updating_info[self.consistency_args.positional_covariance_attr]) == 9:
 
@@ -157,8 +163,8 @@ class ConsistencyChecker(CollectionManager):
 
             updating_info[self.consistency_args.position_attr] = \
                 utils.setPoint(updating_info[self.consistency_args.position_attr], utils.get_mean_over_samples(means, covariances));
+        # Executes a simple average. (To be used if B14 stuff is not to be!)
         elif self.consistency_args.use_running_average_position:
-            # Executes a simple average. (To be used if B14 stuff is not to be!)
             points = [];
             point_av = utils.getPoint(updating_info[self.consistency_args.position_attr]);
             num_points = 1;
@@ -184,6 +190,7 @@ class ConsistencyChecker(CollectionManager):
             update_entry_input[self.consistency_args.last_observation_batch] = \
                 updating_info[self.consistency_args.observation_batch_num];
         
+        # Infrastructure for setting up the incrementing of the observations counter.
         increment_param=None;
         if self.consistency_args.observation_counter_attr != None:
             increment_param = {self.consistency_args.observation_counter_attr: 1};
@@ -192,14 +199,22 @@ class ConsistencyChecker(CollectionManager):
             pass;
             print(update_entry_input);
 
+        # Update the entry in pushing_to.
         self.pushing_to.updateEntry(obj_id_to_update, update_entry_input, increment_param);
 
+        # Refresh the visualisations.
         if self.pushing_to.visualisation_manager != None:
             self.pushing_to.visualisation_manager.add_obj_dict(updating_info, str(obj_id_to_update), num_observations);
 
 
     # Returns the str id that the object has gone into.
     def push_item_to_pushing_to(self, adding:dict, obj_id:str) -> str:
+        """
+        The callback that adds observations to the object collection.
+        This gets the full adding dict (with all default fields).
+        It filters objects based on raw distance (rather than anything more fancy) at present.
+            This is done to work out whether to update or to create a new entry.
+        """
         
         query = {};
         for element in self.consistency_args.cross_ref_attr:

@@ -177,6 +177,7 @@ TODO:
     Human positional stuff.
 NEEDS TESTING:
     Query into regions themselves.
+    Direct updating of objects by setting the UID within the update script.
 SEMI-DONE:
     Rviz visualisations.
     Looking at how inputs having the same batch number influences the system.
