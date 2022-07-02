@@ -22,6 +22,8 @@ Current active branch is `noetic`.
     - /som/objects
         - For storing the object entities.
         - /basic_query
+        - /input
+            - To mainly be used for updating a given entry (done by setting UID).
     - /som/object_regions
         - For storing (and querying) regions.
         - /input

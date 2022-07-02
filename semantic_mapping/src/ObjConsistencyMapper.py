@@ -25,7 +25,7 @@ class ConsistencyArgs:
         last_observation_batch:str=None,
         class_identifier:str=None,
         positional_covariance_attr:str=None,
-        observation_counter_attr:str=None
+        observation_counter_attr:str=None,
         use_running_average_position:bool=True):
 
 

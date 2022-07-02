@@ -8,7 +8,7 @@ import orion_actions.srv
 import orion_actions.msg
 
 
-def create_obs_instance(class_, x, y, z, batch_num=0, category="") -> orion_actions.srv.SOMAddObservationRequest:
+def create_obs_instance(class_, x=0, y=0, z=0, batch_num=0, category="") -> orion_actions.srv.SOMAddObservationRequest:
     output = orion_actions.srv.SOMAddObservationRequest();
     output.adding.class_ = class_;
     output.adding.obj_position.position.x = x;
@@ -285,8 +285,6 @@ def test_covariance_method():
     query_response:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(query);
     print(len(query_response.returns));
 
-    # print(query_response);
-
 
 def test_regions():
     # Adding regions (if applicable).
@@ -339,6 +337,33 @@ def test_regions():
 
 
     pass;
+
+
+def test_updating_entry():
+    push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
+    get_obs_from_db_srv = rospy.ServiceProxy('/som/observations/basic_query', orion_actions.srv.SOMQueryObservations);
+
+    adding = create_obs_instance("update_entry_test", 0.1, 0, 0, batch_num=0, category="unupdated_category");
+    obj_return = push_to_db_srv(adding);
+
+    querying = orion_actions.srv.SOMQueryObservationsRequest();
+    querying.query.class_ = "update_entry_test";
+    query_response = get_obs_from_db_srv(querying);
+    assert(len(query_response.returns) == 1);
+    response_obs = query_response.returns[0];
+    assert(response_obs.category == "unupdated_category");
+
+    updating_obs = create_obs_instance("update_entry_test");
+    updating_obs.adding.UID = obj_return.UID;
+    updating_obs.adding.category = "update_category";
+
+    querying = orion_actions.srv.SOMQueryObservationsRequest();
+    querying.query.class_ = "update_entry_test";
+    query_response = get_obs_from_db_srv(querying);
+    assert(len(query_response.returns) == 1);
+    response_obs = query_response.returns[0];
+    assert(response_obs.category == "update_category");
+
 
 if __name__ == '__main__':
     rospy.init_node('som_test_node');

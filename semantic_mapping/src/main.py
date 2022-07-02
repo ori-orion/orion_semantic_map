@@ -98,7 +98,9 @@ def setup_system():
     object_types:TypesCollection = TypesCollection(
         base_ros_type=orion_actions.msg.SOMObject,
         query_parent=orion_actions.srv.SOMQueryObjects,
-        query_response=orion_actions.srv.SOMQueryObjectsResponse
+        query_response=orion_actions.srv.SOMQueryObjectsResponse,
+        input_parent=orion_actions.srv.SOMAddObject,
+        input_response=orion_actions.srv.SOMAddObjectResponse
     );
     object_visualisation_manager:RvizVisualisationManager = RvizVisualisationManager(
         im_server=interactive_marker_server,
@@ -135,6 +137,10 @@ def setup_system():
     );
     observation_arg_name_defs.dont_transfer.append("covariance_mat");
     observation_arg_name_defs.dont_transfer.append("transform_cov_to_diagonal");
+    # This is specifically for updating directly, and so we don't want this to be set to 
+    # False upon every observation (although if the object's been moved, that shouldn't
+    # actually be a problem).
+    observation_arg_name_defs.dont_transfer.append("picked_up");
     observation_arg_name_defs.cross_ref_attr.append("class_");
     observation_manager:ConsistencyChecker = ConsistencyChecker(
         pushing_to=object_manager,

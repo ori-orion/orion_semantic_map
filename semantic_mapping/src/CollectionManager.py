@@ -119,8 +119,14 @@ class CollectionManager:
         return result_id;
 
     def addItemToCollection(self, adding) -> pymongo.collection.ObjectId:
-        adding_dict:dict = utils.obj_to_dict(adding, ignore_default=False);
-        return self.addItemToCollectionDict(adding_dict);
+        if len(adding.UID) > 0:
+            updating_dict:dict = utils.obj_to_dict(adding, ignore_default=True);
+            uid:pymongo.collection.ObjectId = pymongo.collection.ObjectId(adding.UID);
+            self.updateEntry(uid, updating_dict);
+            return uid;
+        else:
+            adding_dict:dict = utils.obj_to_dict(adding, ignore_default=False);
+            return self.addItemToCollectionDict(adding_dict);
 
     def rosPushToCollection(self, pushing): # -> self.types.input_response
         pushing_attr = utils.get_attributes(pushing);        
