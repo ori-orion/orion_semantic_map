@@ -30,7 +30,7 @@ def setup_system():
 
     mem_manager:MemoryManager = MemoryManager();
 
-    interactive_marker_server = InteractiveMarkerServer("som/obj_vis")
+    interactive_marker_server = InteractiveMarkerServer("zzz_som/obj_vis")
     
     ontology_tree:Ontology.ontology_member = Ontology.read_file(
         os.path.dirname(__file__) + "/labels.txt");
@@ -182,6 +182,11 @@ def setup_system():
         input_response=orion_actions.srv.SOMAddRegionResponse,
         query_parent=orion_actions.srv.SOMQueryRegions,
         query_response=orion_actions.srv.SOMQueryRegionsResponse
+    );
+    region_visualisation_manager:RvizVisualisationManager = RvizVisualisationManager(
+        im_server=interactive_marker_server,
+        colour_a=0.7, colour_r=0.9, colour_g=0.2, colour_b=0.2,
+        class_attr="name", size_attr="dimension", position_attr="corner_loc"
     );
     object_region_manager:RegionManager = RegionManager(
         memory_manager=mem_manager,

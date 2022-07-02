@@ -167,6 +167,7 @@ TODO:
     leftmost/rightmost needs to be implemented.
     Regions.
         - Get something to delete all regions. (Maybe even something to delete entries in general would be a good idea).
+        - Visualisations. (These need to be accurate!)
     Order stuff by closest to the robot? (within order of batch number).
     Size stuff.
     reusable_states.py line 821 SaveOperatorToSOM

@@ -13,6 +13,7 @@ import numpy
 import utils;
 from CollectionManager import CollectionManager, TypesCollection, SERVICE_ROOT;
 from MemoryManager import MemoryManager, SESSION_ID;
+from visualisation import RvizVisualisationManager;
 
 from orion_actions.msg import SOMBoxRegion;
 import orion_actions.msg
@@ -35,7 +36,8 @@ class RegionManager(CollectionManager):
         types:TypesCollection, 
         service_name:str,
         querying_within:CollectionManager,
-        positional_parameter:str):
+        positional_parameter:str,
+        visualisation_manager:RvizVisualisationManager=None):
         
         super(RegionManager, self).__init__(
             types=types, 
@@ -69,7 +71,24 @@ class RegionManager(CollectionManager):
             return adding_dict, obj_uid;
         self.collection_input_callbacks.append(session_num_to_prior);
 
+        self.visualisation_manager = visualisation_manager;
+
         self.setupROSServices();
+
+    def transform_pt_to_global(self, transforming:geometry_msgs.msg.Point, region_name:str) -> tf2_geometry_msgs.PointStamped:
+        point_tf2 = tf2_geometry_msgs.PointStamped();
+        point_tf2.point = transforming;        # NOTE: this is not actually the right type but this may well make no difference.
+        point_tf2.header.stamp = rospy.Time.now();
+        point_tf2.header.frame_id = self.global_frame;
+
+        try:
+            transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
+                point_tf2, region_name);
+        except:
+            transformed_point = tf2_geometry_msgs.PointStamped();
+            rospy.logerr("transform raised an error!");
+        
+        return transformed_point;
 
 
     def create_region(self, transform:geometry_msgs.msg.TransformStamped, region_name:str, size:geometry_msgs.msg.Vector3):
@@ -81,6 +100,10 @@ class RegionManager(CollectionManager):
         region_id:str = str(self.addItemToCollectionDict(utils.obj_to_dict(adding)));
 
         self.publish_transform(transform, self.region_tf_prefix + region_id);
+
+        if self.visualisation_manager != None:
+
+            pass;
         
     def publish_transform(self, transform:geometry_msgs.msg.TransformStamped, child_frame_id:str) -> None:
         transform.header.stamp = rospy.Time.now();
@@ -89,21 +112,12 @@ class RegionManager(CollectionManager):
 
         self.static_tb.sendTransform(transform);
 
+
     def point_in_region(self, region:SOMBoxRegion, point:geometry_msgs.msg.Point) -> bool:
         """
         Returns whether the point is in the region.
         """
-        point_tf2 = tf2_geometry_msgs.PointStamped();
-        point_tf2.point = point;
-        point_tf2.header.stamp = rospy.Time.now();
-        point_tf2.header.frame_id = self.global_frame;
-
-        try:
-            transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
-                point_tf2, self.region_tf_prefix + region.UID);
-        except:
-            transformed_point = tf2_geometry_msgs.PointStamped();
-            rospy.logerr("transform raised an error!");
+        transformed_point:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(point, self.region_tf_prefix + region.UID);
 
         attr = ["x", "y", "z"];
 

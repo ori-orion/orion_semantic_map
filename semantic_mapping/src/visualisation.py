@@ -61,7 +61,7 @@ class RvizVisualisationManager:
             obj_size = carry.position;
             obj_pose.orientation = carry.orientation;
         else:
-            obj_size = utils.dict_to_obj(adding_dict[self.size_attr], Point());#
+            obj_size = utils.dict_to_obj(adding_dict[self.size_attr], Point());
         
         if "position" in adding_dict[self.position_attr]:
             obj_pose = utils.dict_to_obj(adding_dict[self.position_attr], Pose());
