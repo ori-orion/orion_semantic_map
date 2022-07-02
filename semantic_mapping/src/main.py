@@ -180,7 +180,7 @@ def setup_system():
         base_ros_type=orion_actions.msg.SOMBoxRegion,
         input_parent=orion_actions.srv.SOMAddRegion,
         input_response=orion_actions.srv.SOMAddRegionResponse,
-        query_parent=orion_actions.srv.SOMQueryRegionsRequest,
+        query_parent=orion_actions.srv.SOMQueryRegions,
         query_response=orion_actions.srv.SOMQueryRegionsResponse
     );
     object_region_manager:RegionManager = RegionManager(

@@ -248,6 +248,7 @@ def uid_input_test():
             assert(return_batch_nums[l-2] >= return_batch_nums[l-1]);
     print(return_batch_nums);
 
+
 def test_category_callback():
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
     get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
@@ -289,7 +290,42 @@ def test_covariance_method():
 
     pass;
 
+
 def test_regions():
+    # Adding regions (if applicable).
+    region_push_to_db_srv = rospy.ServiceProxy('/som/object_regions/input', orion_actions.srv.SOMAddRegion);
+    get_region_from_db_srv = rospy.ServiceProxy('/som/object_regions/basic_query', orion_actions.srv.SOMQueryRegions);
+    region_query_srv = rospy.ServiceProxy('/som/object_regions/region_query', orion_actions.srv.SOMRegionQuery);
+
+    region_name = "test_reg_1"
+
+    region_query_1 = orion_actions.srv.SOMQueryRegionsRequest();
+    region_query_1.query.name = region_name;
+    region_query_1_response = get_region_from_db_srv(region_query_1);
+    if len(region_query_1_response.returns) == 0:
+        region_to_add = orion_actions.msg.SOMBoxRegion();
+        region_to_add.name = region_name;
+        region_to_add.dimension.x = 1;
+        region_to_add.dimension.y = 1;
+        region_to_add.dimension.z = 1;
+        region_to_add.corner_loc.translation.x = 1;
+        region_to_add.corner_loc.translation.y = 0;
+        region_to_add.corner_loc.translation.z = 0;
+        region_to_add.corner_loc.rotation.x = 0;
+        region_to_add.corner_loc.rotation.y = 0;
+        region_to_add.corner_loc.rotation.z = 0;
+        region_to_add.corner_loc.rotation.w = 1;
+        region_push_to_db_srv(orion_actions.srv.SOMAddRegion(region_to_add));
+
+        region_query_1_response = get_region_from_db_srv(region_query_1);
+
+        assert(len(region_query_1_response.returns) == 1);
+    region_q1_ret = region_query_1_response.returns[0];
+    assert(region_q1_ret.SESSION_NUM == -1);        # We want this to be a prior.
+    assert(region_q1_ret.name == region_name);
+    
+
+
 
     pass;
 
