@@ -75,7 +75,7 @@ class RegionManager(CollectionManager):
 
         self.setupROSServices();
 
-    def transform_pt_to_global(self, transforming:geometry_msgs.msg.Point, region_name:str) -> tf2_geometry_msgs.PointStamped:
+    def transform_pt_to_global(self, transforming:geometry_msgs.msg.Point, region_tf_name:str) -> tf2_geometry_msgs.PointStamped:
         point_tf2 = tf2_geometry_msgs.PointStamped();
         point_tf2.point = transforming;        # NOTE: this is not actually the right type but this may well make no difference.
         point_tf2.header.stamp = rospy.Time.now();
@@ -83,7 +83,7 @@ class RegionManager(CollectionManager):
 
         try:
             transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
-                point_tf2, region_name);
+                point_tf2, region_tf_name);
         except:
             transformed_point = tf2_geometry_msgs.PointStamped();
             rospy.logerr("transform raised an error!");
@@ -102,7 +102,25 @@ class RegionManager(CollectionManager):
         self.publish_transform(transform, self.region_tf_prefix + region_id);
 
         if self.visualisation_manager != None:
+            # This needs to be done because I believe visualisations are drawn with the point at their centre.
+            half_size_point = geometry_msgs.msg.Point();
+            half_size_point.x = size.x/2;
+            half_size_point.y = size.y/2;
+            half_size_point.z = size.z/2;
+            transformed_hf_size:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(half_size_point, self.region_tf_prefix + region_id);
 
+            # transformed_hf_size then needs to be added to the corner loc to get the centre loc.
+            centre_loc = geometry_msgs.msg.Pose();
+            centre_loc.position.x = half_size_point.x + transform.x;
+            centre_loc.position.y = half_size_point.y + transform.y;
+            centre_loc.position.z = half_size_point.z + transform.z;
+            centre_loc.orientation = transform.rotation;
+
+            self.visualisation_manager.add_object(
+                id=self.region_tf_prefix + region_id,
+                pose=centre_loc,
+                size=size,
+                obj_class=region_name);
             pass;
         
     def publish_transform(self, transform:geometry_msgs.msg.TransformStamped, child_frame_id:str) -> None:

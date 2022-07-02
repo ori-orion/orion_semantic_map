@@ -297,14 +297,16 @@ def test_regions():
     get_region_from_db_srv = rospy.ServiceProxy('/som/object_regions/basic_query', orion_actions.srv.SOMQueryRegions);
     region_query_srv = rospy.ServiceProxy('/som/object_regions/region_query', orion_actions.srv.SOMRegionQuery);
 
-    region_name = "test_reg_1"
+    region_name_1 = "test_reg_1";
+    region_name_2 = "test_reg_2";
+    region_name_3 = "test_reg_3";
 
     region_query_1 = orion_actions.srv.SOMQueryRegionsRequest();
-    region_query_1.query.name = region_name;
+    region_query_1.query.name = region_name_1;
     region_query_1_response = get_region_from_db_srv(region_query_1);
     if len(region_query_1_response.returns) == 0:
         region_to_add = orion_actions.msg.SOMBoxRegion();
-        region_to_add.name = region_name;
+        region_to_add.name = region_name_1;
         region_to_add.dimension.x = 1;
         region_to_add.dimension.y = 1;
         region_to_add.dimension.z = 1;
@@ -317,13 +319,25 @@ def test_regions():
         region_to_add.corner_loc.rotation.w = 1;
         region_push_to_db_srv(orion_actions.srv.SOMAddRegion(region_to_add));
 
+        region_to_add.name = region_name_2;
+        region_to_add.corner_loc.rotation.z = 1;
+        region_to_add.corner_loc.rotation.w = 0;
+        region_to_add.dimension.x = 0.5;
+        region_push_to_db_srv(orion_actions.srv.SOMAddRegion(region_to_add));
+
+        region_to_add.name = region_name_3;
+        region_to_add.corner_loc.rotation.x = 1;
+        region_to_add.corner_loc.rotation.z = 0;
+        region_to_add.dimension.z = 0.2;
+        region_push_to_db_srv(orion_actions.srv.SOMAddRegion(region_to_add));
+
         region_query_1_response = get_region_from_db_srv(region_query_1);
 
         assert(len(region_query_1_response.returns) == 1);
     region_q1_ret = region_query_1_response.returns[0];
     assert(region_q1_ret.SESSION_NUM == -1);        # We want this to be a prior.
-    assert(region_q1_ret.name == region_name);
-    
+    assert(region_q1_ret.name == region_name_1);
+
 
 
 
