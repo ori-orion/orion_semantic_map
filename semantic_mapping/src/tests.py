@@ -312,19 +312,19 @@ def test_regions():
         region_to_add.corner_loc.rotation.y = 0;
         region_to_add.corner_loc.rotation.z = 0;
         region_to_add.corner_loc.rotation.w = 1;
-        region_push_to_db_srv(orion_actions.srv.SOMAddRegion(region_to_add));
+        region_push_to_db_srv(orion_actions.srv.SOMAddRegionRequest(region_to_add));
 
         region_to_add.name = region_name_2;
         region_to_add.corner_loc.rotation.z = 1;
         region_to_add.corner_loc.rotation.w = 0;
         region_to_add.dimension.x = 0.5;
-        region_push_to_db_srv(orion_actions.srv.SOMAddRegion(region_to_add));
+        region_push_to_db_srv(orion_actions.srv.SOMAddRegionRequest(region_to_add));
 
         region_to_add.name = region_name_3;
         region_to_add.corner_loc.rotation.x = 1;
         region_to_add.corner_loc.rotation.z = 0;
         region_to_add.dimension.z = 0.2;
-        region_push_to_db_srv(orion_actions.srv.SOMAddRegion(region_to_add));
+        region_push_to_db_srv(orion_actions.srv.SOMAddRegionRequest(region_to_add));
 
         region_query_1_response = get_region_from_db_srv(region_query_1);
 
@@ -340,6 +340,8 @@ def test_regions():
 
 
 def test_updating_entry():
+    print("Testing the updating of an entry");
+
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
     get_obs_from_db_srv = rospy.ServiceProxy('/som/observations/basic_query', orion_actions.srv.SOMQueryObservations);
 
@@ -356,13 +358,15 @@ def test_updating_entry():
     updating_obs = create_obs_instance("update_entry_test");
     updating_obs.adding.UID = obj_return.UID;
     updating_obs.adding.category = "update_category";
+    push_to_db_srv(updating_obs);
 
     querying = orion_actions.srv.SOMQueryObservationsRequest();
     querying.query.class_ = "update_entry_test";
-    query_response = get_obs_from_db_srv(querying);
+    query_response:orion_actions.srv.SOMQueryObservationsResponse = get_obs_from_db_srv(querying);
     assert(len(query_response.returns) == 1);
-    response_obs = query_response.returns[0];
+    response_obs:orion_actions.msg.SOMObservation = query_response.returns[0];
     assert(response_obs.category == "update_category");
+    print("\tTest passed");
 
 
 if __name__ == '__main__':
@@ -373,6 +377,7 @@ if __name__ == '__main__':
     test_obj_relational_query();
     test_covariance_method();
     test_category_callback();
+    test_updating_entry();
     
     test_regions();
 

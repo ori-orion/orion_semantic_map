@@ -16,7 +16,9 @@ from MemoryManager import MemoryManager, SESSION_ID;
 from visualisation import RvizVisualisationManager;
 
 from orion_actions.msg import SOMBoxRegion;
+
 import orion_actions.msg
+import orion_actions.srv
 
 import rospy;
 import genpy;
