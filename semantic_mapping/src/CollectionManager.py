@@ -76,6 +76,9 @@ class CollectionManager:
         # However, note that obj_id will propagate through all callbacks after it's assigned which in
         # itself is quite useful.  
         self.collection_input_callbacks = [];
+        # This goes right at the beginning of the query infrastructure. It only takes
+        # query_dict:dict as an input/output.
+        self.collection_query_callbacks = [];
 
         self.sort_queries_by = sort_queries_by;
 
@@ -183,7 +186,9 @@ class CollectionManager:
         Query into the system through a dictionary.
         This will return a list of dictionaries, each one corresponding to an entry.
         """
-        # query_dict = utils.obj_to_dict(query, ignore_default=True);
+        
+        for callback in self.collection_query_callbacks:
+            query_dict = callback(query_dict);
 
         if SESSION_ID not in query_dict:
             query_dict[SESSION_ID] = self.memory_manager.current_session_id;

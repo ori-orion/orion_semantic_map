@@ -7,6 +7,8 @@ import geometry_msgs.msg;
 import orion_actions.srv
 import orion_actions.msg
 
+import std_srvs.srv;
+
 
 def create_obs_instance(class_, x=0, y=0, z=0, batch_num=0, category="") -> orion_actions.srv.SOMAddObservationRequest:
     output = orion_actions.srv.SOMAddObservationRequest();
@@ -326,17 +328,21 @@ def test_regions():
         region_to_add.dimension.z = 0.2;
         region_push_to_db_srv(orion_actions.srv.SOMAddRegionRequest(region_to_add));
 
-        region_query_1_response = get_region_from_db_srv(region_query_1);
+        region_query_1_response:orion_actions.srv.SOMQueryRegionsResponse = get_region_from_db_srv(region_query_1);
+        print(region_query_1_response);
 
         assert(len(region_query_1_response.returns) == 1);
-    region_q1_ret = region_query_1_response.returns[0];
+    region_q1_ret:orion_actions.msg.SOMBoxRegion = region_query_1_response.returns[0];
     assert(region_q1_ret.SESSION_NUM == -1);        # We want this to be a prior.
     assert(region_q1_ret.name == region_name_1);
-
-
-
-
-    pass;
+    
+    print("Deleting all again...");
+    region_delete_srv = rospy.ServiceProxy('/som/object_regions/delete_entries', std_srvs.srv.Empty);
+    region_delete_srv(std_srvs.srv.EmptyRequest());
+    
+    region_query_2 = orion_actions.srv.SOMQueryRegionsRequest();
+    region_query_2_response = get_region_from_db_srv(region_query_2);
+    assert(len(region_query_2_response.returns) == 0);
 
 
 def test_updating_entry():

@@ -68,10 +68,15 @@ class RegionManager(CollectionManager):
         self.region_tf_prefix = "region_";
 
         # We want every entry here to be a prior, so SESSION_ID = CollectionManager.PRIOR_SESSION_ID.
-        def session_num_to_prior(adding_dict:dict, obj_uid:str):
+        def session_num_to_prior_adding(adding_dict:dict, obj_uid:str):
             adding_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
             return adding_dict, obj_uid;
-        self.collection_input_callbacks.append(session_num_to_prior);
+        self.collection_input_callbacks.append(session_num_to_prior_adding);
+
+        def session_num_to_prior_querying(query_dict:dict):
+            query_dict[SESSION_ID] = -1;
+            return query_dict;
+        self.collection_query_callbacks.append(session_num_to_prior_querying);
 
         self.visualisation_manager = visualisation_manager;
 
