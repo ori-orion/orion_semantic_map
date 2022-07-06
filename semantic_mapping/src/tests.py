@@ -288,63 +288,6 @@ def test_covariance_method():
     print(len(query_response.returns));
 
 
-def test_regions():
-    # Adding regions (if applicable).
-    region_push_to_db_srv = rospy.ServiceProxy('/som/object_regions/input', orion_actions.srv.SOMAddRegion);
-    get_region_from_db_srv = rospy.ServiceProxy('/som/object_regions/basic_query', orion_actions.srv.SOMQueryRegions);
-    region_query_srv = rospy.ServiceProxy('/som/object_regions/region_query', orion_actions.srv.SOMRegionQuery);
-
-    region_name_1 = "test_reg_1";
-    region_name_2 = "test_reg_2";
-    region_name_3 = "test_reg_3";
-
-    region_query_1 = orion_actions.srv.SOMQueryRegionsRequest();
-    region_query_1.query.name = region_name_1;
-    region_query_1_response = get_region_from_db_srv(region_query_1);
-    if len(region_query_1_response.returns) == 0:
-        region_to_add = orion_actions.msg.SOMBoxRegion();
-        region_to_add.name = region_name_1;
-        region_to_add.dimension.x = 1;
-        region_to_add.dimension.y = 1;
-        region_to_add.dimension.z = 1;
-        region_to_add.corner_loc.translation.x = 1;
-        region_to_add.corner_loc.translation.y = 0;
-        region_to_add.corner_loc.translation.z = 0;
-        region_to_add.corner_loc.rotation.x = 0;
-        region_to_add.corner_loc.rotation.y = 0;
-        region_to_add.corner_loc.rotation.z = 0;
-        region_to_add.corner_loc.rotation.w = 1;
-        region_push_to_db_srv(orion_actions.srv.SOMAddRegionRequest(region_to_add));
-
-        region_to_add.name = region_name_2;
-        region_to_add.corner_loc.rotation.z = 1;
-        region_to_add.corner_loc.rotation.w = 0;
-        region_to_add.dimension.x = 0.5;
-        region_push_to_db_srv(orion_actions.srv.SOMAddRegionRequest(region_to_add));
-
-        region_to_add.name = region_name_3;
-        region_to_add.corner_loc.rotation.x = 1;
-        region_to_add.corner_loc.rotation.z = 0;
-        region_to_add.dimension.z = 0.2;
-        region_push_to_db_srv(orion_actions.srv.SOMAddRegionRequest(region_to_add));
-
-        region_query_1_response:orion_actions.srv.SOMQueryRegionsResponse = get_region_from_db_srv(region_query_1);
-        print(region_query_1_response);
-
-        assert(len(region_query_1_response.returns) == 1);
-    region_q1_ret:orion_actions.msg.SOMBoxRegion = region_query_1_response.returns[0];
-    assert(region_q1_ret.SESSION_NUM == -1);        # We want this to be a prior.
-    assert(region_q1_ret.name == region_name_1);
-    
-    print("Deleting all again...");
-    region_delete_srv = rospy.ServiceProxy('/som/object_regions/delete_entries', std_srvs.srv.Empty);
-    region_delete_srv(std_srvs.srv.EmptyRequest());
-    
-    region_query_2 = orion_actions.srv.SOMQueryRegionsRequest();
-    region_query_2_response = get_region_from_db_srv(region_query_2);
-    assert(len(region_query_2_response.returns) == 0);
-
-
 def test_updating_entry():
     print("Testing the updating of an entry");
 

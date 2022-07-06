@@ -12,7 +12,7 @@ Regions are entities we typically want to last the entire competition, and so ar
 import numpy
 import utils;
 from CollectionManager import CollectionManager, TypesCollection, SERVICE_ROOT;
-from MemoryManager import MemoryManager, SESSION_ID;
+from MemoryManager import DEBUG, MemoryManager, SESSION_ID;
 from visualisation import RvizVisualisationManager;
 
 from orion_actions.msg import SOMBoxRegion;
@@ -39,7 +39,7 @@ class RegionManager(CollectionManager):
         service_name:str,
         querying_within:CollectionManager,
         positional_parameter:str,
-        visualisation_manager:RvizVisualisationManager=None):
+        region_visualisation_manager:RvizVisualisationManager=None):
         
         # The method here is completely different! We therefore don't want the default
         # service to be created.
@@ -84,7 +84,10 @@ class RegionManager(CollectionManager):
             return query_dict;
         self.collection_query_callbacks.append(session_num_to_prior_querying);
 
-        self.visualisation_manager = visualisation_manager;
+        # So that we can implement separate logic to ensure it goes at the same location.
+        # We aren't actually overriding because the inputs are completely different!
+        # (Slight hack alert).
+        self.region_visualisation_manager = region_visualisation_manager;
 
         self.setupROSServices();
 
@@ -93,6 +96,9 @@ class RegionManager(CollectionManager):
         point_tf2.point = transforming;        # NOTE: this is not actually the right type but this may well make no difference.
         point_tf2.header.stamp = rospy.Time.now();
         point_tf2.header.frame_id = self.global_frame;
+
+        transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
+                point_tf2, region_tf_name);
 
         try:
             transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
@@ -105,6 +111,9 @@ class RegionManager(CollectionManager):
 
 
     def create_region(self, transform:geometry_msgs.msg.TransformStamped, region_name:str, size:geometry_msgs.msg.Vector3):
+        if DEBUG:
+            print("Creating a region");
+
         adding = SOMBoxRegion();
         adding.corner_loc = transform;
         adding.dimension = size;
@@ -114,7 +123,7 @@ class RegionManager(CollectionManager):
 
         self.publish_transform(transform, self.region_tf_prefix + region_id);
 
-        if self.visualisation_manager != None:
+        if self.region_visualisation_manager != None:
             self.publish_visualisation_box(transform, region_name, size, region_id);
         
         return region_id;
@@ -124,6 +133,7 @@ class RegionManager(CollectionManager):
         transform.header.frame_id = self.global_frame;
         transform.child_frame_id = child_frame_id;
 
+        print("\tPublishing transform");
         self.static_tb.sendTransform(transform);
 
     
@@ -142,14 +152,20 @@ class RegionManager(CollectionManager):
         half_size_point.z = size.z/2;
         transformed_hf_size:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(half_size_point, self.region_tf_prefix + region_id);
 
+        print("Half size:", half_size_point);
+
         # transformed_hf_size then needs to be added to the corner loc to get the centre loc.
         centre_loc = geometry_msgs.msg.Pose();
         centre_loc.position.x = transformed_hf_size.point.x + transform.transform.translation.x;
         centre_loc.position.y = transformed_hf_size.point.y + transform.transform.translation.y;
         centre_loc.position.z = transformed_hf_size.point.z + transform.transform.translation.z;
+
+        # centre_loc.position.x = transform.transform.translation.x;
+        # centre_loc.position.y = transform.transform.translation.y;
+        # centre_loc.position.z = transform.transform.translation.z;
         centre_loc.orientation = transform.transform.rotation;
 
-        self.visualisation_manager.add_object(
+        self.region_visualisation_manager.add_object(
             id=self.region_tf_prefix + region_id,
             pose=centre_loc,
             size=size,
@@ -219,7 +235,9 @@ class RegionManager(CollectionManager):
 
 
     def addRegionROSEntryPoint(self, adding:orion_actions.srv.SOMAddRegionRequest) -> orion_actions.srv.SOMAddRegionResponse:
-        uid:str = self.create_region(adding.adding.corner_loc, adding.adding.name, adding.adding.dimension);
+        corner_loc_stamped = geometry_msgs.msg.TransformStamped();
+        corner_loc_stamped.transform = adding.adding.corner_loc;
+        uid:str = self.create_region(corner_loc_stamped, adding.adding.name, adding.adding.dimension);
         return orion_actions.srv.SOMAddRegionResponse(uid);
 
 

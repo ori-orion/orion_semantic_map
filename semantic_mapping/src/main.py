@@ -201,7 +201,8 @@ def setup_system():
         types=object_region_types,
         service_name="object_regions",
         querying_within=object_manager,
-        positional_parameter="obj_position"
+        positional_parameter="obj_position",
+        region_visualisation_manager=region_visualisation_manager
     );
 
     rospy.loginfo("Memory systems set up!");
