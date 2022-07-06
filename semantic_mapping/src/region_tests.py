@@ -55,14 +55,16 @@ def test_regions():
         region_to_add.corner_loc.translation.x = 0;
         region_to_add.corner_loc.translation.y = 1;
         region_to_add.corner_loc.translation.z = 0;
-        region_to_add.corner_loc.rotation.x = 0;
+        region_to_add.corner_loc.rotation.x = 0.0998;
         region_to_add.corner_loc.rotation.y = 0;
         region_to_add.corner_loc.rotation.z = 0;
-        region_to_add.corner_loc.rotation.w = 1;
+        region_to_add.corner_loc.rotation.w = 0.995;
         region_input(orion_actions.srv.SOMAddRegionRequest(region_to_add));
 
         region_to_add.name = region_name_2;
-        region_to_add.corner_loc.translation.x = 1;
+        region_to_add.corner_loc.translation.x = 1.2;
+        region_to_add.corner_loc.translation.z = 1;
+        region_to_add.corner_loc.rotation.x = 0;
         region_to_add.corner_loc.rotation.z = math.sqrt(2)/2;
         region_to_add.corner_loc.rotation.w = math.sqrt(2)/2;
         region_to_add.dimension.x = 0.5;

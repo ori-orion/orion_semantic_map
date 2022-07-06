@@ -106,7 +106,7 @@ class RegionManager(CollectionManager):
         except:
             transformed_point = tf2_geometry_msgs.PointStamped();
             rospy.logerr("transform raised an error!");
-        
+
         return transformed_point;
 
 
@@ -151,18 +151,21 @@ class RegionManager(CollectionManager):
 
         # This needs to be done because I believe visualisations are drawn with the point at their centre.
         half_size_point = geometry_msgs.msg.Point();
-        half_size_point.x = size.x/2;
-        half_size_point.y = size.y/2;
-        half_size_point.z = size.z/2;
-        transformed_hf_size:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(half_size_point, self.region_tf_prefix + region_id);
+        half_size_point.x = size.x/2# + transform.transform.translation.x;
+        half_size_point.y = size.y/2# + transform.transform.translation.y;
+        half_size_point.z = size.z/2# + transform.transform.translation.z;
+        # transformed_hf_size:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(half_size_point, self.region_tf_prefix + region_id);
 
-        print("Half size:", half_size_point);
+        rotation_mat:numpy.matrix = utils.quaternion_to_rot_mat(transform.transform.rotation);
+        rotated_corner_point = numpy.matmul(rotation_mat, numpy.asarray([size.x/2, size.y/2, size.z/2]));
+
+        print("Half size:", half_size_point, " rotated to", rotated_corner_point);
 
         # transformed_hf_size then needs to be added to the corner loc to get the centre loc.
         centre_loc = geometry_msgs.msg.Pose();
-        centre_loc.position.x = transformed_hf_size.point.x + transform.transform.translation.x;
-        centre_loc.position.y = transformed_hf_size.point.y + transform.transform.translation.y;
-        centre_loc.position.z = transformed_hf_size.point.z + transform.transform.translation.z;
+        centre_loc.position.x = rotated_corner_point[0] + transform.transform.translation.x;
+        centre_loc.position.y = rotated_corner_point[1] + transform.transform.translation.y;
+        centre_loc.position.z = rotated_corner_point[2] + transform.transform.translation.z;
 
         # centre_loc.position.x = transform.transform.translation.x;
         # centre_loc.position.y = transform.transform.translation.y;
