@@ -61,8 +61,10 @@ class RegionManager(CollectionManager):
         # We also need to know what the positional parameter within `querying_within` actually is.
         self.positional_parameter = positional_parameter;
 
+        # Lists all the transforms that have been published. 
+        self.static_transforms = [];
+        # The static transform broadcaster itself.
         self.static_tb = tf2_ros.StaticTransformBroadcaster();
-        self.publisher:rospy.Publisher = self.static_tb.pub_tf;
 
         self.tfBuffer = tf2_ros.Buffer();
         self.listener = tf2_ros.TransformListener(self.tfBuffer);
@@ -117,7 +119,9 @@ class RegionManager(CollectionManager):
         adding.dimension = size;
         adding.name = region_name;
 
-        region_id:str = str(self.addItemToCollectionDict(utils.obj_to_dict(adding)));
+        region_dict:dict = utils.obj_to_dict(adding);
+        region_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
+        region_id:str = str(self.addItemToCollectionDict(region_dict));
 
         self.publish_transform(transform, self.region_tf_prefix + region_id);
 
@@ -131,8 +135,10 @@ class RegionManager(CollectionManager):
         transform.header.frame_id = self.global_frame;
         transform.child_frame_id = child_frame_id;
 
-        print("\tPublishing transform");
-        self.static_tb.sendTransform(transform);
+        self.static_transforms.append(transform);
+
+        print("\tPublishing transform of name", child_frame_id);
+        self.static_tb.sendTransform(self.static_transforms);
 
     
     def publish_visualisation_box(self, 
