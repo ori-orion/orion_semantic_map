@@ -295,7 +295,7 @@ def test_updating_entry():
     get_obs_from_db_srv = rospy.ServiceProxy('/som/observations/basic_query', orion_actions.srv.SOMQueryObservations);
 
     adding = create_obs_instance("update_entry_test", 0.1, 0, 0, batch_num=0, category="unupdated_category");
-    obj_return = push_to_db_srv(adding);
+    obj_return:orion_actions.srv.SOMAddObservationResponse = push_to_db_srv(adding);
 
     querying = orion_actions.srv.SOMQueryObservationsRequest();
     querying.query.class_ = "update_entry_test";
@@ -327,8 +327,6 @@ if __name__ == '__main__':
     test_covariance_method();
     test_category_callback();
     test_updating_entry();
-    
-    test_regions();
 
     uid_input_test();
     

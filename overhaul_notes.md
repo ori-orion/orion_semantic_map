@@ -189,6 +189,7 @@ TODO:
     ORION Checklist:
         Print Robocup invitation.
     Money needed in Bangkok?
+
 NEEDS TESTING:
     Query into regions themselves.
     Direct updating of objects by setting the UID within the update script.
@@ -220,6 +221,13 @@ Notes for branches you need to change (to/from)
     - orion_recognition noetic <-> noetic-som-upgrade-...
     - orion_semantic_map noetic <-> noetic-som-upgrade
 
+General Notes:
+    Recieved (and need to pack):
+        Screws (Hold)
+        Batteries AAAx10 AAx4 (Carry on)
+        Power extension lead x2
+        tp-link (Carry on/easily accessible; Hand to Ricardo)
+        Invoice book.
 
 Manip will stick with tf publishing for size and position identification. 
 
