@@ -183,10 +183,11 @@ def setup_system():
     );
 
 
+    # The input service has been completely rewritten for the region manager. 
+    # The input_parent/input_response fields are set to None in the constructor.
+    # Even so, it makes no sense to add them here as well.
     object_region_types = TypesCollection(
         base_ros_type=orion_actions.msg.SOMBoxRegion,
-        input_parent=orion_actions.srv.SOMAddRegion,
-        input_response=orion_actions.srv.SOMAddRegionResponse,
         query_parent=orion_actions.srv.SOMQueryRegions,
         query_response=orion_actions.srv.SOMQueryRegionsResponse
     );

@@ -41,6 +41,11 @@ class RegionManager(CollectionManager):
         positional_parameter:str,
         visualisation_manager:RvizVisualisationManager=None):
         
+        # The method here is completely different! We therefore don't want the default
+        # service to be created.
+        types.input_parent = None;
+        types.input_response = None;
+
         super(RegionManager, self).__init__(
             types=types, 
             service_name=service_name, 
@@ -68,10 +73,11 @@ class RegionManager(CollectionManager):
         self.region_tf_prefix = "region_";
 
         # We want every entry here to be a prior, so SESSION_ID = CollectionManager.PRIOR_SESSION_ID.
-        def session_num_to_prior_adding(adding_dict:dict, obj_uid:str):
-            adding_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
-            return adding_dict, obj_uid;
-        self.collection_input_callbacks.append(session_num_to_prior_adding);
+        # def session_num_to_prior_adding(adding_dict:dict, obj_uid:str):
+        #     adding_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
+        #     return adding_dict, obj_uid;
+        # self.collection_input_callbacks.append(session_num_to_prior_adding);
+
 
         def session_num_to_prior_querying(query_dict:dict):
             query_dict[SESSION_ID] = -1;
@@ -110,6 +116,8 @@ class RegionManager(CollectionManager):
 
         if self.visualisation_manager != None:
             self.publish_visualisation_box(transform, region_name, size, region_id);
+        
+        return region_id;
 
     def publish_transform(self, transform:geometry_msgs.msg.TransformStamped, child_frame_id:str) -> None:
         transform.header.stamp = rospy.Time.now();
@@ -210,8 +218,18 @@ class RegionManager(CollectionManager):
         return output;
 
 
+    def addRegionROSEntryPoint(self, adding:orion_actions.srv.SOMAddRegionRequest) -> orion_actions.srv.SOMAddRegionResponse:
+        uid:str = self.create_region(adding.adding.corner_loc, adding.adding.name, adding.adding.dimension);
+        return orion_actions.srv.SOMAddRegionResponse(uid);
+
+
     def setupROSServices(self):
         rospy.Service(
             SERVICE_ROOT + self.service_name + "/region_query",
             orion_actions.srv.SOMRegionQuery,
             self.queryRegionROSEntryPoint);
+
+        rospy.Service(
+            SERVICE_ROOT + self.service_name + "/input",
+            orion_actions.srv.SOMAddRegion,
+            self.addRegionROSEntryPoint);
