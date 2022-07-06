@@ -174,6 +174,21 @@ TODO:
         - branch noetic-som-upgrade 
     Bounding box centres at the centre of the actual object.
     Human positional stuff.
+    
+    Send in exact branch to Clarissa for vision system.
+    False default parameter won't work.
+    7:45 Heathrow bus!!! (Gloucester Green Bus station.)
+        BOOK!!!
+    Briefing on Sunday Night
+    At Bangkok:
+        Daily briefing at the beginning of each day.
+        Print ALL travel documents.
+        Make changes on the Laptop rather than on the HSR.
+        Poster presentation? 
+    Wednesday Afternoon from 2pm onwards.
+    ORION Checklist:
+        Print Robocup invitation.
+    Money needed in Bangkok?
 NEEDS TESTING:
     Query into regions themselves.
     Direct updating of objects by setting the UID within the update script.
