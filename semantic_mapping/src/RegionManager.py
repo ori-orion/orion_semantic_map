@@ -26,11 +26,12 @@ import tf2_ros;
 import tf2_geometry_msgs;
 import geometry_msgs.msg;
 
+DEBUG_REGION_VISUALISATIONS:bool = True;
+
 class RegionManager(CollectionManager):
     """
     The whole aim here is to do introspection on one object to work out if it's
     within a cuiboidal region of corner location `corner_loc` and size `dimension`.
-
     """
     def __init__(
         self, 
@@ -186,6 +187,8 @@ class RegionManager(CollectionManager):
         """
         transformed_point:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(point, self.region_tf_prefix + region.UID);
 
+        print(transformed_point);
+
         attr = ["x", "y", "z"];
 
         # Iterates over the parameters of {x,y,z}.
@@ -225,17 +228,28 @@ class RegionManager(CollectionManager):
         output = orion_actions.srv.SOMRegionQueryResponse();
         output_list = [];
         for query_response in query_responses:
+            query_response:dict;
             if self.positional_parameter in query_response:
                 if 'x' in query_response[self.positional_parameter]:
-                    pos:geometry_msgs.msg.Point = utils.dict_to_obj(query_response[self.positional_parameter], geometry_msgs.msg.Point());
+                    pos:geometry_msgs.msg.Point = utils.dict_to_obj(
+                        query_response[self.positional_parameter], 
+                        geometry_msgs.msg.Point());
                 else:
-                    pos:geometry_msgs.msg.Point = utils.dict_to_obj(query_response[self.positional_parameter], geometry_msgs.msg.Pose()).position;
+                    pos:geometry_msgs.msg.Point = utils.dict_to_obj(
+                        query_response[self.positional_parameter], 
+                        geometry_msgs.msg.Pose()).position;
 
                 for box in boxes:
                     box_som_msg:SOMBoxRegion = utils.dict_to_obj(box, SOMBoxRegion());
 
                     if self.point_in_region(box_som_msg, pos):
                         output_list.append(utils.dict_to_obj(query_response, orion_actions.msg.SOMObject()));
+
+                        if self.querying_within.visualisation_manager != None and DEBUG_REGION_VISUALISATIONS:
+                            self.querying_within.visualisation_manager.add_obj_dict(
+                                query_response, 
+                                query_response[utils.UID_ENTRY]);
+
 
         output.returns = output_list;
         return output;
