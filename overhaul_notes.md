@@ -157,19 +157,77 @@ Find empty space for where to put down an object?
     SIZE INFORMATION.
         Size have direction?
     Find the absence of an object?
-    
+
 It would be nice to be able to say that object has now moved.
     - Implemented as a average_back_to_batch on an object?
 
+???
+    Getting objects at similar heights!!!
 TODO:
     leftmost/rightmost needs to be implemented.
     Regions.
-    Ontology.
-    Looking at how inputs having the same batch number influences the system.
-    Humans aren't moving!!!
-        Ensure there aren't 20 humans in the SOM system.
-    -> noetic-som-upgrade.        
+        - Get something to delete all regions. (Maybe even something to delete entries in general would be a good idea).
+    Order stuff by closest to the robot? (within order of batch number).
+    Size stuff.
+    reusable_states.py line 821 SaveOperatorToSOM
+        - This needs to be linked into the SOM system.
+        - branch noetic-som-upgrade 
+    Bounding box centres at the centre of the actual object.
+    Human positional stuff.
     
+    Send in exact branch to Clarissa for vision system.
+    False default parameter won't work.
+    7:45 Heathrow bus!!! (Gloucester Green Bus station.)
+        BOOK!!!
+    Briefing on Sunday Night
+    At Bangkok:
+        Daily briefing at the beginning of each day.
+        Print ALL travel documents.
+        Make changes on the Laptop rather than on the HSR.
+        Poster presentation? 
+    Wednesday Afternoon from 2pm onwards.
+    ORION Checklist:
+        Print Robocup invitation.
+    Money needed in Bangkok?
+
+NEEDS TESTING:
+    Query into regions themselves.
+    Direct updating of objects by setting the UID within the update script.
+    Regions:
+        - Visualisations. (These need to be accurate!)
+SEMI-DONE:
+    Rviz visualisations.
+    Looking at how inputs having the same batch number influences the system.
+    Ontology.
+    Uncertainty stuff.
+DONE:
+    Branch -> noetic-som-upgrade.
+    Humans aren't moving!!!
+        - Ensure there aren't 200 humans in the SOM system.
+        - (Is now setup s.t. the distances for human consistency are much greater than those for object consistency.)
+    Check SOMROIObject.msg - where is this in use?
+        - Was deleted.
+    Check UID, SESSION_NUM queries work.
+        - uid_input_test function is where this is tested.
+        - This also tests that the responses are in order, and so should be run last out of all the tests.
+    Order the responses w.r.t. time last observerd (or last batch number?)
+    Clicking on the Rviz object doesn't print the result to the console.
+    state_machines tests.py file.
+Issues:
+    There seems to be some sort of tf bug with getting the positions of objects.
+
+Notes for branches you need to change (to/from)
+    - orion_actions noetic <-> noetic-som-upgrade
+    - orion_recognition noetic <-> noetic-som-upgrade-...
+    - orion_semantic_map noetic <-> noetic-som-upgrade
+
+General Notes:
+    Recieved (and need to pack):
+        Screws (Hold)
+        Batteries AAAx10 AAx4 (Carry on)
+        Power extension lead x2
+        tp-link (Carry on/easily accessible; Hand to Ricardo)
+        Invoice book.
 
 Manip will stick with tf publishing for size and position identification. 
 
@@ -180,4 +238,3 @@ Tasks
     Put away the groceries.
     Find my mates.
     Take out the trash (backup).
-

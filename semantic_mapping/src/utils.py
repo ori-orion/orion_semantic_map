@@ -1,6 +1,8 @@
+import math;
 import rospy;
 import genpy;
 import numpy;
+import geometry_msgs.msg
 
 # SESSION_ID = "session_num";
 # UID_ENTRY = "entry_uid";
@@ -47,6 +49,70 @@ def setPoint(obj:dict, new_pt:numpy.array) -> dict:
         obj['z'] = new_pt[2];
     return obj;
 
+def getMatrix(obj:list, num_rows:int=3) -> numpy.matrix:
+    obj_array = numpy.asarray(obj);
+    obj_2D = obj_array.reshape((num_rows, -1));
+    return numpy.matrix(obj_2D);
+
+def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
+    """
+    https://automaticaddison.com/how-to-convert-a-quaternion-to-a-rotation-matrix/
+    """
+    output = numpy.zeros((3,3));
+
+    quat_array = [quat.w, quat.x, quat.y, quat.z];
+    quat_0 = quat_array[0];
+    for i in range(0,3):
+        quat_ip1 = quat_array[i+1];
+        output[i,i] = 2 * (quat_0*quat_0 + quat_ip1*quat_ip1) - 1;
+    
+    # There's probably a nicer way to do this, but for now...
+    output[0,1] = 2 * (quat_array[1]*quat_array[2] - quat_array[0]*quat_array[3]);
+    output[1,0] = 2 * (quat_array[1]*quat_array[2] + quat_array[0]*quat_array[3]);
+
+    output[0,2] = 2 * (quat_array[1]*quat_array[3] + quat_array[0]*quat_array[2]);
+    output[2,0] = 2 * (quat_array[1]*quat_array[3] - quat_array[0]*quat_array[2]);
+
+    output[1,2] = 2 * (quat_array[2]*quat_array[3] - quat_array[0]*quat_array[1]);
+    output[2,1] = 2 * (quat_array[2]*quat_array[3] + quat_array[0]*quat_array[1]);
+    
+    return output;
+
+def get_multi_likelihood(mean:numpy.array, covariance_matrix:numpy.matrix, location:numpy.array) -> numpy.float64:
+    exponent = -0.5 * numpy.dot((mean - location), numpy.matmul(numpy.linalg.inv(covariance_matrix), (mean-location)));
+    cov_det = numpy.linalg.det(covariance_matrix);
+    return (1/math.sqrt(2*math.pi * cov_det)) * math.exp(exponent);
+
+def get_mean_over_samples(means, covariances) -> numpy.array:
+    """
+    means           - An array of numpy.array[s]
+    covariances     - An array of numpy.matrix[s]
+    This will do x = (sum(inv(cov[i])))^(-1) * sum(inv(cov[i])*mean[i]), as per MLE.
+    """
+    assert(len(means) == len(covariances));
+    print("get_mean_over_samples");
+
+    sum_inv_cov = numpy.zeros((3,3));
+    # print("\t", sum_inv_cov);
+    for i in range(len(means)):
+        covariances[i] = numpy.linalg.inv(covariances[i]);
+        sum_inv_cov += covariances[i];
+        # print("\t", sum_inv_cov);
+    
+    sum_invcov_mu = numpy.zeros((3,1));
+    # print(sum_invcov_mu);
+    for i in range(len(means)):
+        temp = numpy.asarray(numpy.matmul(covariances[i], means[i])).reshape((3,1));
+        #print(temp);
+        #print(sum_invcov_mu);
+        sum_invcov_mu += temp;
+
+    # inv_sum_inv_cov = numpy.linalg.inv(sum_inv_cov);
+    #print(inv_sum_inv_cov);
+    #print(sum_invcov_mu);
+    output = numpy.matmul(numpy.linalg.inv(sum_inv_cov), sum_invcov_mu);
+    return [output[0,0], output[1,0], output[2,0]];
+
 
 #removes attributes of a ROS msg that we're not interested in.
 def get_attributes(obj) -> list:
@@ -72,11 +138,18 @@ def get_attributes(obj) -> list:
 
     return attributes;
 
-
 # Main set of infrastructure to convert ROS types to and from dictionaries.
 #   should be able to push almost anything into a dictionary (There may well be some as 
 #   yet unknown types that need to be dealt with)!
-def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:bool=False, ignore_of_type=[]) -> dict:
+def obj_to_dict(
+    obj, 
+    attributes:list=None, 
+    session_id:int=-1, 
+    ignore_default:bool=False, 
+    ignore_of_type=[],
+    convert_caps=False) -> dict:
+    
+    
     """
     This will transfer an arbitrary ROS object into a dictionary.
 
@@ -140,7 +213,8 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
                     element, 
                     attributes=attributes_recursive_in, 
                     ignore_default=ignore_default, 
-                    ignore_of_type=ignore_of_type);
+                    ignore_of_type=ignore_of_type,
+                    convert_caps=convert_caps);
 
                 output_type = dict;
         
@@ -156,7 +230,7 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
         attr:str;
 
         # We don't want to look at constants, and constants are all upper case.
-        if attr[0].isupper(): 
+        if attr[0].isupper() and not convert_caps: 
             continue;
 
         element = getattr(obj, attr);
@@ -176,7 +250,6 @@ def obj_to_dict(obj, attributes:list=None, session_id:int=-1, ignore_default:boo
 
     return output;
 
-
 def dict_to_obj(dictionary:dict, objFillingOut):
     """
     The main idea here is that we may well want to convert an arbitrary dictionary to one of the ROS types
@@ -186,11 +259,14 @@ def dict_to_obj(dictionary:dict, objFillingOut):
     # print(dictionary);
     # print(type(objFillingOut));
 
+    temporal_types = [rospy.Time, rospy.Duration, genpy.rostime.Time];
+
     attributes = objFillingOut.__dir__();
     for key in dictionary.keys():
         if (key in attributes):
             if isinstance(dictionary[key], dict):                
                 dict_to_obj(dictionary[key], getattr(objFillingOut, key));
+                continue;
             elif isinstance(dictionary[key], list):
                 carry = [];
                 for element in dictionary[key]:
@@ -219,3 +295,8 @@ def dict_to_obj(dictionary:dict, objFillingOut):
     
     # print(objFillingOut);
     return objFillingOut;
+
+
+if __name__ == '__main__':
+    output = quaternion_to_rot_mat(geometry_msgs.msg.Quaternion(x=1,y=1));
+    print(output);

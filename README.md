@@ -3,7 +3,33 @@ ORIon Semantic Mapping.
 
 READMEs are included in each subfolder.
 
-Current active branch is `master`.
+Current active branch is `noetic`.
+
+# Notes on current implementation...
+
+## ROS message definitions:
+
+    - /som/human_observations
+        - For the adding of observations of humans.
+        - /input
+    - /som/humans
+        - For the storing of human entities.
+        - /basic_query
+    - /som/observations
+        - For the adding of observations of objects.
+        - /input
+        - /basic_query
+    - /som/objects
+        - For storing the object entities.
+        - /basic_query
+        - /input
+            - To mainly be used for updating a given entry (done by setting UID).
+    - /som/object_regions
+        - For storing (and querying) regions.
+        - /input
+        - /basic_query
+        - /region_query
+    
 
 # Notes:
 
@@ -22,6 +48,15 @@ The whole aim of the new system is to generalise the memory system s.t. it can b
  - We need some sort of observer functionality on additions into the collection you want to do the consistency checking for.
    - Note that we'll call the collection we're cross-referencing `based_off`.
    - We will use a callback function within CollectionManager to then add to the ConsistencyChecker.
+
+### Notes on the implementation of distance checking within ObjConsistencyMapper.py.
+So we want something that can be object specific, but also something with a default case. I therefore propose the following: 
+ - ConsistencyArgs::max_distance can simply be inputted as a number.
+ - ConsistencyArgs::max_distance can also be a dictionary.
+   - If it's of type dictionary, then it must have a field max_distance["default"].
+      - If it doesn't, this should be automatically filled with math.inf.
+      - This will be the field that gets used in the most general case.
+   - Otherwise, max_distance[class_identifier] will be used to obtain the minimum consistent distance, where class_identifier is yet another field to set in main.py.
 
 
 

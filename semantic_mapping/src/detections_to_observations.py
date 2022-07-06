@@ -10,6 +10,12 @@ from orion_actions.msg import DetectionArray, Detection
 from tf import TransformListener;
 import std_msgs.msg;
 
+import utils;
+
+import numpy;
+
+import tf2_geometry_msgs
+
 
 class DetectToObserve:
     def __init__(self):
@@ -20,9 +26,7 @@ class DetectToObserve:
         self.global_frame = "map"
 
         self.tfBuffer = tf2_ros.Buffer();
-        self.listener = tf2_ros.TransformListener(self.tfBuffer)
-        #Uses tf rather than tf2_ros
-        self.tf_old = TransformListener()
+        self.listener = tf2_ros.TransformListener(self.tfBuffer);
 
         # Initialising the SOM services
         # rospy.wait_for_service('som/observe')
@@ -50,6 +54,9 @@ class DetectToObserve:
     
         for detection in data.detections:
             detection:Detection;
+
+            if detection.label.confidence < 0.8:
+                continue;
             
             forwarding = SOMObservation();            
             # print(dir(forwarding))
@@ -68,7 +75,11 @@ class DetectToObserve:
             # forwarding.timestamp = rospy.Time().now()
 
             # Getting the robot pose:
-            camera_to_global:tf2_ros.TransformStamped = self.tfBuffer.lookup_transform(self.camera_frame, self.global_frame, rospy.Time());
+            camera_to_global:tf2_ros.TransformStamped = self.tfBuffer.lookup_transform(
+                self.camera_frame, 
+                self.global_frame, 
+                rospy.Time());
+            
             # forwarding.robot_pose = Pose();
             forwarding.camera_pose.position.x = camera_to_global.transform.translation.x;
             forwarding.camera_pose.position.y = camera_to_global.transform.translation.y;
@@ -79,11 +90,26 @@ class DetectToObserve:
             forwarding.camera_pose.orientation.z = camera_to_global.transform.rotation.z;
 
             # Getting the position of the object in 3D space relative to the global frame.
-            object_point = PoseStamped()
-            object_point.header.frame_id = self.camera_frame
-            object_point.pose.position = Point(detection.translation_x, detection.translation_y, detection.translation_z);            
-            p_global_frame:PoseStamped = self.tf_old.transformPose(self.global_frame, object_point);
-            # transformed_obj_point:PoseStamped = self.tfBuffer.transform(object_point, camera_to_global.transform);
+            obj_point_2 = tf2_geometry_msgs.PoseStamped();
+            obj_point_2.header.frame_id = self.camera_frame;
+            obj_point_2.header.stamp = detection.timestamp;
+            obj_point_2.pose.position = Point(
+                detection.translation_x, detection.translation_y, detection.translation_z+forwarding.size.z/2);
+            
+            # object_point = PoseStamped()
+            # object_point.header.frame_id = self.camera_frame;
+            # object_point.header.stamp = detection.timestamp;
+            # object_point.pose.position = Point(
+            #     detection.translation_x, detection.translation_y, detection.translation_z);
+            # transformed_stamped = self.tfBuffer.transform(
+            #     object_point, self.global_frame, timeout=rospy.Duration(1));
+            
+            try:
+                p_global_frame:tf2_geometry_msgs.PoseStamped = self.tfBuffer.transform(
+                    obj_point_2, self.global_frame);
+            except:
+                p_global_frame = tf2_geometry_msgs.PoseStamped();
+                rospy.logerr("transform raised an error!");
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;
 
@@ -93,7 +119,21 @@ class DetectToObserve:
             # forwarding.header.stamp = rospy.Time.now();
             # NOTE need to check frame ID in the header. (Could that be that of the camera?)
             # forwarding.header.frame_id = self.global_frame;#.encode("ascii", "ignore");                
-        
+
+            # Setting up the covariance stuff.
+            # Note that the covariance matrix is symmetric, so the order doesn't matter.
+            # Note also that the parameters here could probably be adjusted!
+            uncertainty_rot:numpy.matrix = utils.quaternion_to_rot_mat(camera_to_global.transform.rotation);
+            cov_mat = numpy.matrix([[3,0,0],[0,0.5,0],[0,0,0.5]]);
+            cov_transformed = numpy.matmul(uncertainty_rot.transpose(), numpy.matmul(cov_mat, uncertainty_rot));
+            cov_t_linear = [];
+            cov_transform_linear = [];
+            for i in range(3):
+                for j in range(3):
+                    cov_t_linear.append(cov_transformed[i,j]);
+                    cov_transform_linear.append(uncertainty_rot[i,j]);
+            forwarding.covariance_mat = cov_t_linear;
+            forwarding.transform_cov_to_diagonal = cov_transform_linear;
             
             service_output:SOMObserveResponse = self.observe_obj_srv(forwarding);
             print(forwarding.class_);
