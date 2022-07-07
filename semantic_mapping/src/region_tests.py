@@ -13,13 +13,26 @@ import math;
 
 import random;
 
-def create_obj_instance(class_, x=0, y=0, z=0) -> orion_actions.srv.SOMAddObservationRequest:
+def create_object_instance(class_, x=0, y=0, z=0) -> orion_actions.srv.SOMAddObservationRequest:
     output = orion_actions.srv.SOMAddObjectRequest();
     output.adding.class_ = class_;
     output.adding.obj_position.position.x = x;
     output.adding.obj_position.position.y = y;
     output.adding.obj_position.position.z = z;
     output.adding.num_observations = 100;
+
+    output.adding.size.x = 0.1;
+    output.adding.size.y = 0.1;
+    output.adding.size.z = 0.1;
+    
+    return output;
+
+def create_observation_instance(class_, x=0, y=0, z=0) -> orion_actions.srv.SOMAddObservationRequest:
+    output = orion_actions.srv.SOMAddObservationRequest();
+    output.adding.class_ = class_;
+    output.adding.obj_position.position.x = x;
+    output.adding.obj_position.position.y = y;
+    output.adding.obj_position.position.z = z;
 
     output.adding.size.x = 0.1;
     output.adding.size.y = 0.1;
@@ -35,6 +48,7 @@ def test_regions():
     region_basic_query = rospy.ServiceProxy('/som/object_regions/basic_query', orion_actions.srv.SOMQueryRegions);
     region_region_query = rospy.ServiceProxy('/som/object_regions/region_query', orion_actions.srv.SOMRegionQuery);
     object_input = rospy.ServiceProxy('/som/objects/input', orion_actions.srv.SOMAddObject);
+    observation_input = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
 
 
 
@@ -47,7 +61,7 @@ def test_regions():
 
 
     # Adding an origin marker.
-    object_input(create_obj_instance("origin"));
+    object_input(create_object_instance("origin"));
 
 
     region_name_1 = "test_reg_1";
@@ -63,17 +77,18 @@ def test_regions():
         region_to_add.dimension.x = 1;
         region_to_add.dimension.y = 1;
         region_to_add.dimension.z = 1;
-        region_to_add.corner_loc.translation.x = 0;
-        region_to_add.corner_loc.translation.y = 1;
+        region_to_add.corner_loc.translation.x = 1;
+        region_to_add.corner_loc.translation.y = 0;
         region_to_add.corner_loc.translation.z = 0;
-        region_to_add.corner_loc.rotation.x = 0.0998;
+        region_to_add.corner_loc.rotation.x = 0;
         region_to_add.corner_loc.rotation.y = 0;
         region_to_add.corner_loc.rotation.z = 0;
-        region_to_add.corner_loc.rotation.w = 0.995;
+        region_to_add.corner_loc.rotation.w = 1;
         region_input(orion_actions.srv.SOMAddRegionRequest(region_to_add));
 
         region_to_add.name = region_name_2;
         region_to_add.corner_loc.translation.x = 1.2;
+        region_to_add.corner_loc.translation.y = 3;
         region_to_add.corner_loc.translation.z = 1;
         region_to_add.corner_loc.rotation.x = 0;
         region_to_add.corner_loc.rotation.z = 0.955;
@@ -98,12 +113,12 @@ def test_regions():
     # assert(region_q1_ret.name == region_name_1);
 
 
-    adding_request = create_obj_instance("Test_1", 0.5, 1.5, 0.5);
+    adding_request = create_observation_instance("Test_1", 1.5, 0.5, 0.5);
     adding_request.adding.size.x = 0.1;
     adding_request.adding.size.y = 0.1;
     adding_request.adding.size.z = 0.1;
     
-    object_input(adding_request);
+    observation_input(adding_request);
     
 
     # name_prefix:str = "obj_";

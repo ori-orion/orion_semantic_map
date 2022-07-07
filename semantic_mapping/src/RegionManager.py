@@ -100,6 +100,9 @@ class RegionManager(CollectionManager):
         point_tf2.header.stamp = rospy.Time.now();
         point_tf2.header.frame_id = self.global_frame;
 
+        transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
+            point_tf2, region_tf_name, rospy.Duration(1));
+
         # To prevent a race condition, we need to add a delay here!
         try:
             transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
@@ -187,7 +190,7 @@ class RegionManager(CollectionManager):
         """
         transformed_point:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(point, self.region_tf_prefix + region.UID);
 
-        print(transformed_point);
+        # print(transformed_point);
 
         attr = ["x", "y", "z"];
 
@@ -213,7 +216,7 @@ class RegionManager(CollectionManager):
         region_name = query.region_name;
         # All regions are priors...
         boxes = self.queryIntoCollection({
-            "region_name":region_name,
+            "name":region_name,
             SESSION_ID: CollectionManager.PRIOR_SESSION_ID});
 
         # This is the query into the thing we're looking for the objects.
@@ -240,7 +243,10 @@ class RegionManager(CollectionManager):
                         geometry_msgs.msg.Pose()).position;
 
                 for box in boxes:
+                    # print(box);
                     box_som_msg:SOMBoxRegion = utils.dict_to_obj(box, SOMBoxRegion());
+                    box_som_msg.UID = str(box[utils.PYMONGO_ID_SPECIFIER]);
+                    # print(box_som_msg);
 
                     if self.point_in_region(box_som_msg, pos):
                         output_list.append(utils.dict_to_obj(query_response, orion_actions.msg.SOMObject()));
@@ -248,7 +254,7 @@ class RegionManager(CollectionManager):
                         if self.querying_within.visualisation_manager != None and DEBUG_REGION_VISUALISATIONS:
                             self.querying_within.visualisation_manager.add_obj_dict(
                                 query_response, 
-                                query_response[utils.UID_ENTRY]);
+                                str(query_response[utils.PYMONGO_ID_SPECIFIER]));
 
 
         output.returns = output_list;
