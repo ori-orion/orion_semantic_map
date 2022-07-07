@@ -24,6 +24,10 @@ import os;
 
 # print(__file__);
 
+
+NUM_OBSERVATIONS_THRESHOLD_FOR_QUERY = 0;
+
+
 def setup_system():
 
     rospy.init_node('som_manager');
@@ -115,6 +119,13 @@ def setup_system():
         visualisation_manager=object_visualisation_manager,
         sort_queries_by="observation_batch_num"
     );
+    def num_observation_threshold_query_callback(query_dict:dict):
+        if 'num_observations' not in query_dict:
+            query_dict['num_observations'] = {"$gt" : NUM_OBSERVATIONS_THRESHOLD_FOR_QUERY};
+        else:
+            threshold = query_dict['num_observations'];
+            query_dict['num_observations'] = {"$gt" : threshold};
+    object_manager.collection_query_callbacks.append(num_observation_threshold_query_callback);
 
     observation_types:TypesCollection = TypesCollection(
         base_ros_type=orion_actions.msg.SOMObservation,
