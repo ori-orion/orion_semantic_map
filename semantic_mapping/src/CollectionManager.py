@@ -9,7 +9,7 @@ from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, DEBUG_LONG, SESSION_I
 
 import visualisation;
 
-import std_srvs;
+import std_srvs.srv;
 
 
 class TypesCollection:
@@ -124,6 +124,10 @@ class CollectionManager:
         return result_id;
 
     def addItemToCollection(self, adding) -> pymongo.collection.ObjectId:
+        """
+        Adds or updates entries into a collection. 
+        If you are updating an entry (because its UID is defined), this ignores default values.
+        """
         if len(adding.UID) > 0:
             updating_dict:dict = utils.obj_to_dict(adding, ignore_default=True);
             uid:pymongo.collection.ObjectId = pymongo.collection.ObjectId(adding.UID);
@@ -242,7 +246,7 @@ class CollectionManager:
         ros_response = self.types.query_response();
         query_response_attr = utils.get_attributes(ros_response)[0];
 
-        resp_array = getattr(ros_response, query_response_attr);
+        resp_array:list = getattr(ros_response, query_response_attr);
 
         # assert(type(resp_array) is list);
 
@@ -264,6 +268,7 @@ class CollectionManager:
 
     def rosDeleteAllEntries(self, srv_input:std_srvs.srv.EmptyRequest):
         self.deleteAllEntries();
+        print("Deleting all entries within", self.service_name);
         return std_srvs.srv.EmptyResponse();
 
 
