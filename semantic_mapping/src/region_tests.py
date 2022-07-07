@@ -82,8 +82,8 @@ def test_regions():
         region_to_add.corner_loc.translation.z = 0;
         region_to_add.corner_loc.rotation.x = 0;
         region_to_add.corner_loc.rotation.y = 0;
-        region_to_add.corner_loc.rotation.z = 0;
-        region_to_add.corner_loc.rotation.w = 1;
+        region_to_add.corner_loc.rotation.z = 0.955;
+        region_to_add.corner_loc.rotation.w = 0.296;
         region_input(orion_actions.srv.SOMAddRegionRequest(region_to_add));
 
         region_to_add.name = region_name_2;
@@ -120,18 +120,32 @@ def test_regions():
     
     observation_input(adding_request);
     
+    positions = [
+        [0,-0.5,0.5],
+        [1,-0.5,0.5],
+        [2,-0.5,0.5],
+        [0,0,0.5],
+        [1,0,0.5],
+        [2,0,0.5],
+        [0,0.5,0.5],
+        [1,0.5,0.5],
+        [2,0.5,0.5],
+        [0,1,0.5],
+        [1,1,0.5],
+        [2,1,0.5],
+        [0,1.5,0.5],
+        [1,1.5,0.5],
+        [2,1.5,0.5]
+    ];
 
-    # name_prefix:str = "obj_";
-    # for i in range(1000):
-    #     rand_x:float = random.uniform(-1,2);
-    #     rand_y:float = random.uniform(0, 3);
-    #     rand_z:float = random.uniform(-1, 2);
-    #     adding_request = create_obj_instance(name_prefix + str(i), rand_x, rand_y, rand_z);
-    #     adding_request.adding.size.x = 0.1;
-    #     adding_request.adding.size.y = 0.1;
-    #     adding_request.adding.size.z = 0.1;
+    name_prefix:str = "obj_";
+    for i in range(len(positions)):
+        adding_request = create_object_instance(name_prefix + str(i), positions[i][0], positions[i][1], positions[i][2]);
+        adding_request.adding.size.x = 0.1;
+        adding_request.adding.size.y = 0.1;
+        adding_request.adding.size.z = 0.1;
 
-    #     object_input(adding_request);
+        object_input(adding_request);
         
     region_request = orion_actions.srv.SOMRegionQueryRequest();
     region_request.region_name = region_name_1;
