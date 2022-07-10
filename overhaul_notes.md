@@ -190,6 +190,10 @@ TODO:
         Print Robocup invitation.
     Money needed in Bangkok?
 
+TODO in Bangkok.
+    Carry height through to human entries.
+    Is the action server for checking if the door is open being started?
+
 NEEDS TESTING:
     Query into regions themselves.
     Direct updating of objects by setting the UID within the update script.
