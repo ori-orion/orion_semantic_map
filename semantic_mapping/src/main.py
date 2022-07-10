@@ -40,7 +40,7 @@ def setup_system():
     ontology_tree:Ontology.ontology_member = Ontology.read_file(
         os.path.dirname(__file__) + "/labels.txt");
     # This will be a callback within observations for assigning the category of an object.
-    def ontology_observation_getCategory_callback(adding_dict:dict, obj_id:str):
+    def ontology_observation_getCategory_callback(adding_dict:dict, metadata:dict):
         if (len(adding_dict["category"]) == 0):
             ontological_result = ontology_tree.search_for_term(adding_dict["class_"]);
             if (ontological_result == None):
@@ -54,7 +54,7 @@ def setup_system():
             if (DEBUG):
                 print("setting category to", adding_dict["category"]);
 
-        return adding_dict, obj_id;
+        return adding_dict, metadata;
     # ontology_tree.print_graph();
 
     def pickupable_callback(adding_dict:dict, obj_id:str):
@@ -163,9 +163,9 @@ def setup_system():
         collection_input_callbacks=[ontology_observation_getCategory_callback, pickupable_callback]
     );
     
-    def push_person_callback(adding:dict, obj_uid:str):
+    def push_person_callback(adding:dict, metadata:dict):
         if adding["class_"] == "person":
-            human_query:list = human_manager.queryIntoCollection({"object_uid":obj_uid});
+            human_query:list = human_manager.queryIntoCollection({"object_uid":metadata['obj_uid']});
             # So we want there to be one entry that's consistent with this object_uid.
             # Note that "object_uid" is what is being checked for consistency so
             # there should never be more than 1. 
@@ -173,14 +173,14 @@ def setup_system():
             # We might want it updating position all the time.
             if len(human_query) == 0:
                 adding_human = orion_actions.msg.HumanObservation();
-                adding_human.object_uid = obj_uid;
+                adding_human.object_uid = metadata['obj_uid'];
                 adding_human.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
                 adding_human.observed_at = utils.numericalTimeToROSTime(adding["observed_at"]);
                 adding_human.spoken_to_state = orion_actions.msg.Human._NOT_SPOKEN_TO;
                 human_observation_manager.addItemToCollectionDict(
                     utils.obj_to_dict(adding_human));
 
-        return adding, obj_uid;
+        return adding, metadata;
 
     # This needs to be here because we need the callback to be called AFTER `obj_uid`
     # has been assigned by the observation_manager. Thus the Observation manager 

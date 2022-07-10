@@ -99,15 +99,15 @@ class CollectionManager:
             adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
 
         # This is for inserting stuff into the higher level system.
-        # If we're cross referencing entries in the dictionary, we're going to need to log this!        
-        obj_id:str = None;
+        # If we're cross referencing entries in the dictionary, we're going to need to log this!
+        metadata:dict = {};
         for callback in self.collection_input_callbacks:
-            adding_dict, obj_id = callback(adding_dict, obj_id);
+            adding_dict, metadata = callback(adding_dict, metadata);
 
         # If no obj_id was returned from the callback, then we assume there is no cross-referencing
         # and thus nothing to add here!
-        if (obj_id != None):
-            adding_dict[utils.CROSS_REF_UID] = str(obj_id);
+        if ('obj_id' in metadata):
+            adding_dict[utils.CROSS_REF_UID] = str(metadata['obj_id']);
 
         if (DEBUG_LONG):
             print("Adding an entry to", self.service_name ,"\n\t", adding_dict, "\n");

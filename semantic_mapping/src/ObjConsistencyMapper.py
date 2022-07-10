@@ -212,7 +212,7 @@ class ConsistencyChecker(CollectionManager):
 
 
     # Returns the str id that the object has gone into.
-    def push_item_to_pushing_to(self, adding:dict, obj_id:str) -> str:
+    def push_item_to_pushing_to(self, adding:dict, metadata:dict) -> str:
         """
         The callback that adds observations to the object collection.
         This gets the full adding dict (with all default fields).
@@ -234,7 +234,8 @@ class ConsistencyChecker(CollectionManager):
 
         if len(possible_results) == 0:
             # print("No matches.")
-            return adding, self.createNewConsistentObj(adding);
+            metadata['obj_uid'] = self.createNewConsistentObj(adding);
+            return adding, metadata;
 
         # print("There were", len(possible_results), "possible matches");
 
@@ -264,10 +265,12 @@ class ConsistencyChecker(CollectionManager):
 
 
         if (updating == None):
-            return adding, self.createNewConsistentObj(adding);
+            metadata['obj_uid'] = self.createNewConsistentObj(adding);
+            return adding, metadata;
         else:
             # Update an existing entry.
             self.updateConsistentObj(adding, updating[utils.PYMONGO_ID_SPECIFIER], num_prev_observations);
-            return adding, str(updating[utils.PYMONGO_ID_SPECIFIER]);
+            metadata['obj_uid'] = str(updating[utils.PYMONGO_ID_SPECIFIER]);
+            return adding, metadata;
 
     pass;
