@@ -30,7 +30,8 @@ class RelationManager:
         - obj1
         - obj2
         - relation
-        where everything is defined as before.
+        - distance
+        where everything is defined as before bar distance where distance is that between the two objects.
     There is no naming constraint on this last outermost variable, it being the only one necessary for the output.
     """
     def __init__(self, operating_on:CollectionManager, positional_attr:str, service_base:type, service_response:type, match_type:type):
@@ -76,7 +77,9 @@ class RelationManager:
         matches = [];
         for o1 in obj1_query_result:
             for o2 in obj2_query_result:
-                relation_out:Relation = self.get_relation_dict(cur_robot_pose, o1, o2);
+                relation_out, distance = self.get_relation_dict(cur_robot_pose, o1, o2);
+                relation_out:Relation
+                distance:float
                 relation_out_dict = utils.obj_to_dict(relation_out);
 
                 if compare_relational_dicts(relation_out_dict):
@@ -84,6 +87,8 @@ class RelationManager:
                     match_appending.obj1 = utils.dict_to_obj(o1, match_appending.obj1);
                     match_appending.obj2 = utils.dict_to_obj(o2, match_appending.obj2);
                     match_appending.relation = relation_out;
+
+                    match_appending.distance = distance;
 
                     matches.append(match_appending);
         
@@ -95,6 +100,10 @@ class RelationManager:
     def get_relation_dict(self, cur_robot_pose:Pose, obj1:dict, obj2:dict) -> Relation:
         """
         HEAVILY inspired by Mark Richter's relational code from the old system.
+
+        Returns:
+            Relation between the objects.
+            Distances between the objects.
         """
 
         dist_thr = 2;
@@ -111,10 +120,12 @@ class RelationManager:
         robot_to_two = obj_two_pos - robot_pos
         two_to_one = obj_one_pos - obj_two_pos
 
+        distance = numpy.linalg.norm(two_to_one);
+
         # if the distance between the two objects is greater than the threshold then none of the relations are true
-        if numpy.linalg.norm(obj_one_pos - obj_two_pos) > dist_thr:
+        if distance > dist_thr:
             output_relation.not_near = True
-            return output_relation
+            return output_relation, distance
         else:
             output_relation.near = True
         # near, not_near set.
@@ -146,7 +157,7 @@ class RelationManager:
         # but that won't happen here (because we're only looking at two objects, not
         # the whole set).
 
-        return output_relation        
+        return output_relation, distance;
 
 
     def setup_ROS_services(self):
