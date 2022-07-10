@@ -125,6 +125,7 @@ def setup_system():
         else:
             threshold = query_dict['num_observations'];
             query_dict['num_observations'] = {"$gt" : threshold};
+        return query_dict;
     object_manager.collection_query_callbacks.append(num_observation_threshold_query_callback);
 
     observation_types:TypesCollection = TypesCollection(
