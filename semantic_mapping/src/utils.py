@@ -149,7 +149,6 @@ def obj_to_dict(
     ignore_of_type=[],
     convert_caps=False) -> dict:
     
-    
     """
     This will transfer an arbitrary ROS object into a dictionary.
 

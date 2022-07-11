@@ -193,6 +193,13 @@ TODO:
 TODO in Bangkok.
     Carry height through to human entries.
     Is the action server for checking if the door is open being started?
+    We won't start in the right room!
+        - Nav to room first.
+        - Look around.
+        - Know where the operator is.
+        - Location of the operator?
+            - Operator is in different room.
+    Add not gate.
 
 NEEDS TESTING:
     Query into regions themselves.
