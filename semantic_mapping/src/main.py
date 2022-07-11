@@ -177,6 +177,7 @@ def setup_system():
                 adding_human.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
                 adding_human.observed_at = utils.numericalTimeToROSTime(adding["observed_at"]);
                 adding_human.spoken_to_state = orion_actions.msg.Human._NOT_SPOKEN_TO;
+                adding_human.height = adding['size']['z'];
                 human_observation_manager.addItemToCollectionDict(
                     utils.obj_to_dict(adding_human));
 

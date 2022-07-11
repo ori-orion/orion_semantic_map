@@ -318,6 +318,14 @@ def test_updating_entry():
     print("\tTest passed");
 
 
+def test_human_height_transfer():
+    adding = orion_actions.srv.SOMAddObservationRequest();
+    adding.adding.class_ = "person";
+    adding.adding.category = "height_transfer_test";
+
+    
+    pass;
+
 if __name__ == '__main__':
     rospy.init_node('som_test_node');
 
