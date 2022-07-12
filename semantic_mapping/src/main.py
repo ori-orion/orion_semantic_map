@@ -164,7 +164,9 @@ def setup_system():
     );
     
     def push_person_callback(adding:dict, metadata:dict):
-        if adding["class_"] == "person":
+        
+
+        if adding["class_"] == "person" and adding["obj_position"]["position"]["z"] > 0.5:
             human_query:list = human_manager.queryIntoCollection({"object_uid":metadata['obj_uid']});
             # So we want there to be one entry that's consistent with this object_uid.
             # Note that "object_uid" is what is being checked for consistency so
