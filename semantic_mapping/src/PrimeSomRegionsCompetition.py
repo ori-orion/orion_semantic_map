@@ -7,6 +7,10 @@ from geometry_msgs.msg import Pose, Point;
 
 import rospy;
 
+import math;
+
+import std_srvs.srv
+
 def create_observation_input(name:str, position:Point):
     output = SOMAddObservationRequest();
     output.adding.class_ = name;
@@ -33,9 +37,35 @@ def create_map_corner_objs():
 
     pass;
 
+def create_region():
+    region_delete_srv = rospy.ServiceProxy('/som/object_regions/delete_entries', std_srvs.srv.Empty);
+    region_delete_srv(std_srvs.srv.EmptyRequest());
+    region_input = rospy.ServiceProxy('/som/object_regions/input', SOMAddRegion);
+
+    region_adding = SOMAddRegionRequest();
+    region_adding.adding.dimension.x = 8.5749;
+    region_adding.adding.dimension.y = 8.993;
+    region_adding.adding.dimension.z = 2;
+
+    region_adding.adding.corner_loc.translation.x = -1.036
+    region_adding.adding.corner_loc.translation.y = 5.28
+    region_adding.adding.corner_loc.translation.z = 0
+
+    angle = -40;
+    region_adding.adding.corner_loc.rotation.x = 0;
+    region_adding.adding.corner_loc.rotation.y = 0;
+    region_adding.adding.corner_loc.rotation.w = math.cos(angle * math.pi/180);
+    region_adding.adding.corner_loc.rotation.z = math.sin(angle * math.pi/180);
+
+    region_adding.adding.name = "arena_boundry";
+
+    region_input(region_adding);
+
 
 
 if __name__ == '__main__':
     rospy.init_node('prime_som_system_map_regions');
 
     create_map_corner_objs();
+
+    create_region();
