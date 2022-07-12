@@ -81,6 +81,9 @@ class RvizVisualisationManager:
         obj_class           - The label the object will be given in the visualisation.
         num_observations    - The number of observations (will be used in a function for the alpha value of the object.)
         """
+        if obj_class != "person":
+            return;
+
         self.im_server.erase(id);
 
         int_marker = InteractiveMarker()
