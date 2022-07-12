@@ -36,6 +36,7 @@ def setup_system():
 
     interactive_marker_server = InteractiveMarkerServer("zzz_som/obj_vis")
     interactive_marker_server_regions = InteractiveMarkerServer("zzz_som/region_vis")
+    interactive_marker_server_humans = InteractiveMarkerServer("zzz_som/human_vis")
     
     ontology_tree:Ontology.ontology_member = Ontology.read_file(
         os.path.dirname(__file__) + "/labels.txt");
@@ -164,8 +165,6 @@ def setup_system():
     );
     
     def push_person_callback(adding:dict, metadata:dict):
-        
-
         if adding["class_"] == "person" and adding["obj_position"]["position"]["z"] > 0.5:
             human_query:list = human_manager.queryIntoCollection({"object_uid":metadata['obj_uid']});
             # So we want there to be one entry that's consistent with this object_uid.
