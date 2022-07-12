@@ -92,7 +92,7 @@ class RegionManager(CollectionManager):
         # (Slight hack alert).
         self.region_visualisation_manager = region_visualisation_manager;
 
-        self.publish_primed_transforms();
+        # self.publish_primed_transforms();
 
         self.setupROSServices();
 
@@ -226,6 +226,8 @@ class RegionManager(CollectionManager):
                 return False;
 
         return True;
+    
+    
 
     def queryRegionROSEntryPoint(self, query:orion_actions.srv.SOMRegionQueryRequest) -> orion_actions.srv.SOMRegionQueryResponse:
         """

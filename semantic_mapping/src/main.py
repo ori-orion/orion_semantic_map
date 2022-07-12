@@ -186,9 +186,20 @@ def setup_system():
         region_visualisation_manager=region_visualisation_manager
     );
     
+    rospy.wait_for_service('/som/object_regions/basic_query');
+    region_query_srv = rospy.ServiceProxy('/som/object_regions/basic_query', orion_actions.srv.SOMQueryRegions);
+    region_query = orion_actions.srv.SOMQueryRegionsRequest();
+    region_query.query.name = "arena_boundry";
+    arena_boundary_regions:orion_actions.srv.SOMQueryRegionsResponse = region_query_srv(region_query);
+    arena_boundary_region:orion_actions.msg.SOMBoxRegion = arena_boundary_regions.returns[0];
     
     def push_person_callback(adding:dict, metadata:dict):
-        if adding["class_"] == "person" and adding["obj_position"]["position"]["z"] > 0.5:
+        object_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
+
+        if object_region_manager.point_in_region(arena_boundary_region, object_position.position) == False:
+            return adding, metadata;
+
+        if adding["class_"] == "person":
             human_query:list = human_manager.queryIntoCollection({"object_uid":metadata['obj_uid']});
             # So we want there to be one entry that's consistent with this object_uid.
             # Note that "object_uid" is what is being checked for consistency so
