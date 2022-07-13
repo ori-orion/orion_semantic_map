@@ -192,7 +192,10 @@ def setup_system():
     region_query = orion_actions.srv.SOMQueryRegionsRequest();
     region_query.query.name = "arena_boundry";
     arena_boundary_regions:orion_actions.srv.SOMQueryRegionsResponse = region_query_srv(region_query);
-    arena_boundary_region:orion_actions.msg.SOMBoxRegion = arena_boundary_regions.returns[0] if len(arena_boundary_regions.returns) else None;
+    if len(arena_boundary_regions.returns) == 0:
+        arena_boundary_region = orion_actions.msg.SOMBoxRegion();
+    else:    
+        arena_boundary_region:orion_actions.msg.SOMBoxRegion = arena_boundary_regions.returns[0] if len(arena_boundary_regions.returns) else None;
     
     def push_person_callback(adding:dict, metadata:dict):
         object_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
