@@ -163,9 +163,44 @@ def setup_system():
         consistency_args=observation_arg_name_defs,
         collection_input_callbacks=[ontology_observation_getCategory_callback, pickupable_callback]
     );
+
+
+    # The input service has been completely rewritten for the region manager. 
+    # The input_parent/input_response fields are set to None in the constructor.
+    # Even so, it makes no sense to add them here as well.
+    object_region_types = TypesCollection(
+        base_ros_type=orion_actions.msg.SOMBoxRegion,
+        query_parent=orion_actions.srv.SOMQueryRegions,
+        query_response=orion_actions.srv.SOMQueryRegionsResponse
+    );
+    region_visualisation_manager:RvizVisualisationManager = RvizVisualisationManager(
+        im_server=interactive_marker_server_regions,
+        colour_a=0.7, colour_r=0.9, colour_g=0.2, colour_b=0.2,
+        class_attr="name", size_attr="dimension", position_attr="corner_loc"
+    );
+    object_region_manager:RegionManager = RegionManager(
+        memory_manager=mem_manager,
+        types=object_region_types,
+        service_name="object_regions",
+        querying_within=object_manager,
+        positional_parameter="obj_position",
+        region_visualisation_manager=region_visualisation_manager
+    );
+    
+    rospy.wait_for_service('/som/object_regions/basic_query');
+    region_query_srv = rospy.ServiceProxy('/som/object_regions/basic_query', orion_actions.srv.SOMQueryRegions);
+    region_query = orion_actions.srv.SOMQueryRegionsRequest();
+    region_query.query.name = "arena_boundry";
+    arena_boundary_regions:orion_actions.srv.SOMQueryRegionsResponse = region_query_srv(region_query);
+    arena_boundary_region:orion_actions.msg.SOMBoxRegion = arena_boundary_regions.returns[0] if len(arena_boundary_regions.returns) else None;
     
     def push_person_callback(adding:dict, metadata:dict):
-        if adding["class_"] == "person" and adding["obj_position"]["position"]["z"] > 0.5:
+        object_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
+
+        if object_region_manager.point_in_region(arena_boundary_region, object_position.position) == False:
+            return adding, metadata;
+
+        if adding["class_"] == "person":
             human_query:list = human_manager.queryIntoCollection({"object_uid":metadata['obj_uid']});
             # So we want there to be one entry that's consistent with this object_uid.
             # Note that "object_uid" is what is being checked for consistency so
@@ -198,27 +233,7 @@ def setup_system():
     );
 
 
-    # The input service has been completely rewritten for the region manager. 
-    # The input_parent/input_response fields are set to None in the constructor.
-    # Even so, it makes no sense to add them here as well.
-    object_region_types = TypesCollection(
-        base_ros_type=orion_actions.msg.SOMBoxRegion,
-        query_parent=orion_actions.srv.SOMQueryRegions,
-        query_response=orion_actions.srv.SOMQueryRegionsResponse
-    );
-    region_visualisation_manager:RvizVisualisationManager = RvizVisualisationManager(
-        im_server=interactive_marker_server_regions,
-        colour_a=0.7, colour_r=0.9, colour_g=0.2, colour_b=0.2,
-        class_attr="name", size_attr="dimension", position_attr="corner_loc"
-    );
-    object_region_manager:RegionManager = RegionManager(
-        memory_manager=mem_manager,
-        types=object_region_types,
-        service_name="object_regions",
-        querying_within=object_manager,
-        positional_parameter="obj_position",
-        region_visualisation_manager=region_visualisation_manager
-    );
+
 
     rospy.loginfo("Memory systems set up!");
 

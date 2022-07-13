@@ -92,6 +92,8 @@ class RegionManager(CollectionManager):
         # (Slight hack alert).
         self.region_visualisation_manager = region_visualisation_manager;
 
+        self.publish_primed_transforms();
+
         self.setupROSServices();
 
     def transform_pt_to_global(self, transforming:geometry_msgs.msg.Point, region_tf_name:str) -> tf2_geometry_msgs.PointStamped:
@@ -114,32 +116,52 @@ class RegionManager(CollectionManager):
         return transformed_point;
 
 
-    def create_region(self, transform:geometry_msgs.msg.TransformStamped, region_name:str, size:geometry_msgs.msg.Vector3):
+    def publish_primed_transforms(self):
+        regions_already_in_som:list = self.queryIntoCollection({});
+        print(regions_already_in_som[0])
+        for region in regions_already_in_som:
+            region_som_msg:SOMBoxRegion = utils.dict_to_obj(region, SOMBoxRegion());
+            
+            transform_stamped = geometry_msgs.msg.TransformStamped();
+            transform_stamped.transform = region_som_msg.corner_loc;
+            region_id = str(region[utils.PYMONGO_ID_SPECIFIER]);
+            region_name = region_som_msg.name;
+            size = region_som_msg.dimension;
+
+            self.publish_transform(transform_stamped, self.region_tf_prefix + region_id);
+
+            if self.region_visualisation_manager != None:
+                self.publish_visualisation_box(transform_stamped, region_name, size, region_id);
+        pass;
+
+
+    def create_region(self, transform_stamped:geometry_msgs.msg.TransformStamped, region_name:str, size:geometry_msgs.msg.Vector3):
         if DEBUG:
             print("Creating a region");
 
         adding = SOMBoxRegion();
-        adding.corner_loc = transform;
+        adding.corner_loc = transform_stamped.transform;    # Needs to be the transform.
         adding.dimension = size;
         adding.name = region_name;
 
         region_dict:dict = utils.obj_to_dict(adding);
         region_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
+        print(region_dict);
         region_id:str = str(self.addItemToCollectionDict(region_dict));
 
-        self.publish_transform(transform, self.region_tf_prefix + region_id);
+        self.publish_transform(transform_stamped, self.region_tf_prefix + region_id);
 
         if self.region_visualisation_manager != None:
-            self.publish_visualisation_box(transform, region_name, size, region_id);
+            self.publish_visualisation_box(transform_stamped, region_name, size, region_id);
         
         return region_id;
 
-    def publish_transform(self, transform:geometry_msgs.msg.TransformStamped, child_frame_id:str) -> None:
-        transform.header.stamp = rospy.Time.now();
-        transform.header.frame_id = self.global_frame;
-        transform.child_frame_id = child_frame_id;
+    def publish_transform(self, transform_stamped:geometry_msgs.msg.TransformStamped, child_frame_id:str) -> None:
+        transform_stamped.header.stamp = rospy.Time.now();
+        transform_stamped.header.frame_id = self.global_frame;
+        transform_stamped.child_frame_id = child_frame_id;
 
-        self.static_transforms.append(transform);
+        self.static_transforms.append(transform_stamped);
 
         print("\tPublishing transform of name", child_frame_id);
         self.static_tb.sendTransform(self.static_transforms);
@@ -203,8 +225,10 @@ class RegionManager(CollectionManager):
                 return False;
 
         return True;
+    
+    
 
-    def queryRegionROSEntryPoint(self, query:orion_actions.srv.SOMRegionQueryRequest):
+    def queryRegionROSEntryPoint(self, query:orion_actions.srv.SOMRegionQueryRequest) -> orion_actions.srv.SOMRegionQueryResponse:
         """
         Here is the entry point. query has two fields:
             string region_name
