@@ -118,7 +118,7 @@ class RegionManager(CollectionManager):
 
     def publish_primed_transforms(self):
         regions_already_in_som:list = self.queryIntoCollection({});
-        print(regions_already_in_som[0])
+        # print(regions_already_in_som[0])
         for region in regions_already_in_som:
             region_som_msg:SOMBoxRegion = utils.dict_to_obj(region, SOMBoxRegion());
             
