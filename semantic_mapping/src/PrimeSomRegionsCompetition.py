@@ -70,4 +70,4 @@ if __name__ == '__main__':
 
     create_region();
 
-    create_map_corner_objs();
+    # create_map_corner_objs();

@@ -92,7 +92,7 @@ class RegionManager(CollectionManager):
         # (Slight hack alert).
         self.region_visualisation_manager = region_visualisation_manager;
 
-        # self.publish_primed_transforms();
+        self.publish_primed_transforms();
 
         self.setupROSServices();
 
@@ -121,12 +121,10 @@ class RegionManager(CollectionManager):
         print(regions_already_in_som[0])
         for region in regions_already_in_som:
             region_som_msg:SOMBoxRegion = utils.dict_to_obj(region, SOMBoxRegion());
-            print(region_som_msg);
             
             transform_stamped = geometry_msgs.msg.TransformStamped();
             transform_stamped.transform = region_som_msg.corner_loc;
-            print(transform_stamped)
-            region_id = region_som_msg.UID;
+            region_id = str(region[utils.PYMONGO_ID_SPECIFIER]);
             region_name = region_som_msg.name;
             size = region_som_msg.dimension;
 
@@ -142,12 +140,13 @@ class RegionManager(CollectionManager):
             print("Creating a region");
 
         adding = SOMBoxRegion();
-        adding.corner_loc = transform_stamped;
+        adding.corner_loc = transform_stamped.transform;    # Needs to be the transform.
         adding.dimension = size;
         adding.name = region_name;
 
         region_dict:dict = utils.obj_to_dict(adding);
         region_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
+        print(region_dict);
         region_id:str = str(self.addItemToCollectionDict(region_dict));
 
         self.publish_transform(transform_stamped, self.region_tf_prefix + region_id);
