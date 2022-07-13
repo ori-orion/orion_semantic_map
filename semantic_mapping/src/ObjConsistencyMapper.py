@@ -219,10 +219,26 @@ class ConsistencyChecker(CollectionManager):
         It filters objects based on raw distance (rather than anything more fancy) at present.
             This is done to work out whether to update or to create a new entry.
         """
+        adding_pos = utils.getPoint(adding[self.consistency_args.position_attr]);
         
         query = {};
         for element in self.consistency_args.cross_ref_attr:
             query[element] = adding[element];
+
+        # For objects really close together, it might be a double detection...
+        if self.consistency_args.batch_nums_setup():
+            query[self.consistency_args.last_observation_batch] = adding[self.consistency_args.observation_batch_num];
+            possible_results:list = self.pushing_to.queryIntoCollection(query);
+            for element in possible_results:
+                element_pos = utils.getPoint(element[self.consistency_args.position_attr]);
+                dist = numpy.linalg.norm(adding_pos - element_pos);
+                if dist < 0.5:
+                    metadata['obj_uid'] = "";
+                    return adding, metadata;
+
+            query = {};
+            for element in self.consistency_args.cross_ref_attr:
+                query[element] = adding[element];
 
         # This means we have a greedy implementation that just takes the closest 
         # option each time. This is almost certainly fine (bar for really uncertain cases).
@@ -251,7 +267,6 @@ class ConsistencyChecker(CollectionManager):
 
         # Doing the filtering to work out which object you want to look at (if any).
         print("Max distance", max_distance);
-        adding_pos = utils.getPoint(adding[self.consistency_args.position_attr]);
         updating = None;
         num_prev_observations = math.inf;
         for element in possible_results:

@@ -198,6 +198,9 @@ def setup_system():
         arena_boundary_region:orion_actions.msg.SOMBoxRegion = arena_boundary_regions.returns[0] if len(arena_boundary_regions.returns) else None;
     
     def push_person_callback(adding:dict, metadata:dict):
+        if len(metadata['obj_uid']) == 0:
+            return adding, metadata;
+
         object_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
 
         if object_region_manager.point_in_region(arena_boundary_region, object_position.position) == False:
