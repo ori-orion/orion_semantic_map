@@ -52,15 +52,28 @@ class MemoryManager:
         self.setup_services();
 
     def addCollection(self, collection_name:str) -> pymongo.collection.Collection:
+        """
+        Adds a collection to the database.
+        If the collection already exists, this acts as a get funciton.
+        """
         self.collections[collection_name] = self.database[collection_name];
         return self.collections[collection_name];
 
-    def clear_db(self):
-        self.client.drop_database('database_test');
+    def clear_db(self, database_name='database_test'):
+        """
+        Gets rid of the entire database.
+        """
+        self.client.drop_database(database_name);
 
     def clear_database_ROS_server(self, srv_input:std_srvs.srv.EmptyRequest):
+        """
+        ROS entrypoint for deleting the entire database.
+        """
         self.clear_db();
         return std_srvs.srv.EmptyResponse();
 
     def setup_services(self):
+        """
+        Function to setup all the services.
+        """
         rospy.Service(SERVICE_ROOT + "delete_databases", std_srvs.srv.Empty, self.clear_database_ROS_server);
