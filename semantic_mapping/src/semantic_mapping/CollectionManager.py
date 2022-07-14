@@ -198,8 +198,9 @@ class CollectionManager:
         This will return a list of dictionaries, each one corresponding to an entry.
         """
         
+        metadata = {};
         for callback in self.collection_query_callbacks:
-            query_dict = callback(query_dict);
+            query_dict, metadata = callback(query_dict, metadata);
 
         if SESSION_ID not in query_dict:
             query_dict[SESSION_ID] = self.memory_manager.current_session_id;

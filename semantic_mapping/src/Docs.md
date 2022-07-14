@@ -2,17 +2,17 @@
 
 ## Class hierachy:
 
- + MemoryManager                (MemoryManager.py)
+ + `MemoryManager`                (MemoryManager.py)
     - SUMMARY:
        - This deals with the mongod connection for querying and adding things to collections.
        - It also works out what the session number is and appends it to all entries and queries if applicable. (This sometimes isn't applicable, if you're querying for a given session, or indeed if you're adding something as a prior with session number -1.)
- + TypesCollection              (CollectionManager.py)
+ + `TypesCollection`              (CollectionManager.py)
     - SUMMARY:
        - This is a holder class for the parent type of the collection, and the adding and querying service types of relevance. If one of the service fields is `None`, then it is assumed that the respective service is unavailable.
- + ConsistencyArgs              (ObjConsistencyMapper.py)
+ + `ConsistencyArgs`              (ObjConsistencyMapper.py)
     - SUMMARY:
        - In the drive to make this system as general as possible, there are no hard coded parameters in the core system bar stuff like `UID` and   `SESSION_NUM`. This is fine until we want to count the number of instances we've seen an object, or average over its position. `ConsistencyArgs` gives these parameter names (amoung a large number of others). If one of these fields is `None`, then it is assumed to not exist. (It should be noted that the `None` functionality has not been rigorously tested for all parameters).
- + CollectionManager            (CollectionManager.py)
+ + `CollectionManager`            (CollectionManager.py)
     - SUMMARY:
        - This is the class that deals with the collections itself and holds the basic adding and query functions.
        - The main way of inputting parameters into this is via setting the `types:TypesCollection` parameter within `CollectionManager`. This then lets the system set up the services for querying into and adding to the collection.
@@ -22,8 +22,18 @@
           - `metadata['obj_uid']`: Within consistency checking, `obj_uid` is the object uid from objects that we want to sent into the `CRSS_REF_UID` field within an observation.
           - `metadata['prevent_from_adding']`: When we are adding something, we may want to prevent it from being added (and progressing to the following callbacks). This field, once set to `True`, prevents all following callbacks from running, as well as the datapoint from being added. This can be used for suppressing double detections. The field will be created initially and set to `False`. 
     - OTHER NOTES:
-    + ConsistencyChecker        (ObjConsistencyManager.py)
-    + RegionManager             (RegionManager.py)
- + RelationManager              (RelationManager.py)
- + ontology_member              (Ontology.py)
- + RvizVisualisationManager     (visualisation.py)
+    + `ConsistencyChecker`        (ObjConsistencyManager.py)
+       - SUMMARY:
+          - Every frame that the recognition system processes will share some objects. Object consistency checking is not done for this. This script checks for the consistency of objects across different attributes. It uses `ConsistencyArgs` as its input.
+          - Note that the observations are of type `ConsistencyChecker` while the consistent objects reside in a simple `CollectionManager`. (The adding/checking for consistency is done through callbacks, so the consistent object collection can in theory be anything of type `CollectionManager`).
+       - FEATURES:
+          - Consistency checking.
+          - Positional averaging (basic averaging, B14 Inference methods)
+          - Counting number of detections.
+          - Logging first and most recent observations.
+          - Double detection suppression.
+          - Prevention of the updating of certain attributes.
+    + `RegionManager`             (RegionManager.py)
+ + `RelationManager`              (RelationManager.py)
+ + `ontology_member`              (Ontology.py)
+ + `RvizVisualisationManager`     (visualisation.py)

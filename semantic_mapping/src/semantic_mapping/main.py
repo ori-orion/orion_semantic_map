@@ -124,13 +124,13 @@ def setup_system():
         visualisation_manager=object_visualisation_manager,
         sort_queries_by="observation_batch_num"
     );
-    def num_observation_threshold_query_callback(query_dict:dict):
+    def num_observation_threshold_query_callback(query_dict:dict, metadata:dict):
         if 'num_observations' not in query_dict:
             query_dict['num_observations'] = {"$gt" : NUM_OBSERVATIONS_THRESHOLD_FOR_QUERY};
         else:
             threshold = query_dict['num_observations'];
             query_dict['num_observations'] = {"$gt" : threshold};
-        return query_dict;
+        return query_dict, metadata;
     object_manager.collection_query_callbacks.append(num_observation_threshold_query_callback);
 
     observation_types:TypesCollection = TypesCollection(
@@ -152,7 +152,7 @@ def setup_system():
         last_observation_batch="last_observation_batch",
         positional_covariance_attr="covariance_mat",
         observation_counter_attr="num_observations",
-        suppress_double_detections=False,
+        suppress_double_detections=False,       # Currently the suppression of double detections if off!
         suppression_distance_dict={'suppression_test_type':0.1}
     );
     observation_arg_name_defs.dont_transfer.append("covariance_mat");

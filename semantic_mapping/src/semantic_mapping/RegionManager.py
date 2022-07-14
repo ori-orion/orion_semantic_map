@@ -85,9 +85,9 @@ class RegionManager(CollectionManager):
         # self.collection_input_callbacks.append(session_num_to_prior_adding);
 
 
-        def session_num_to_prior_querying(query_dict:dict):
+        def session_num_to_prior_querying(query_dict:dict, metadata:dict):
             query_dict[SESSION_ID] = -1;
-            return query_dict;
+            return query_dict, metadata;
         self.collection_query_callbacks.append(session_num_to_prior_querying);
 
         # So that we can implement separate logic to ensure it goes at the same location.
@@ -104,9 +104,6 @@ class RegionManager(CollectionManager):
         point_tf2.point = transforming;        # NOTE: this is not actually the right type but this may well make no difference.
         point_tf2.header.stamp = rospy.Time.now();
         point_tf2.header.frame_id = self.global_frame;
-
-        transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
-            point_tf2, region_tf_name, rospy.Duration(1));
 
         # To prevent a race condition, we need to add a delay here!
         try:
