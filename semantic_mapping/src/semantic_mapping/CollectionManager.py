@@ -1,3 +1,8 @@
+"""
+Author: Matthew Munks
+Owner: Matthew Munks
+"""
+
 import numpy
 import utils;
 import pymongo;

@@ -4,8 +4,11 @@ Regions are defined by the type SOMBoxRegion, this defining a cuboid in space th
 Each region is stored within the collection specified in the service name collection defined in main.py.
 Each region is also given a static tf named [self.region_tf_prefix][collection_uid].
 Regions are entities we typically want to last the entire competition, and so are given 
-    SESSION_NUM = CollectionManager.PRIOR_SESSION_ID automatically. This will save them ad-infinitem (or until it's reset). Having a specific reset 
-    call might be a plan tbh.
+    SESSION_NUM = CollectionManager.PRIOR_SESSION_ID automatically. This will save them ad-infinitem 
+    (or until it's reset). Deleting the entry deletes the region for the next run.
+
+Author: Matthew Munks
+Owner: Matthew Munks
 """
 
 

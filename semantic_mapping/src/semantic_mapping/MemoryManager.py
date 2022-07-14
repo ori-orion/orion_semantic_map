@@ -1,3 +1,8 @@
+"""
+Author: Matthew Munks
+Owner: Matthew Munks
+"""
+
 import pymongo
 import pymongo.cursor
 import pymongo.collection

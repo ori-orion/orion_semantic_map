@@ -1,5 +1,8 @@
 """
 Adapted from Marc Rigter's system.
+
+Author: Marc Rigter, Matthew Munks
+Owner: Matthew Munks
 """
 
 import math;

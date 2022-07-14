@@ -1,6 +1,10 @@
 """
 Defines the infrastructure around getting the relation between objects.
+
+Author: Matthew Munks
+Owner: Matthew Munks
 """
+
 import numpy;
 import utils;
 import rospy;

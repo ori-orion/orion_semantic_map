@@ -1,5 +1,8 @@
 """
 Constructs the ontology tree from labels.txt.
+
+Author: Matthew Munks
+Owner: Matthew Munks
 """
 
 class ontology_member:

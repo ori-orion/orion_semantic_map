@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Author: Matthew Munks
+Owner: Matthew Munks
+"""
 
 from interactive_markers.interactive_marker_server import InteractiveMarkerServer
 
