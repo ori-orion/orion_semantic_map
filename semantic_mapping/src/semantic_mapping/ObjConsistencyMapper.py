@@ -205,7 +205,6 @@ class ConsistencyChecker(CollectionManager):
             increment_param = {self.consistency_args.observation_counter_attr: 1};
 
         if (DEBUG_LONG):
-            pass;
             print(update_entry_input);
 
         # Update the entry in pushing_to.
@@ -230,20 +229,23 @@ class ConsistencyChecker(CollectionManager):
         for element in self.consistency_args.cross_ref_attr:
             query[element] = adding[element];
 
+        #region Old double detection suppression code.
         # For objects really close together, it might be a double detection...
-        if self.consistency_args.batch_nums_setup():
-            query[self.consistency_args.last_observation_batch] = adding[self.consistency_args.observation_batch_num];
-            possible_results:list = self.pushing_to.queryIntoCollection(query);
-            for element in possible_results:
-                element_pos = utils.getPoint(element[self.consistency_args.position_attr]);
-                dist = numpy.linalg.norm(adding_pos - element_pos);
-                if dist < 0.5:
-                    metadata['obj_uid'] = "";
-                    return adding, metadata;
+        # It's therefore nice to be able to suppress double detections.
+        # if self.consistency_args.batch_nums_setup() and self.consistency_args.suppress_double_detections:
+        #     query[self.consistency_args.last_observation_batch] = adding[self.consistency_args.observation_batch_num];
+        #     possible_results:list = self.pushing_to.queryIntoCollection(query);
+        #     for element in possible_results:
+        #         element_pos = utils.getPoint(element[self.consistency_args.position_attr]);
+        #         dist = numpy.linalg.norm(adding_pos - element_pos);
+        #         if dist < 0.5:
+        #             metadata['obj_uid'] = "";
+        #             return adding, metadata;
 
-            query = {};
-            for element in self.consistency_args.cross_ref_attr:
-                query[element] = adding[element];
+        #     query = {};
+        #     for element in self.consistency_args.cross_ref_attr:
+        #         query[element] = adding[element];
+        #endregion
 
         # This means we have a greedy implementation that just takes the closest 
         # option each time. This is almost certainly fine (bar for really uncertain cases).

@@ -280,8 +280,6 @@ def obj_to_dict(
             continue;
 
         element = getattr(obj, attr);
-        # rospy.loginfo("Element started as '{}', element: '{}'".format(element,attr));
-
         
         carry = pushObjToDict(element, ignore_default);
         if carry == None:
@@ -305,11 +303,6 @@ def dict_to_obj(dictionary:dict, objFillingOut):
         dictionary:dict     The dictionary that we want to fill out the ROS message with. 
         objFillingOut       An empty ROS message to fill out.
     """
-    # print("obj_to_dict(...)");
-    # print(dictionary);
-    # print(type(objFillingOut));
-
-    temporal_types = [rospy.Time, rospy.Duration, genpy.rostime.Time];
 
     attributes = objFillingOut.__dir__();
     for key in dictionary.keys():
@@ -324,26 +317,17 @@ def dict_to_obj(dictionary:dict, objFillingOut):
                         raise(Exception("The sub-class of a list is a dictionary. The type is not currently known."));
                     else:
                         carry.append(element);
-                # print("Setting", key, "=", carry);
                 setattr(objFillingOut, key, carry);
                 continue;
-            elif isinstance(getattr(objFillingOut, key), rospy.Time):   # Needs to be checked
-                # print("rospy.Time element found.");
-                # print("Setting",key, "[time]");
+            elif isinstance(getattr(objFillingOut, key), rospy.Time):
                 setattr(objFillingOut, key, numericalTimeToROSTime(dictionary[key]));
-            elif isinstance(getattr(objFillingOut, key), rospy.Duration):   # Needs to be checked
-                # print("rospy.Duration element found.");
-                # print("Setting",key, "[time]");
+            elif isinstance(getattr(objFillingOut, key), rospy.Duration):
                 setattr(objFillingOut, key, numericalTimeToROSDuration(dictionary[key]));
-            elif isinstance(getattr(objFillingOut, key), genpy.rostime.Time):   # Needs to be checked
-                # print("rospy.Duration element found.");
-                # print("Setting",key, "[time]");
+            elif isinstance(getattr(objFillingOut, key), genpy.rostime.Time):
                 setattr(objFillingOut, key, numericalTimeToROSDuration(dictionary[key]));
             else:
-                # print("Setting",key,"=", dictionary[key]);
                 setattr(objFillingOut, key, dictionary[key]);
     
-    # print(objFillingOut);
     return objFillingOut;
 
 

@@ -18,6 +18,9 @@
        - The main way of inputting parameters into this is via setting the `types:TypesCollection` parameter within `CollectionManager`. This then lets the system set up the services for querying into and adding to the collection.
     - CALLBACKS:
        - There are lists of callbacks associated with both querying and adding to the colletion. These have the dictionary for adding/querying in question, along with `metadata:dict`, for storing anything else of import (like the uid of a consistent object that's just been assigned).
+       - Fields within `metadata`:
+          - `metadata['obj_uid']`: Within consistency checking, `obj_uid` is the object uid from objects that we want to sent into the `CRSS_REF_UID` field within an observation.
+          - `metadata['prev_from_add']`: When we are adding something, we may want to prevent it from being added (and progressing to the following callbacks). This field, once set to `True`, prevents all following callbacks from running, as well as the datapoint from being added. This can be used for suppressing double detections. The field will be created initially and set to `False`. 
     - OTHER NOTES:
     + ConsistencyChecker        (ObjConsistencyManager.py)
     + RegionManager             (RegionManager.py)
