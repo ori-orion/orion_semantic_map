@@ -21,7 +21,16 @@
        - Fields within `metadata`:
           - `metadata['obj_uid']`: Within consistency checking, `obj_uid` is the object uid from objects that we want to sent into the `CRSS_REF_UID` field within an observation.
           - `metadata['prevent_from_adding']`: When we are adding something, we may want to prevent it from being added (and progressing to the following callbacks). This field, once set to `True`, prevents all following callbacks from running, as well as the datapoint from being added. This can be used for suppressing double detections. The field will be created initially and set to `False`. 
+    - PRIORS:
+       - There are some things that we want to persist within the database, and may want to be able to query. We have reserved the session number -1 for priors. 
+          - TODO:
+             - Setup a prior flag to automatically set the prior information.
+    - Required fields on any type stored in the system:
+       - SESSION_UID:int - This is used for storing the session unique identifier. (-1 for priors).
+       - UID:str - This is used for returning the unique identifier once you've added an object.
     - OTHER NOTES:
+       - ENUMS:
+          - These need to begin with a leading underscore so that they are ignored while querying.
     + `ConsistencyChecker`        (ObjConsistencyManager.py)
        - SUMMARY:
           - Every frame that the recognition system processes will share some objects. Object consistency checking is not done for this. This script checks for the consistency of objects across different attributes. It uses `ConsistencyArgs` as its input.
@@ -34,6 +43,22 @@
           - Double detection suppression.
           - Prevention of the updating of certain attributes.
     + `RegionManager`             (RegionManager.py)
+       - SUMMARY:
+          - Let's say you want to query for things sitting on the table. One way of doing this would be to define a virtual box over the table. `RegionManager` defines regions (as priors), as well as querying infrastructure for it. This allows us to query for stuff within the region.
+             - TODO:
+                - Multi-box regions.
+                - Easy setup functionality for regions.
+       - ROS Message required fields on the `
  + `RelationManager`              (RelationManager.py)
+    - SUMMARY:
+       - It is useful to be able to say that something is above/to the left of/... something else. This implements that. The current implementation specifically references `orion_actions.msg.Relation` and uses the fields of `orion_actions.msg.Match` without specifically referencing the field.
+    - ROS Message required fields on the `Relation` message:
+         left:bool, right:bool, above:bool, below:bool,  behind:bool, frontof:bool, near:bool, not_near:bool, left_most:bool, right_most:bool
+    - ROS Message required fields on the query return message:
+         obj1:SOMObject, relation:Relation, obj2:SOMObject, distance:float64
  + `ontology_member`              (Ontology.py)
+    - SUMMARY:
+       - Defines the ontology tree that can be used to define the category of an element.
  + `RvizVisualisationManager`     (visualisation.py)
+    - SUMMARY:
+       - This defines the connection between the SOM system and rviz for detection boxes. It also scales the transparency of the box by the number of observations (up to colour_a).
