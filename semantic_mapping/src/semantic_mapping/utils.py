@@ -3,7 +3,7 @@ Author: Matthew Munks
 Owner: Matthew Munks
 """
 
-import math;
+import math
 import rospy;
 import genpy;
 import numpy;
@@ -19,15 +19,25 @@ PYMONGO_ID_SPECIFIER = "_id";
 
 
 def ROSTimeToNumericalTime(time:rospy.Time) -> int:
+    """
+    Converts rospy.Time (or anything with the fields `secs` and `nsecs`) into a single number.
+    This makes us able to sort w.r.t. the time field.
+    """
     output = time.nsecs + time.secs * 1e9;
     return output;
 def numericalTimeToROSTime(time:int) -> rospy.Time:
+    """
+    Converts from the single number representation of time into rospy.Time.
+    """
     output = rospy.Time();
     output.nsecs = int(time % 1e9);
     output.secs = int((time - output.nsecs) / 1e9);
     # print(output.secs);
     return output;
 def numericalTimeToROSDuration(time:int) -> rospy.Duration:
+    """
+    Converts from the single number representation of time into rospy.Duration.
+    """
     output = rospy.Duration();
     output.nsecs = int(time % 1e9);
     output.secs = int((time - output.nsecs) / 1e9);
@@ -40,10 +50,16 @@ def numericalTimeToROSDuration(time:int) -> rospy.Duration:
 # We also know that the dict obj we might be trying to decipher is a ROS
 # Pose object, so we know that "position" is the string we want.
 def getPoint(obj:dict) -> numpy.array:
+    """
+    Returns the numpy.array 3D point from a Point or Pose object.
+    """
     if "position" in obj:
         obj = obj["position"];
     return numpy.asarray([obj["x"], obj["y"], obj["z"]]);
 def setPoint(obj:dict, new_pt:numpy.array) -> dict:
+    """
+    Sets the position in either a Point or Pose object from a numpy.array 3D point.
+    """
     if ("position" in obj):
         obj["position"]['x'] = new_pt[0];
         obj["position"]['y'] = new_pt[1];
@@ -55,12 +71,18 @@ def setPoint(obj:dict, new_pt:numpy.array) -> dict:
     return obj;
 
 def getMatrix(obj:list, num_rows:int=3) -> numpy.matrix:
+    """
+    Gets the numpy.matrix from a linear array. 
+    Let x=[1,2,3,4,5,6,7,8,9].
+    getMatrix(x) -> [[1,2,3],[4,5,6],[7,8,9]]
+    """
     obj_array = numpy.asarray(obj);
     obj_2D = obj_array.reshape((num_rows, -1));
     return numpy.matrix(obj_2D);
 
 def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
     """
+    Gets the 3x3 rotation matrix from a quaternion.
     https://automaticaddison.com/how-to-convert-a-quaternion-to-a-rotation-matrix/
     """
     output = numpy.zeros((3,3));
@@ -84,12 +106,18 @@ def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
     return output;
 
 def get_multi_likelihood(mean:numpy.array, covariance_matrix:numpy.matrix, location:numpy.array) -> numpy.float64:
+    """
+    Gets the likelihood out from a multidimensional likelihood out for a given position and covariance matrix.
+    Note that this is NOT the probability.
+    """
     exponent = -0.5 * numpy.dot((mean - location), numpy.matmul(numpy.linalg.inv(covariance_matrix), (mean-location)));
     cov_det = numpy.linalg.det(covariance_matrix);
     return (1/math.sqrt(2*math.pi * cov_det)) * math.exp(exponent);
 
 def get_mean_over_samples(means, covariances) -> numpy.array:
     """
+    For MLE, there is an covariance matrix weighted average that is used. This implements that. 
+
     means           - An array of numpy.array[s]
     covariances     - An array of numpy.matrix[s]
     This will do x = (sum(inv(cov[i])))^(-1) * sum(inv(cov[i])*mean[i]), as per MLE.
@@ -121,6 +149,13 @@ def get_mean_over_samples(means, covariances) -> numpy.array:
 
 #removes attributes of a ROS msg that we're not interested in.
 def get_attributes(obj) -> list:
+    """
+    Gets a list of the attributes for a given object, and removes those we don't want. 
+    ROS message/service types come with a few fields that we don't want, such as the
+    header field and the serialize and deserialize functions. These are removed. 
+    We also don't want to convert anything with a leading underscore (given that those
+    are assigned by default by ROS).
+    """
     attributes:list = obj.__dir__();
 
     def remove_element(e:str):
@@ -151,17 +186,24 @@ def obj_to_dict(
     attributes:list=None, 
     session_id:int=-1, 
     ignore_default:bool=False, 
-    ignore_of_type=[],
-    convert_caps=False) -> dict:
+    ignore_of_type:list=[],
+    convert_caps:bool=False) -> dict:
     
     """
     This will transfer an arbitrary ROS object into a dictionary.
 
-    ignore_default is for queries. If we don't want to compare a parameter, we want to 
-    be able to set it to the default and ignore it. This sets this up.
-
-    For queries, there are fields of types we want to ignore completely (such as those of time.)
-        The ignore_of_type entry handles this.
+    Inputs:
+        obj                     The object to convert. 
+        attributes:list         A list of attributes to convert. This is typically used for recursion.
+        session_id:int          Sets the session_id of the entry iff session_id != -1.
+        ignore_default:bool     For queries, we want to ignore default fields. (If a field is as its 
+                                default, then that means we don't want to query into it.)
+        ignore_of_type:list     For queries, there are some fields that are a pain (such as temporal 
+                                types). This allows us to remove fields from a set of types.
+        convert_caps:bool       For queries, we want to convert fields with leading capitals. However,
+                                fields with leading capitals should be fields that the system sets 
+                                internally. Thus, if we are adding an object, we don't want to set 
+                                these fields.
     """
     # print("obj_to_dict(...)");
 
@@ -258,6 +300,10 @@ def dict_to_obj(dictionary:dict, objFillingOut):
     """
     The main idea here is that we may well want to convert an arbitrary dictionary to one of the ROS types
     we've created. This will do it.
+
+    Inputs:
+        dictionary:dict     The dictionary that we want to fill out the ROS message with. 
+        objFillingOut       An empty ROS message to fill out.
     """
     # print("obj_to_dict(...)");
     # print(dictionary);
@@ -302,5 +348,5 @@ def dict_to_obj(dictionary:dict, objFillingOut):
 
 
 if __name__ == '__main__':
-    output = quaternion_to_rot_mat(geometry_msgs.msg.Quaternion(x=1,y=1));
-    print(output);
+    arr = [1,2,3,4,5,6,7,8,9];
+    print(getMatrix(arr));
