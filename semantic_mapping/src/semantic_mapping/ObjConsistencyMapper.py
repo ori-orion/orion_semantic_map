@@ -31,7 +31,10 @@ class ConsistencyArgs:
         class_identifier:str=None,
         positional_covariance_attr:str=None,
         observation_counter_attr:str=None,
-        use_running_average_position:bool=True):
+        use_running_average_position:bool=True,
+        suppress_double_detections:bool=False,
+        suppression_default_distance:float=0,
+        suppression_distance_dict:dict={}):
 
 
         self.position_attr = position_attr;
@@ -78,9 +81,9 @@ class ConsistencyArgs:
         # The vision system gives bounding boxes for the same object on occaision. This is to stop these double detections
         # from being forwarded onto the SOM system. The default_field argument gives some default parameter for the 
         # suppression distance.
-        self.suppress_double_detections = False;
-        self.suppression_default_distance = 0;
-        self.suppression_distance_dict = {};
+        self.suppress_double_detections = suppress_double_detections;
+        self.suppression_default_distance = suppression_default_distance;
+        self.suppression_distance_dict = suppression_distance_dict;
 
         # -------------------- Not yet implemented --------------------
 
@@ -296,29 +299,30 @@ class ConsistencyChecker(CollectionManager):
 
     
     def suppression_callback(self, adding:dict, metadata:dict):
-        with self.consistency_args as cs:
-            cs:ConsistencyArgs;
-            if cs.class_identifier not in adding:
+        if self.consistency_args.class_identifier not in adding:
+            return adding, metadata;
+
+        adding_pos = utils.getPoint(adding[self.consistency_args.position_attr]);
+
+        query = {};
+        for element in self.consistency_args.cross_ref_attr:
+            query[element] = adding[element];
+
+        if adding[self.consistency_args.class_identifier] in self.consistency_args.suppression_distance_dict:
+            suppression_distance = self.consistency_args.suppression_distance_dict[adding[self.consistency_args.class_identifier]];
+        else:
+            suppression_distance = self.consistency_args.suppression_default_distance;
+
+        # For objects really close together, it might be a double detection...
+        # It's therefore nice to be able to suppress double detections.
+        query[self.consistency_args.last_observation_batch] = adding[self.consistency_args.observation_batch_num];
+        possible_results:list = self.pushing_to.queryIntoCollection(query);
+        for element in possible_results:
+            element_pos = utils.getPoint(element[self.consistency_args.position_attr]);
+            dist = numpy.linalg.norm(adding_pos - element_pos);
+            if dist < suppression_distance:
+                metadata['prevent_from_adding'] = True;
+                print("Suppressing a double detection of class ", adding[self.consistency_args.class_identifier]);
                 return adding, metadata;
 
-            adding_pos = utils.getPoint(adding[cs.position_attr]);
-
-            query = {};
-            for element in cs.cross_ref_attr:
-                query[element] = adding[element];
-
-            if adding[cs.class_identifier] in cs.suppression_distance_dict:
-                suppression_distance = cs.suppression_distance_dict[adding[cs.class_identifier]];
-            else:
-                suppression_distance = cs.suppression_default_distance;
-
-            # For objects really close together, it might be a double detection...
-            # It's therefore nice to be able to suppress double detections.
-            query[cs.last_observation_batch] = adding[cs.observation_batch_num];
-            possible_results:list = self.pushing_to.queryIntoCollection(query);
-            for element in possible_results:
-                element_pos = utils.getPoint(element[cs.position_attr]);
-                dist = numpy.linalg.norm(adding_pos - element_pos);
-                if dist < suppression_distance:
-                    metadata['prevent_from_adding'] = True;
-                    return adding, metadata;
+        return adding, metadata;

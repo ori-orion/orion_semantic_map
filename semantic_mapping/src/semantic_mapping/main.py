@@ -151,7 +151,9 @@ def setup_system():
         observation_batch_num="observation_batch_num",
         last_observation_batch="last_observation_batch",
         positional_covariance_attr="covariance_mat",
-        observation_counter_attr="num_observations"
+        observation_counter_attr="num_observations",
+        suppress_double_detections=True,
+        suppression_distance_dict={'suppression_test_type':0.1}
     );
     observation_arg_name_defs.dont_transfer.append("covariance_mat");
     observation_arg_name_defs.dont_transfer.append("transform_cov_to_diagonal");
