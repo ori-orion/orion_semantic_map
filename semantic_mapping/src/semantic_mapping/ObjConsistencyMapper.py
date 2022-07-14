@@ -75,6 +75,13 @@ class ConsistencyArgs:
             positional_covariance_attr
         ];
 
+        # The vision system gives bounding boxes for the same object on occaision. This is to stop these double detections
+        # from being forwarded onto the SOM system. The default_field argument gives some default parameter for the 
+        # suppression distance.
+        self.suppress_double_detections = False;
+        self.suppression_default_distance = 0;
+        self.suppression_distance_dict = {};
+
         # -------------------- Not yet implemented --------------------
 
         # If we are averaging over position, this gives the number of batch numbers we go back by
@@ -109,6 +116,9 @@ class ConsistencyChecker(CollectionManager):
         # to define parameters. This does this!
         self.consistency_args:ConsistencyArgs = consistency_args;
 
+        if self.consistency_args.suppress_double_detections and self.consistency_args.batch_nums_setup():
+            collection_input_callbacks.insert(0, self.suppression_callback);
+        
         self.collection_input_callbacks = collection_input_callbacks;
         self.collection_input_callbacks.append(self.push_item_to_pushing_to);
 
@@ -230,17 +240,6 @@ class ConsistencyChecker(CollectionManager):
             query[element] = adding[element];
 
         #region Old double detection suppression code.
-        # For objects really close together, it might be a double detection...
-        # It's therefore nice to be able to suppress double detections.
-        # if self.consistency_args.batch_nums_setup() and self.consistency_args.suppress_double_detections:
-        #     query[self.consistency_args.last_observation_batch] = adding[self.consistency_args.observation_batch_num];
-        #     possible_results:list = self.pushing_to.queryIntoCollection(query);
-        #     for element in possible_results:
-        #         element_pos = utils.getPoint(element[self.consistency_args.position_attr]);
-        #         dist = numpy.linalg.norm(adding_pos - element_pos);
-        #         if dist < 0.5:
-        #             metadata['obj_uid'] = "";
-        #             return adding, metadata;
 
         #     query = {};
         #     for element in self.consistency_args.cross_ref_attr:
@@ -295,4 +294,31 @@ class ConsistencyChecker(CollectionManager):
             metadata['obj_uid'] = str(updating[utils.PYMONGO_ID_SPECIFIER]);
             return adding, metadata;
 
-    pass;
+    
+    def suppression_callback(self, adding:dict, metadata:dict):
+        with self.consistency_args as cs:
+            cs:ConsistencyArgs;
+            if cs.class_identifier not in adding:
+                return adding, metadata;
+
+            adding_pos = utils.getPoint(adding[cs.position_attr]);
+
+            query = {};
+            for element in cs.cross_ref_attr:
+                query[element] = adding[element];
+
+            if adding[cs.class_identifier] in cs.suppression_distance_dict:
+                suppression_distance = cs.suppression_distance_dict[adding[cs.class_identifier]];
+            else:
+                suppression_distance = cs.suppression_default_distance;
+
+            # For objects really close together, it might be a double detection...
+            # It's therefore nice to be able to suppress double detections.
+            query[cs.last_observation_batch] = adding[cs.observation_batch_num];
+            possible_results:list = self.pushing_to.queryIntoCollection(query);
+            for element in possible_results:
+                element_pos = utils.getPoint(element[cs.position_attr]);
+                dist = numpy.linalg.norm(adding_pos - element_pos);
+                if dist < suppression_distance:
+                    metadata['prevent_from_adding'] = True;
+                    return adding, metadata;

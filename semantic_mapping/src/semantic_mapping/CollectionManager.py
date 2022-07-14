@@ -105,10 +105,10 @@ class CollectionManager:
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!
-        metadata:dict = { 'prev_from_add':False };
+        metadata:dict = { 'prevent_from_adding':False };
         for callback in self.collection_input_callbacks:
             adding_dict, metadata = callback(adding_dict, metadata);
-            if metadata["prev_from_add"] == True:
+            if metadata["prevent_from_adding"] == True:
                 return "";
 
         # If no obj_id was returned from the callback, then we assume there is no cross-referencing
