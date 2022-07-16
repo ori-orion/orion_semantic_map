@@ -41,6 +41,7 @@
           - Logging first and most recent observations.
           - Double detection suppression.
           - Prevention of the updating of certain attributes.
+          - Frequency analysis on discrete fields to work out what to add.
     + `RegionManager`             (RegionManager.py)
        - SUMMARY:
           - Let's say you want to query for things sitting on the table. One way of doing this would be to define a virtual box over the table. `RegionManager` defines regions (as priors), as well as querying infrastructure for it. This allows us to query for stuff within the region.
@@ -48,14 +49,13 @@
                 - Multi-box regions.
                 - Easy setup functionality for regions.
                 - Only add things from a given region.
-       - ROS Message required fields on the `
  + `RelationManager`              (RelationManager.py)
     - SUMMARY:
        - It is useful to be able to say that something is above/to the left of/... something else. This implements that. The current implementation specifically references `orion_actions.msg.Relation` and uses the fields of `orion_actions.msg.Match` without specifically referencing the field.
     - ROS Message required fields on the `Relation` message:
-         left:bool, right:bool, above:bool, below:bool,  behind:bool, frontof:bool, near:bool, not_near:bool, left_most:bool, right_most:bool
+       - left:bool, right:bool, above:bool, below:bool,  behind:bool, frontof:bool, near:bool, not_near:bool, left_most:bool, right_most:bool
     - ROS Message required fields on the query return message:
-         obj1:SOMObject, relation:Relation, obj2:SOMObject, distance:float64
+       - obj1:SOMObject, relation:Relation, obj2:SOMObject, distance:float64
  + `ontology_member`              (Ontology.py)
     - SUMMARY:
        - Defines the ontology tree that can be used to define the category of an element.
