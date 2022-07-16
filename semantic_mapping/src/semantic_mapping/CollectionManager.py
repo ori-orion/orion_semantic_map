@@ -64,7 +64,8 @@ class CollectionManager:
         service_name:str, 
         memory_manager:MemoryManager, 
         visualisation_manager:visualisation.RvizVisualisationManager=None,
-        sort_queries_by=None):
+        sort_queries_by:str=None,
+        is_prior:bool=False):
 
         self.types:TypesCollection = types;
         self.service_name:str = service_name;        
@@ -85,7 +86,12 @@ class CollectionManager:
         # query_dict:dict as an input/output.
         self.collection_query_callbacks = [];
 
-        self.sort_queries_by = sort_queries_by;
+        # An attribute of a sortable type (such as int or float).
+        # This is what we sort entries by for the query return.
+        self.sort_queries_by:str = sort_queries_by;
+
+        # Is what we're looking at a prior? (Should all inputs/outputs have a session number of PRIOR_SESSION_ID?)
+        self.is_prior:bool = is_prior;
 
         self.visualisation_manager = visualisation_manager;
         if visualisation_manager != None:
@@ -101,7 +107,10 @@ class CollectionManager:
 
         # If SESSION_ID == CollectionManager.PRIOR_SESSION_ID, then it's a prior so...
         if (SESSION_ID not in adding_dict) or (adding_dict[SESSION_ID] != CollectionManager.PRIOR_SESSION_ID):
-            adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
+            if self.is_prior:
+                adding_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
+            else:
+                adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!
@@ -203,7 +212,10 @@ class CollectionManager:
             query_dict, metadata = callback(query_dict, metadata);
 
         if SESSION_ID not in query_dict:
-            query_dict[SESSION_ID] = self.memory_manager.current_session_id;
+            if self.is_prior:
+                query_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
+            else:
+                query_dict[SESSION_ID] = self.memory_manager.current_session_id;
 
         if (DEBUG):
             print("Querying into", self.service_name, ":\t", query_dict);

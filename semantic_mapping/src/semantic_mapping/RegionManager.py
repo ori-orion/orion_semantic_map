@@ -53,7 +53,8 @@ class RegionManager(CollectionManager):
         super(RegionManager, self).__init__(
             types=types, 
             service_name=service_name, 
-            memory_manager=memory_manager);
+            memory_manager=memory_manager,
+            is_prior=True);
 
         # self.corner_location = corner_location;
         # self.dimension = dimension;
@@ -84,11 +85,11 @@ class RegionManager(CollectionManager):
         #     return adding_dict, obj_uid;
         # self.collection_input_callbacks.append(session_num_to_prior_adding);
 
-
-        def session_num_to_prior_querying(query_dict:dict, metadata:dict):
-            query_dict[SESSION_ID] = -1;
-            return query_dict, metadata;
-        self.collection_query_callbacks.append(session_num_to_prior_querying);
+        # Setting Priors (old method).
+        # def session_num_to_prior_querying(query_dict:dict, metadata:dict):
+        #     query_dict[SESSION_ID] = -1;
+        #     return query_dict, metadata;
+        # self.collection_query_callbacks.append(session_num_to_prior_querying);
 
         # So that we can implement separate logic to ensure it goes at the same location.
         # We aren't actually overriding because the inputs are completely different!
@@ -145,8 +146,8 @@ class RegionManager(CollectionManager):
         adding.name = region_name;
 
         region_dict:dict = utils.obj_to_dict(adding);
-        region_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
-        print(region_dict);
+        # region_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
+        # print(region_dict);
         region_id:str = str(self.addItemToCollectionDict(region_dict));
 
         self.publish_transform(transform_stamped, self.region_tf_prefix + region_id);
@@ -239,9 +240,7 @@ class RegionManager(CollectionManager):
         """
         region_name = query.region_name;
         # All regions are priors...
-        boxes = self.queryIntoCollection({
-            "name":region_name,
-            SESSION_ID: CollectionManager.PRIOR_SESSION_ID});
+        boxes = self.queryIntoCollection({"name":region_name});
 
         # This is the query into the thing we're looking for the objects.
         # This should mirror CollectionManager.rosQueryEntrypoint(...).
