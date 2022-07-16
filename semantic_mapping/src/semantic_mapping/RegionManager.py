@@ -107,12 +107,14 @@ class RegionManager(CollectionManager):
         point_tf2.header.frame_id = self.global_frame;
 
         # To prevent a race condition, we need to add a delay here!
+        transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
+            point_tf2, region_tf_name, rospy.Duration(1));
         try:
             transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
                 point_tf2, region_tf_name, rospy.Duration(1));
         except:
             transformed_point = tf2_geometry_msgs.PointStamped();
-            rospy.logerr("transform raised an error!");
+            rospy.logerr("RegionManager.py: transform raised an error!");
 
         return transformed_point;
 

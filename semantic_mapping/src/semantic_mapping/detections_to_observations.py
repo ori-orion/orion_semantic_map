@@ -113,7 +113,7 @@ class DetectToObserve:
                     obj_point_2, self.global_frame, timeout=rospy.Duration(0.1));
             except:
                 p_global_frame = tf2_geometry_msgs.PoseStamped();
-                rospy.logerr("transform raised an error!");
+                rospy.logerr("detections_to_observations.py: transform raised an error!");
                 return;
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;

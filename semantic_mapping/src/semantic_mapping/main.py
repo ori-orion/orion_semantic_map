@@ -193,23 +193,8 @@ def setup_system():
         region_visualisation_manager=region_visualisation_manager
     );
     
-    rospy.wait_for_service('/som/object_regions/basic_query');
-    region_query_srv = rospy.ServiceProxy('/som/object_regions/basic_query', orion_actions.srv.SOMQueryRegions);
-    region_query = orion_actions.srv.SOMQueryRegionsRequest();
-    region_query.query.name = "arena_boundry";
-    arena_boundary_regions:orion_actions.srv.SOMQueryRegionsResponse = region_query_srv(region_query);
-    if len(arena_boundary_regions.returns) == 0:
-        arena_boundary_region = orion_actions.msg.SOMBoxRegion();
-    else:    
-        arena_boundary_region:orion_actions.msg.SOMBoxRegion = arena_boundary_regions.returns[0] if len(arena_boundary_regions.returns) else None;
-    
     def push_person_callback(adding:dict, metadata:dict):
         if len(metadata['obj_uid']) == 0:
-            return adding, metadata;
-
-        object_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
-
-        if object_region_manager.point_in_region(arena_boundary_region, object_position.position) == False:
             return adding, metadata;
 
         if adding["class_"] == "person":

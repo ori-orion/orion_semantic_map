@@ -23,8 +23,7 @@
           - `metadata['prevent_from_adding']`: When we are adding something, we may want to prevent it from being added (and progressing to the following callbacks). This field, once set to `True`, prevents all following callbacks from running, as well as the datapoint from being added. This can be used for suppressing double detections. The field will be created initially and set to `False`. 
     - PRIORS:
        - There are some things that we want to persist within the database, and may want to be able to query. We have reserved the session number -1 for priors. 
-          - TODO:
-             - Setup a prior flag to automatically set the prior information.
+       - There is a flag `is_prior` that sets whether to set/query the session number is that for priors or not. 
     - Required fields on any type stored in the system:
        - SESSION_UID:int - This is used for storing the session unique identifier. (-1 for priors).
        - UID:str - This is used for returning the unique identifier once you've added an object.
@@ -48,6 +47,7 @@
              - TODO:
                 - Multi-box regions.
                 - Easy setup functionality for regions.
+                - Only add things from a given region.
        - ROS Message required fields on the `
  + `RelationManager`              (RelationManager.py)
     - SUMMARY:

@@ -85,6 +85,11 @@ class ConsistencyArgs:
         self.suppression_default_distance = suppression_default_distance;
         self.suppression_distance_dict = suppression_distance_dict;
 
+        # There are some things for which we will want to do a frequency analysis. (Say for instance that you have a 
+        # segmentation algorithm and you want to couple object names to the segmented objects. For this, you would
+        # want to take all of the classes that the recogniser thinks it might be and then take the most common of those.)
+        self.frequency_analysis_attrs = [];
+
         # -------------------- Not yet implemented --------------------
 
         # If we are averaging over position, this gives the number of batch numbers we go back by
@@ -166,6 +171,7 @@ class ConsistencyChecker(CollectionManager):
             if (key not in self.consistency_args.dont_transfer):
                 update_entry_input[key] = updating_info[key];
 
+        #region Doing positional averaging
         # Covariance implementation (using the B14 implementation).
         if self.consistency_args.positional_covariance_attr != None and \
             len(updating_info[self.consistency_args.positional_covariance_attr]) == 9:
@@ -200,6 +206,7 @@ class ConsistencyChecker(CollectionManager):
 
             updating_info[self.consistency_args.position_attr] = \
                 utils.setPoint(updating_info[self.consistency_args.position_attr], point_av);
+        #endregion
 
         update_entry_input[self.consistency_args.position_attr] = \
             updating_info[self.consistency_args.position_attr];
@@ -216,6 +223,29 @@ class ConsistencyChecker(CollectionManager):
         increment_param=None;
         if self.consistency_args.observation_counter_attr != None:
             increment_param = {self.consistency_args.observation_counter_attr: 1};
+
+        #region Doing frequency analysis over discrete parameters (like strings).
+        for attr in self.consistency_args.frequency_analysis_attrs:
+            frequency_keys = {};
+            max_freq = 0;
+            updating_attr_to = None;
+            for result in previously_added:
+                result:dict;
+                if attr not in result:
+                    continue;
+
+                dict_key = str(result[attr]);
+
+                if dict_key in frequency_keys:
+                    frequency_keys[dict_key] += 1;
+                else:
+                    frequency_keys[dict_key] = 1;
+                if frequency_keys[dict_key] > max_freq:
+                    max_freq = frequency_keys[dict_key];
+                    updating_attr_to = result[attr];
+            
+            update_entry_input[attr] = updating_attr_to;
+        #endregion
 
         if (DEBUG_LONG):
             print(update_entry_input);
@@ -241,13 +271,7 @@ class ConsistencyChecker(CollectionManager):
         query = {};
         for element in self.consistency_args.cross_ref_attr:
             query[element] = adding[element];
-
-        #region Old double detection suppression code.
-
-        #     query = {};
-        #     for element in self.consistency_args.cross_ref_attr:
-        #         query[element] = adding[element];
-        #endregion
+            
 
         # This means we have a greedy implementation that just takes the closest 
         # option each time. This is almost certainly fine (bar for really uncertain cases).
