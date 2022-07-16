@@ -76,20 +76,8 @@ class RegionManager(CollectionManager):
 
         self.global_frame = "map";
 
-        # We don't want to blindly add transforms of random names into tf. This gives the prefix for these.
+        # We don't want to blindly add transforms of random names into tf. This gives the prefix for these names.
         self.region_tf_prefix = "region_";
-
-        # We want every entry here to be a prior, so SESSION_ID = CollectionManager.PRIOR_SESSION_ID.
-        # def session_num_to_prior_adding(adding_dict:dict, obj_uid:str):
-        #     adding_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
-        #     return adding_dict, obj_uid;
-        # self.collection_input_callbacks.append(session_num_to_prior_adding);
-
-        # Setting Priors (old method).
-        # def session_num_to_prior_querying(query_dict:dict, metadata:dict):
-        #     query_dict[SESSION_ID] = -1;
-        #     return query_dict, metadata;
-        # self.collection_query_callbacks.append(session_num_to_prior_querying);
 
         # So that we can implement separate logic to ensure it goes at the same location.
         # We aren't actually overriding because the inputs are completely different!
@@ -101,14 +89,17 @@ class RegionManager(CollectionManager):
         self.setupROSServices();
 
     def transform_pt_to_global(self, transforming:geometry_msgs.msg.Point, region_tf_name:str) -> tf2_geometry_msgs.PointStamped:
+        """
+        Transforms a point into the global frame.
+        """
         point_tf2 = tf2_geometry_msgs.PointStamped();
         point_tf2.point = transforming;        # NOTE: this is not actually the right type but this may well make no difference.
         point_tf2.header.stamp = rospy.Time.now();
         point_tf2.header.frame_id = self.global_frame;
 
         # To prevent a race condition, we need to add a delay here!
-        transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
-            point_tf2, region_tf_name, rospy.Duration(1));
+        # transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
+        #     point_tf2, region_tf_name, rospy.Duration(1));
         try:
             transformed_point:tf2_geometry_msgs.PointStamped = self.tfBuffer.transform(
                 point_tf2, region_tf_name, rospy.Duration(1));
@@ -120,6 +111,13 @@ class RegionManager(CollectionManager):
 
 
     def publish_primed_transforms(self):
+        """
+        Publishes the tf transform for all the regions. If the visualisation manager is 
+        running, it also pushes the boxes to rviz.
+
+        This is run at startup and adds all the primed regions already in the database
+        into the tf tree.
+        """
         regions_already_in_som:list = self.queryIntoCollection({});
         # print(regions_already_in_som[0])
         for region in regions_already_in_som:
@@ -139,6 +137,10 @@ class RegionManager(CollectionManager):
 
 
     def create_region(self, transform_stamped:geometry_msgs.msg.TransformStamped, region_name:str, size:geometry_msgs.msg.Vector3):
+        """
+        This creates a single region, both adding it to the database, and to tf.
+        """
+
         if DEBUG:
             print("Creating a region");
 
@@ -160,6 +162,9 @@ class RegionManager(CollectionManager):
         return region_id;
 
     def publish_transform(self, transform_stamped:geometry_msgs.msg.TransformStamped, child_frame_id:str) -> None:
+        """
+        Publishes the array of tfs `self.static_transforms` to the tf tree.
+        """
         transform_stamped.header.stamp = rospy.Time.now();
         transform_stamped.header.frame_id = self.global_frame;
         transform_stamped.child_frame_id = child_frame_id;
@@ -175,6 +180,9 @@ class RegionManager(CollectionManager):
         region_name:str, 
         size:geometry_msgs.msg.Vector3,
         region_id:str):
+        """
+        Adds a given region to the visualisation system.
+        """
 
         print("\tExecuting Region visualisation.");
 
@@ -287,6 +295,9 @@ class RegionManager(CollectionManager):
 
 
     def addRegionROSEntryPoint(self, adding:orion_actions.srv.SOMAddRegionRequest) -> orion_actions.srv.SOMAddRegionResponse:
+        """
+        Is the ROS service callback for adding a region.
+        """
         corner_loc_stamped = geometry_msgs.msg.TransformStamped();
         corner_loc_stamped.transform = adding.adding.corner_loc;
         uid:str = self.create_region(corner_loc_stamped, adding.adding.name, adding.adding.dimension);

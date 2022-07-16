@@ -51,6 +51,9 @@ class RelationManager:
 
 
     def ROS_perform_relational_query(self, input):
+        """
+        ROS entrypoint into the relational query.
+        """
         obj1_dict = utils.obj_to_dict(
             input.obj1, 
             ignore_default=True,
@@ -60,10 +63,14 @@ class RelationManager:
             ignore_default=True,
             ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time]);
         
-        return self.perform_relational_query(obj1_dict, obj2_dict, input.relation, input.current_robot_pose);
+        return self.performRelationalQuery(obj1_dict, obj2_dict, input.relation, input.current_robot_pose);
 
 
-    def perform_relational_query(self, obj1:dict, obj2:dict, relation:Relation, cur_robot_pose:Pose):
+    def performRelationalQuery(self, obj1:dict, obj2:dict, relation:Relation, cur_robot_pose:Pose):
+        """
+        Uses `obj1`, `obj2` and `relation` as query keys to match against for generating the output 
+        list. The whole idea is to use the inputs for the query as things to query against.
+        """
         obj1_query_result:list = self.operating_on.queryIntoCollection(obj1);
         obj2_query_result:list = self.operating_on.queryIntoCollection(obj2);
 
@@ -87,7 +94,7 @@ class RelationManager:
                 relation_out_dict = utils.obj_to_dict(relation_out);
 
                 if compare_relational_dicts(relation_out_dict):
-                    match_appending = self.match_type();                    
+                    match_appending = self.match_type();
                     match_appending.obj1 = utils.dict_to_obj(o1, match_appending.obj1);
                     match_appending.obj2 = utils.dict_to_obj(o2, match_appending.obj2);
                     match_appending.relation = relation_out;
@@ -98,7 +105,7 @@ class RelationManager:
         
         output = self.service_response();
         setattr(output, utils.get_attributes(output)[0], matches);
-        return output;        
+        return output;
 
     
     def get_relation_dict(self, cur_robot_pose:Pose, obj1:dict, obj2:dict) -> Relation:

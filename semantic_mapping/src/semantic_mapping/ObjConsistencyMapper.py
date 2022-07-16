@@ -136,6 +136,9 @@ class ConsistencyChecker(CollectionManager):
     
     # The function for actually adding something to the other collection.
     def createNewConsistentObj(self, adding:dict) -> str:
+        """
+        Creates a new consistent object in the entities collection.
+        """
         
         # Maybe do some fun stuff looking at size here??
         adding[self.consistency_args.first_observed_attr] = \
@@ -323,6 +326,10 @@ class ConsistencyChecker(CollectionManager):
 
     
     def suppression_callback(self, adding:dict, metadata:dict):
+        """
+        This is the callback for the suppression of double detections 
+        (where suppression is done by distance).
+        """
         if self.consistency_args.class_identifier not in adding:
             return adding, metadata;
 

@@ -68,7 +68,7 @@ class CollectionManager:
         is_prior:bool=False):
 
         self.types:TypesCollection = types;
-        self.service_name:str = service_name;        
+        self.service_name:str = service_name;
         self.memory_manager:MemoryManager = memory_manager;
 
         # Makes sure the collection is added to the memory manager.
@@ -192,8 +192,7 @@ class CollectionManager:
         if increment != None:
             self.collection.update_one(
                 {utils.PYMONGO_ID_SPECIFIER:uid},
-                { "$inc": increment}
-            );
+                { "$inc": increment});
         
         if (DEBUG_LONG):
             print("Updating ", uid, "within", self.service_name, "with", update_to);
@@ -229,7 +228,7 @@ class CollectionManager:
             query_result_list.sort(key=lambda x:x[self.sort_queries_by], reverse=True);
 
         if DEBUG:
-            print("\tresponse length =", len(query_result_list))
+            print("\tresponse length =", len(query_result_list));
 
         return query_result_list;
 
@@ -280,7 +279,7 @@ class CollectionManager:
             appending = utils.dict_to_obj(element, appending);
             resp_array.append(appending);
 
-        return ros_response;        
+        return ros_response;
 
 
     def deleteAllEntries(self):
