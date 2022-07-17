@@ -36,6 +36,50 @@ class ConsistencyArgs:
         suppression_default_distance:float=0,
         suppression_distance_dict:dict={}):
 
+        """
+        Constructor:
+        Inputs:
+            position_attr
+                The name of the positional attribute in the message file you're reading in. 
+            size_attr
+                The name of the size attribute in the message file you're reading in. 
+            max_distance
+                The maximum distance over which consistency checking is performed. This can either be a number, 
+                or it can be a dictionary. If it is a dictionary, `default` is a necessary field and gives the 
+                default distance for consitency checking. The other keys are those specified by the parameter
+                given by `class_identifier`.
+            class_identifier:str
+                The name of a general identifying parameter within the system that can be used to work out the
+                max_distance to use, as well as for suppressing double detections (and probably more to come as 
+                well).
+        Positional averaging parameters.
+            positional_covariance_attr:str
+                A matrix (in 1x9 matrix form) for the positional covariance so that we can implement the B14 
+                stuff.
+            use_running_average_position:bool
+                Boolean for activating the simple averaging code. (Will only activate that code if the 
+                positional covariance stuff can't be used.)
+        Temporal attributes:
+            first_observed_attr:str
+                Within the consitent object, we need to know which parameter gives the time at which the first
+                observation occured.
+            last_observed_attr:str
+                Within the consitent object, we need to know which parameter gives the time at which the most 
+                recent observation occured.
+            observed_at_attr:str
+                Within the observations, we need to know when it was observed at.
+        Batch number attributes.
+            observation_batch_num:str
+                For the observations, we need to know the observation batch a given observation came from.
+            last_observation_batch:str
+                Within the objects, we need to know the last batch of observations attributed to that object.            
+            observation_counter_attr:str
+        Suppression of double detections
+            suppress_double_detections:bool
+            suppression_default_distance:float
+            suppression_distance_dict:dict
+        """
+
 
         self.position_attr = position_attr;
         self.positional_covariance_attr = positional_covariance_attr;
