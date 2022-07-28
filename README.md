@@ -6,7 +6,7 @@ READMEs are included in each subfolder.
 Current active branch is `noetic`.
 
 # Notes on current implementation...
-
+This branch (rosplan_tiago) supports Catherine Ning's work on the Tiago pick and place simulation with the ROSPlan planner (Summer 2022). It has been adapted to run on melodic and Python2.7. 
 ## ROS message definitions:
 
 Running the overall system and `rosservice list | grep som` returns 
