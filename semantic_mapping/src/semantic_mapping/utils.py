@@ -18,14 +18,14 @@ CROSS_REF_UID = "CRSS_REF_UID";
 PYMONGO_ID_SPECIFIER = "_id";
 
 
-def ROSTimeToNumericalTime(time:rospy.Time) -> int:
+def ROSTimeToNumericalTime(time) :
     """
     Converts rospy.Time (or anything with the fields `secs` and `nsecs`) into a single number.
     This makes us able to sort w.r.t. the time field.
     """
     output = time.nsecs + time.secs * 1e9;
     return output;
-def numericalTimeToROSTime(time:int) -> rospy.Time:
+def numericalTimeToROSTime(time) :
     """
     Converts from the single number representation of time into rospy.Time.
     """
@@ -34,7 +34,7 @@ def numericalTimeToROSTime(time:int) -> rospy.Time:
     output.secs = int((time - output.nsecs) / 1e9);
     # print(output.secs);
     return output;
-def numericalTimeToROSDuration(time:int) -> rospy.Duration:
+def numericalTimeToROSDuration(time):
     """
     Converts from the single number representation of time into rospy.Duration.
     """
@@ -49,14 +49,14 @@ def numericalTimeToROSDuration(time:int) -> rospy.Duration:
 # We therefore want to separate these out.
 # We also know that the dict obj we might be trying to decipher is a ROS
 # Pose object, so we know that "position" is the string we want.
-def getPoint(obj:dict) -> numpy.array:
+def getPoint(obj):
     """
     Returns the numpy.array 3D point from a Point or Pose object.
     """
     if "position" in obj:
         obj = obj["position"];
     return numpy.asarray([obj["x"], obj["y"], obj["z"]]);
-def setPoint(obj:dict, new_pt:numpy.array) -> dict:
+def setPoint(obj, new_pt):
     """
     Sets the position in either a Point or Pose object from a numpy.array 3D point.
     """
@@ -70,7 +70,7 @@ def setPoint(obj:dict, new_pt:numpy.array) -> dict:
         obj['z'] = new_pt[2];
     return obj;
 
-def getMatrix(obj:list, num_rows:int=3) -> numpy.matrix:
+def getMatrix(obj, num_rows=3):
     """
     Gets the numpy.matrix from a linear array. 
     Let x=[1,2,3,4,5,6,7,8,9].
@@ -80,7 +80,7 @@ def getMatrix(obj:list, num_rows:int=3) -> numpy.matrix:
     obj_2D = obj_array.reshape((num_rows, -1));
     return numpy.matrix(obj_2D);
 
-def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
+def quaternion_to_rot_mat(quat):
     """
     Gets the 3x3 rotation matrix from a quaternion.
     https://automaticaddison.com/how-to-convert-a-quaternion-to-a-rotation-matrix/
@@ -105,7 +105,7 @@ def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
     
     return output;
 
-def get_multi_likelihood(mean:numpy.array, covariance_matrix:numpy.matrix, location:numpy.array) -> numpy.float64:
+def get_multi_likelihood(mean, covariance_matrix, location):
     """
     Gets the likelihood out from a multidimensional likelihood out for a given position and covariance matrix.
     Note that this is NOT the probability.
@@ -114,7 +114,7 @@ def get_multi_likelihood(mean:numpy.array, covariance_matrix:numpy.matrix, locat
     cov_det = numpy.linalg.det(covariance_matrix);
     return (1/math.sqrt(2*math.pi * cov_det)) * math.exp(exponent);
 
-def get_mean_over_samples(means, covariances) -> numpy.array:
+def get_mean_over_samples(means, covariances):
     """
     For MLE, there is an covariance matrix weighted average that is used. This implements that. 
 
@@ -148,7 +148,7 @@ def get_mean_over_samples(means, covariances) -> numpy.array:
 
 
 #removes attributes of a ROS msg that we're not interested in.
-def get_attributes(obj) -> list:
+def get_attributes(obj):
     """
     Gets a list of the attributes for a given object, and removes those we don't want. 
     ROS message/service types come with a few fields that we don't want, such as the
@@ -156,9 +156,9 @@ def get_attributes(obj) -> list:
     We also don't want to convert anything with a leading underscore (given that those
     are assigned by default by ROS).
     """
-    attributes:list = obj.__dir__();
+    attributes = dir(obj);
 
-    def remove_element(e:str):
+    def remove_element(e):
         if (e in attributes):
             attributes.remove(e);
 
@@ -169,7 +169,7 @@ def get_attributes(obj) -> list:
     remove_element("deserialize_numpy");
     remove_element("header");
 
-    i:int = 0;
+    i = 0;
     while (i < len(attributes)):
         if (attributes[i][0] == '_'):   # If it starts with an underscore!
             attributes.pop(i);  # If we're popping this element, then we don't need to increment the index!
@@ -183,41 +183,40 @@ def get_attributes(obj) -> list:
 #   yet unknown types that need to be dealt with)!
 def obj_to_dict(
     obj, 
-    attributes:list=None, 
-    session_id:int=-1, 
-    ignore_default:bool=False, 
-    ignore_of_type:list=[],
-    convert_caps:bool=False) -> dict:
-    
+    attributes=None, 
+    session_id=-1, 
+    ignore_default=False, 
+    ignore_of_type=[],
+    convert_caps=False):
     """
     This will transfer an arbitrary ROS object into a dictionary.
 
     Inputs:
         obj                     The object to convert. 
-        attributes:list         A list of attributes to convert. This is typically used for recursion.
-        session_id:int          Sets the session_id of the entry iff session_id != -1.
-        ignore_default:bool     For queries, we want to ignore default fields. (If a field is as its 
+        attributes         A list of attributes to convert. This is typically used for recursion.
+        session_id          Sets the session_id of the entry iff session_id != -1.
+        ignore_default     For queries, we want to ignore default fields. (If a field is as its 
                                 default, then that means we don't want to query into it.)
-        ignore_of_type:list     For queries, there are some fields that are a pain (such as temporal 
+        ignore_of_type     For queries, there are some fields that are a pain (such as temporal 
                                 types). This allows us to remove fields from a set of types.
-        convert_caps:bool       For queries, we want to convert fields with leading capitals. However,
+        convert_caps       For queries, we want to convert fields with leading capitals. However,
                                 fields with leading capitals should be fields that the system sets 
                                 internally. Thus, if we are adding an object, we don't want to set 
                                 these fields.
     """
-    # print("obj_to_dict(...)");
+    print("obj_to_dict(...)");
 
     if (attributes == None):
         attributes = get_attributes(obj);
 
-    # print("Attributes: {}".format(attributes))
+    print ("Attributes: {}".format(attributes))
 
     if (len(attributes) == 0):
         return {};
 
-    # print(attributes, end = ";\n\t");
+    print(attributes);
 
-    def pushObjToDict(element, ignore_default:bool):
+    def pushObjToDict(element, ignore_default):
         """
         ignore_default is for queries. If we don't want to compare a parameter, we want to 
         be able to set it to the default and ignore it. This sets this up. (The check is
@@ -254,7 +253,7 @@ def obj_to_dict(
 
         if output == None:    
             if (genpy.Message not in ignore_of_type) and isinstance(element, genpy.Message):                
-                attributes_recursive_in:list = get_attributes(element);
+                attributes_recursive_in = get_attributes(element);
                 output = obj_to_dict(
                     element, 
                     attributes=attributes_recursive_in, 
@@ -271,9 +270,9 @@ def obj_to_dict(
         # rospy.loginfo("Ended with output: '{}'".format(output))
         return output;
     
-    output:dict = {};
+    output = {};
     for attr in attributes:
-        attr:str;
+        attr;
 
         # We don't want to look at constants, and constants are all upper case.
         if attr[0].isupper() and not convert_caps: 
@@ -294,17 +293,17 @@ def obj_to_dict(
 
     return output;
 
-def dict_to_obj(dictionary:dict, objFillingOut):
+def dict_to_obj(dictionary, objFillingOut):
     """
     The main idea here is that we may well want to convert an arbitrary dictionary to one of the ROS types
     we've created. This will do it.
 
     Inputs:
-        dictionary:dict     The dictionary that we want to fill out the ROS message with. 
+        dictionary     The dictionary that we want to fill out the ROS message with. 
         objFillingOut       An empty ROS message to fill out.
     """
 
-    attributes = objFillingOut.__dir__();
+    attributes = dir(objFillingOut);
     for key in dictionary.keys():
         if (key in attributes):
             if isinstance(dictionary[key], dict):                
