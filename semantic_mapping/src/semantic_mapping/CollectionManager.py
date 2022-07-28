@@ -22,23 +22,23 @@ class TypesCollection:
     To define all the types we're looking at for the queries.
     """
     def __init__(self, 
-        base_ros_type:type, 
-        input_parent:type=None,
-        input_response:type=None,
-        query_parent:type=None, 
-        query_response:type=None):
+        base_ros_type, 
+        input_parent=None,
+        input_response=None,
+        query_parent=None, 
+        query_response=None):
 
-        self.base_ros_type:type = base_ros_type;
+        self.base_ros_type = base_ros_type;
 
         # Services have the parent type, the request type and the response type. 
         # The request can easily just be read in. That makes the response and the
         # parent the only types of relevance here.
-        self.query_parent:type = query_parent;
-        self.query_response:type = query_response;
+        self.query_parent = query_parent;
+        self.query_response = query_response;
 
         # The service definition for the input type.
-        self.input_parent:type = input_parent;
-        self.input_response:type = input_response;
+        self.input_parent = input_parent;
+        self.input_response = input_response;
 
 
 class CollectionManager:
@@ -52,7 +52,7 @@ class CollectionManager:
     service_name    - The rossrv list name of the service. This is the service name that you
                         will be able to send stuff to in order to add it to this collection.
                         Note that this will also be the name of the pymongo collection.    
-    memory_manager  - The interface through which the basic memory mangement will happen.  
+    memory_manager  - The interface through which the basic memory management will happen.  
     positional_attr - For relations, we want to know what entry determines the position of an object.
                         This will also be used within the ObjConsistencyChecker.                           
     """
@@ -60,19 +60,19 @@ class CollectionManager:
     PRIOR_SESSION_ID = -1;
 
     def __init__(self, 
-        types:TypesCollection, 
-        service_name:str, 
-        memory_manager:MemoryManager, 
-        visualisation_manager:visualisation.RvizVisualisationManager=None,
-        sort_queries_by:str=None,
-        is_prior:bool=False):
+        types, 
+        service_name, 
+        memory_manager, 
+        visualisation_manager=None,
+        sort_queries_by=None,
+        is_prior=False):
 
-        self.types:TypesCollection = types;
-        self.service_name:str = service_name;
-        self.memory_manager:MemoryManager = memory_manager;
+        self.types = types;
+        self.service_name = service_name;
+        self.memory_manager = memory_manager;
 
         # Makes sure the collection is added to the memory manager.
-        self.collection:pymongo.collection.Collection = memory_manager.addCollection(self.service_name);        
+        self.collection = memory_manager.addCollection(self.service_name);        
 
         # These are all in the form (action_dict, obj_id) -> (action_dict, obj_id), so that they can
         # be called in series. obj_id is for cross referencing, and if it's not None, then 
@@ -83,15 +83,15 @@ class CollectionManager:
         # itself is quite useful.  
         self.collection_input_callbacks = [];
         # This goes right at the beginning of the query infrastructure. It only takes
-        # query_dict:dict as an input/output.
+        # query_dict as an input/output.
         self.collection_query_callbacks = [];
 
         # An attribute of a sortable type (such as int or float).
         # This is what we sort entries by for the query return.
-        self.sort_queries_by:str = sort_queries_by;
+        self.sort_queries_by = sort_queries_by;
 
         # Is what we're looking at a prior? (Should all inputs/outputs have a session number of PRIOR_SESSION_ID?)
-        self.is_prior:bool = is_prior;
+        self.is_prior = is_prior;
 
         self.visualisation_manager = visualisation_manager;
         if visualisation_manager != None:
@@ -100,7 +100,7 @@ class CollectionManager:
         self.setupServices();
 
 
-    def addItemToCollectionDict(self, adding_dict:dict) -> pymongo.collection.ObjectId:
+    def addItemToCollectionDict(self, adding_dict):
         """
         Add items to the collection via a dictionary.
         """
@@ -114,7 +114,7 @@ class CollectionManager:
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!
-        metadata:dict = { 'prevent_from_adding':False };
+        metadata = { 'prevent_from_adding':False };
         for callback in self.collection_input_callbacks:
             adding_dict, metadata = callback(adding_dict, metadata);
             if metadata["prevent_from_adding"] == True:
@@ -132,32 +132,33 @@ class CollectionManager:
 
         result = self.collection.insert_one(adding_dict);
 
-        result_id:pymongo.collection.ObjectId = result.inserted_id;
+        result_id = result.inserted_id;
 
         if (self.visualisation_manager != None):
             self.visualisation_manager.add_obj_dict(adding_dict, str(result_id), 1);
 
         return result_id;
 
-    def addItemToCollection(self, adding) -> pymongo.collection.ObjectId:
+    def addItemToCollection(self, adding):
         """
         Adds or updates entries into a collection. 
         If you are updating an entry (because its UID is defined), this ignores default values.
         """
         if len(adding.UID) > 0:
-            updating_dict:dict = utils.obj_to_dict(adding, ignore_default=True);
-            uid:pymongo.collection.ObjectId = pymongo.collection.ObjectId(adding.UID);
+            updating_dict = utils.obj_to_dict(adding, ignore_default=True);
+            uid = pymongo.collection.ObjectId(adding.UID);
             self.updateEntry(uid, updating_dict);
             return uid;
         else:
-            adding_dict:dict = utils.obj_to_dict(adding, ignore_default=False);
+            adding_dict = utils.obj_to_dict(adding, ignore_default=False);
             return self.addItemToCollectionDict(adding_dict);
 
     def rosPushToCollection(self, pushing): # -> self.types.input_response
-        pushing_attr = utils.get_attributes(pushing);        
+        pushing_attr = utils.get_attributes(pushing);  
+        print(pushing, pushing_attr)      
         if DEBUG:
             print("Pushing obj to", self.service_name);
-        uid = self.addItemToCollection(getattr(pushing, pushing_attr[0]));
+        uid = self.addItemToCollection(getattr(pushing));
 
         response = self.types.input_response();
         # this needs to have the field UID in it!
@@ -165,7 +166,7 @@ class CollectionManager:
         return response;
 
 
-    def updateEntry(self, uid:pymongo.collection.ObjectId, update_to:dict, increment:dict=None):
+    def updateEntry(self, uid, update_to, increment=None):
         """
         https://www.w3schools.com/python/python_mongodb_update.asp
 
@@ -200,7 +201,7 @@ class CollectionManager:
             print("Updating ", uid, "within", self.service_name);
 
 
-    def queryIntoCollection(self, query_dict:dict) -> list:
+    def queryIntoCollection(self, query_dict):
         """
         Query into the system through a dictionary.
         This will return a list of dictionaries, each one corresponding to an entry.
@@ -219,7 +220,7 @@ class CollectionManager:
         if (DEBUG):
             print("Querying into", self.service_name, ":\t", query_dict);
 
-        query_result:pymongo.cursor.Cursor = self.collection.find(query_dict);
+        query_result = self.collection.find(query_dict);
         query_result_list = list(query_result);
 
         #print("\tself.sort_queries_by=", self.sort_queries_by);
@@ -239,7 +240,7 @@ class CollectionManager:
         Translates the ROS query into a dictionary, and then gets the list response using self.queryIntoCollection(...)
         """
 
-        ros_query_dict:dict = utils.obj_to_dict(
+        ros_query_dict = utils.obj_to_dict(
             ros_query,
             ignore_default=True,
             ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time],
@@ -260,12 +261,12 @@ class CollectionManager:
             ros_query_dict[utils.PYMONGO_ID_SPECIFIER] = pymongo.collection.ObjectId(ros_query_dict[utils.UID_ENTRY]);
             del ros_query_dict[utils.UID_ENTRY];
         
-        response:list = self.queryIntoCollection(ros_query_dict);
+        response = self.queryIntoCollection(ros_query_dict);
 
         ros_response = self.types.query_response();
         query_response_attr = utils.get_attributes(ros_response)[0];
 
-        resp_array:list = getattr(ros_response, query_response_attr);
+        resp_array = getattr(ros_response, query_response_attr);
 
         # assert(type(resp_array) is list);
 
@@ -285,7 +286,7 @@ class CollectionManager:
     def deleteAllEntries(self):
         self.collection.delete_many({});
 
-    def rosDeleteAllEntries(self, srv_input:std_srvs.srv.EmptyRequest):
+    def rosDeleteAllEntries(self, srv_input):
         self.deleteAllEntries();
         print("Deleting all entries within", self.service_name);
         return std_srvs.srv.EmptyResponse();

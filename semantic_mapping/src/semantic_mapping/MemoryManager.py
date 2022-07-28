@@ -29,15 +29,15 @@ class MemoryManager:
         # self.clear_db();
         self.database = self.client.database_test;
 
-        self.collections:dict = {};
+        self.collections = {};
 
         #region Setting up the session stuff.
         session_log = self.database.session_log_coll;
         if session_log.estimated_document_count() > 0:
             #https://stackoverflow.com/questions/32076382/mongodb-how-to-get-max-value-from-collections
             # => .find().sort(...).limit(...) is actually quite efficient
-            previous_session_cursor:pymongo.cursor.Cursor = session_log.find().sort(SESSION_ID, -1).limit(1);
-            previous_session:list = list(previous_session_cursor);
+            previous_session_cursor = session_log.find().sort(SESSION_ID, -1).limit(1);
+            previous_session = list(previous_session_cursor);
             self.current_session_id = previous_session[0][SESSION_ID] + 1;
         else:
             self.current_session_id = 1;
@@ -51,7 +51,7 @@ class MemoryManager:
 
         self.setup_services();
 
-    def addCollection(self, collection_name:str) -> pymongo.collection.Collection:
+    def addCollection(self, collection_name):
         """
         Adds a collection to the database.
         If the collection already exists, this acts as a get funciton.
@@ -65,7 +65,7 @@ class MemoryManager:
         """
         self.client.drop_database(database_name);
 
-    def clear_database_ROS_server(self, srv_input:std_srvs.srv.EmptyRequest):
+    def clear_database_ROS_server(self, srv_input):
         """
         ROS entrypoint for deleting the entire database.
         """

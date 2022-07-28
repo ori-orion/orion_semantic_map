@@ -20,12 +20,12 @@ import utils;
 
 class RvizVisualisationManager:
     def __init__(self, 
-        im_server:InteractiveMarkerServer, 
+        im_server, 
         colour_a, colour_r, colour_g, colour_b,
-        class_attr:str, size_attr:str, position_attr:str):
+        class_attr, size_attr, position_attr):
 
         # Interactive Marker server.
-        self.im_server:InteractiveMarkerServer = im_server;
+        self.im_server = im_server;
         # self.coll_manager:CollectionManager.CollectionManager = coll_manager;
 
         # In the range [0,1]
@@ -52,14 +52,14 @@ class RvizVisualisationManager:
         Handles the click callback for when the user clicks on one of the rviz boxes.
         """
         if (self.query_callback != None):
-            obj:list = self.query_callback(
+            obj = self.query_callback(
                 {utils.PYMONGO_ID_SPECIFIER:pymongo.collection.ObjectId(input.marker_name)});
 
             if len(obj) > 0:
                 rospy.loginfo(obj);
                 rospy.loginfo("\n\n\n");
 
-    def add_obj_dict(self, adding_dict:dict, obj_id:str, num_observations=math.inf):
+    def add_obj_dict(self, adding_dict, obj_id, num_observations=float('inf')):
         """
         This acts both to add and to update a given entry.
         """
@@ -67,7 +67,7 @@ class RvizVisualisationManager:
         obj_pose.orientation.w=1;
 
         if "position" in adding_dict[self.size_attr]:
-            carry:Pose = utils.dict_to_obj(adding_dict[self.size_attr], Pose());
+            carry = utils.dict_to_obj(adding_dict[self.size_attr], Pose());
             obj_size = carry.position;
             obj_pose.orientation = carry.orientation;
         else:
@@ -82,7 +82,7 @@ class RvizVisualisationManager:
 
         self.add_object(obj_id, obj_pose, obj_size, obj_class, num_observations);
 
-    def add_object(self, id:str, pose:Pose, size:Point, obj_class:str, num_observations=math.inf):
+    def add_object(self, id, pose, size, obj_class, num_observations=float('inf')):
         """
         Deals with the adding of an object to the visualisation server. 
         id                  - The id of the object (and the id that rviz will use).
