@@ -158,7 +158,7 @@ class CollectionManager:
         print(pushing, pushing_attr)      
         if DEBUG:
             print("Pushing obj to", self.service_name);
-        uid = self.addItemToCollection(getattr(pushing));
+        uid = self.addItemToCollection(getattr(pushing, pushing_attr[0]));
 
         response = self.types.input_response();
         # this needs to have the field UID in it!
