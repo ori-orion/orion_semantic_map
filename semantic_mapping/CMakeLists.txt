@@ -53,25 +53,11 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   # SOMObject.msg
-#   # SOMObservation.msg
-#   # SOMROIObject.msg
-#   # PoseEstimate.msg
-#   # Relation.msg
-#   # Match.msg
 # )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
 #   FILES
-#   # SOMAddObservation.srv
-#   # SOMGetObservations.srv
-#   # SOMDelete.srv
-#   # SOMObserve.srv
-#   # SOMQuery.srv
-#   # SOMLookup.srv
-#   # SOMClearDatabase.srv
-#   # SOMGetAllObjects.srv
 # )
 
 ## Generate actions in the 'action' folder
@@ -82,12 +68,12 @@ catkin_python_setup()
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-   DEPENDENCIES
-  std_msgs
-  geometry_msgs
-  sensor_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+#   geometry_msgs
+#   sensor_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
