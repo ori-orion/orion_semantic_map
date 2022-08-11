@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "../../../../orion_actions"
+		},
+		{
+			"path": "../../.."
+		}
+	],
+	"settings": {
+		"python.autoComplete.extraPaths": [
+			"/home/catherine/rosplan_tiago_ws/devel/lib/python2.7/dist-packages",
+			"/home/catherine/tiago_public_ws/devel/lib/python2.7/dist-packages",
+			"/opt/ros/melodic/lib/python2.7/dist-packages"
+		],
+		"ros.distro": "melodic",
+		"python.analysis.extraPaths": [
+			"/home/catherine/rosplan_tiago_ws/devel/lib/python2.7/dist-packages",
+			"/home/catherine/tiago_public_ws/devel/lib/python2.7/dist-packages",
+			"/opt/ros/melodic/lib/python2.7/dist-packages"
+		]
+	}
+}

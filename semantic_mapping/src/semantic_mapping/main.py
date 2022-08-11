@@ -46,6 +46,18 @@ def setup_system():
         types= successcount_types,
         service_name="successcounts",
         memory_manager=mem_manager)
+    
+    plan_types= TypesCollection(
+        base_ros_type=orion_actions.msg.Plan,
+        query_parent=orion_actions.srv.SOMQueryPlan,
+        query_response=orion_actions.srv.SOMQueryPlanResponse,
+        input_parent=orion_actions.srv.SOMAddPlan,
+        input_response=orion_actions.srv.SOMAddPlanResponse)
+
+    object_manager = CollectionManager(
+        types= plan_types,
+        service_name="plan",
+        memory_manager=mem_manager)
 
     rospy.loginfo("Memory systems set up!")
 
