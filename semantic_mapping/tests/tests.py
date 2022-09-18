@@ -327,6 +327,36 @@ def test_human_height_transfer():
     
     pass;
 
+
+def test_observation_batch_query():
+    print("Batch number tests.");
+    obs1 = create_obs_instance("obs_1", batch_num=100);
+    obs2 = create_obs_instance("obs_2", batch_num=101);
+    obs3 = create_obs_instance("obs_3", batch_num=102);
+
+    push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
+    get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
+
+    push_to_db_srv(obs1);
+    push_to_db_srv(obs2);
+    push_to_db_srv(obs3);
+
+    print("\tTesting that you can query for a specific batch number.");
+    q1 = orion_actions.srv.SOMQueryObjectsRequest();
+    q1.query.last_observation_batch = 100;
+    q1_response:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(q1);
+    assert(len(q1_response.returns) == 1);
+    assert(q1_response.returns[0].class_ == "obs_1");
+
+    print("\tTesting that you can query for an interval of batches.");
+    q2 = orion_actions.srv.SOMQueryObjectsRequest();
+    q2.query.last_observation_batch = -101;
+    q2_response:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(q2);
+    assert(len(q2_response.returns) == 1);
+    assert(q2_response.returns[0].class_ == "obs_3");
+
+    print("\tFinished testing batch number queries.");
+
 if __name__ == '__main__':
     rospy.init_node('som_test_node');
 
@@ -336,6 +366,7 @@ if __name__ == '__main__':
     test_covariance_method();
     test_category_callback();
     test_updating_entry();
+    test_observation_batch_query();
 
     uid_input_test();
     

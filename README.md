@@ -56,9 +56,7 @@ Regions are defined as priors within the SOM system. (They therefore have a sess
 The whole aim of the new system is to generalise the memory system s.t. it can be used as a memory system for any generic message. This manifests itself as being able to take an arbitrary ROS message and translate this into a dict for storage in a mongodb. There are a few conventions that need to be satisifed here.
  - Constants are conventionally all uppercase. The system currently checks only the leading character for the identification of constants. Therefore all parameters for storage in the memory system need to start with a lower case.
  - Leading underscores are how the system detects for the parameters in every python type (such as `__dict__`). Thus leading underscores are used for enumerated types within SOM messages. (If this convention is not used, enums within the message types will find their way into the query messages, thus rendering the returns empty.)
- - All entries need a `UID` entry, for referencing and querying. 
-    - When you query, you only fill the parameters you are interested in. Thus, if you are querying by `UID`, you only fill out this parameter. 
- - If an object has a `SESSION_NUM` entry, this will also be filled out with the current session number. This is to allow multiple sessions to be recorded over time. 
+ - All entries need a `HEADER` entry of type `SOMHeader.msg`. This then has the `UID` and `SESSION_NUM` entries encoded within it.
     - Priors will be stored with `SESSION_NUM=-1`.
 
 What does this actually mean? You can change the ROS message types, and so long as you don't change something the system actually cares about (such as the positional or batch num parameters), it will read any new/changed fields in automatically. This makes this system versatile and easy to extend to store more types of thing. 

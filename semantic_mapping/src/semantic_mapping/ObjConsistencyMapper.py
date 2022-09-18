@@ -4,6 +4,7 @@ Owner: Matthew Munks
 """
 
 import math
+from re import S
 import numpy
 import utils;
 from CollectionManager import CollectionManager, TypesCollection;
@@ -112,8 +113,10 @@ class ConsistencyArgs:
 
         # Batch information:
         # Batch number for the things you're pulling from.
+        # This is the entry within the observation.
         self.observation_batch_num = observation_batch_num;
         # Latest batch number from the observations for the entity you're pushing to.
+        # This is the entry within the consistent object.
         self.last_observation_batch = last_observation_batch;
 
         # Which attributes don't you want transferred upon an observation?
@@ -173,6 +176,7 @@ class ConsistencyChecker(CollectionManager):
         
         self.collection_input_callbacks = collection_input_callbacks;
         self.collection_input_callbacks.append(self.push_item_to_pushing_to);
+        self.pushing_to.collection_query_callbacks.append(self.query_callback);
 
         self.pushing_to.sort_queries_by = consistency_args.last_observation_batch;
 
@@ -401,3 +405,12 @@ class ConsistencyChecker(CollectionManager):
                 return adding, metadata;
 
         return adding, metadata;
+
+    def query_callback(self, querying:dict, metadata:dict):
+        if self.consistency_args.batch_nums_setup():
+            if self.consistency_args.last_observation_batch in querying:
+                batch_num_query = querying[self.consistency_args.last_observation_batch];
+                if type(batch_num_query) is int and batch_num_query < 0:
+                    querying[self.consistency_args.last_observation_batch] = {"$gt" : -batch_num_query};
+
+        return querying, metadata;
