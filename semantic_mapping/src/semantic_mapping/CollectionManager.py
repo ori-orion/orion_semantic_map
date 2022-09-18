@@ -101,23 +101,48 @@ class CollectionManager:
         self.setupServices();
 
     
-    def getHeaderInfo(self, obj_querying:dict):
+    # Functions for manipulating the objects directly.
+    def getHeaderInfo(self, obj_querying):
         try:
             return obj_querying.HEADER;
         except AttributeError:
+            rospy.logerr("`" + HEADER_ID + "` is not in the message type given.");
+            print();
             raise Exception("`" + HEADER_ID + "` is not in the message type given.");
-    def getUID(self, obj_querying:dict):
+    def getUID(self, obj_querying):
         header = self.getHeaderInfo(obj_querying);
         try:
             return header.UID;
         except AttributeError:
+            rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+            print();
             raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-    def getSessionId(self, obj_querying:dict):
+    def getSessionNum(self, obj_querying):
         header = self.getHeaderInfo(obj_querying);
         try:
             return header.SESSION_ID;
         except AttributeError:
+            rospy.logerr("`SESSION_ID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+            print();
             raise Exception("`SESSION_ID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+    def setUID(self, obj_setting, set_to):
+        header = self.getHeaderInfo(obj_setting);
+        try:
+            header.UID = set_to;
+        except AttributeError:
+            rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+            print();
+            raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+    def setSessionNum(self, obj_setting, set_to):
+        header = self.getHeaderInfo(obj_setting);
+        try:
+            header.SESSION_NUM = set_to;
+        except AttributeError:
+            rospy.logerr("`SESSION_ID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+            print();
+            raise Exception("`SESSION_ID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+
+
 
 
     def addItemToCollectionDict(self, adding_dict:dict) -> pymongo.collection.ObjectId:
@@ -164,9 +189,9 @@ class CollectionManager:
         Adds or updates entries into a collection. 
         If you are updating an entry (because its UID is defined), this ignores default values.
         """
-        if len(adding.UID) > 0:
+        if len(self.getUID(adding)) > 0:
             updating_dict:dict = utils.obj_to_dict(adding, ignore_default=True);
-            uid:pymongo.collection.ObjectId = pymongo.collection.ObjectId(adding.UID);
+            uid:pymongo.collection.ObjectId = pymongo.collection.ObjectId(self.getUID(adding));
             self.updateEntry(uid, updating_dict);
             return uid;
         else:
@@ -180,8 +205,14 @@ class CollectionManager:
         uid = self.addItemToCollection(getattr(pushing, pushing_attr[0]));
 
         response = self.types.input_response();
-        # this needs to have the field UID in it!
-        response.UID = str(uid);
+        # This needs to have the field UID in it!
+        # Note that this is the service response, rather than the message definition.
+        try:
+            response.UID = str(uid);
+        except AttributeError:
+            rospy.logerr("UID is not in the response field for the service being used.");
+            print();
+            raise Exception("UID is not in the response field for the service being used.");
         return response;
 
 
