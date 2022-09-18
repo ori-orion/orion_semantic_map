@@ -102,46 +102,80 @@ class CollectionManager:
 
     
     # Functions for manipulating the objects directly.
-    def getHeaderInfo(self, obj_querying):
+    def getHeaderInfoObj(self, obj_querying):
         try:
             return obj_querying.HEADER;
         except AttributeError:
             rospy.logerr("`" + HEADER_ID + "` is not in the message type given.");
             print();
             raise Exception("`" + HEADER_ID + "` is not in the message type given.");
-    def getUID(self, obj_querying):
-        header = self.getHeaderInfo(obj_querying);
+    def getUIDObj(self, obj_querying):
+        header = self.getHeaderInfoObj(obj_querying);
         try:
             return header.UID;
         except AttributeError:
             rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
             print();
             raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-    def getSessionNum(self, obj_querying):
-        header = self.getHeaderInfo(obj_querying);
+    def getSessionNumObj(self, obj_querying):
+        header = self.getHeaderInfoObj(obj_querying);
         try:
             return header.SESSION_ID;
         except AttributeError:
-            rospy.logerr("`SESSION_ID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+            rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
             print();
-            raise Exception("`SESSION_ID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-    def setUID(self, obj_setting, set_to):
-        header = self.getHeaderInfo(obj_setting);
+            raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+    def setUIDObj(self, obj_setting, set_to):
+        header = self.getHeaderInfoObj(obj_setting);
         try:
             header.UID = set_to;
         except AttributeError:
             rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
             print();
             raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-    def setSessionNum(self, obj_setting, set_to):
-        header = self.getHeaderInfo(obj_setting);
+    def setSessionNumObj(self, obj_setting, set_to):
+        header = self.getHeaderInfoObj(obj_setting);
         try:
             header.SESSION_NUM = set_to;
         except AttributeError:
-            rospy.logerr("`SESSION_ID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+            rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
             print();
-            raise Exception("`SESSION_ID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-
+            raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+    # Functions for manipulating the dictionary objects.
+    def getHeaderInfoDict(self, dict_querying) -> dict:
+        if HEADER_ID not in dict_querying:
+            rospy.logerr("`" + HEADER_ID + "` is not in the message type given.");
+            print();
+            raise Exception("`" + HEADER_ID + "` is not in the message type given.");
+        return dict_querying[HEADER_ID];
+    def getUIDDict(self, dict_querying):
+        header:dict = self.getHeaderInfoDict(dict_querying);
+        if UID_ENTRY not in header:
+            rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+            print();
+            raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        return header[UID_ENTRY];
+    def getSessionNumDict(self, dict_querying):
+        header:dict = self.getHeaderInfoDict(dict_querying);
+        if SESSION_ID not in header:
+            rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+            print();
+            raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        return header[SESSION_ID];
+    def setUIDDict(self, dict_setting, set_to):
+        header:dict = self.getHeaderInfoDict(dict_setting);
+        if UID_ENTRY not in header:
+            rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+            print();
+            raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        header[UID_ENTRY] = set_to;
+    def setSessionNumDict(self, dict_setting, set_to):
+        header:dict = self.getHeaderInfoDict(dict_setting);
+        if SESSION_ID not in header:
+            rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+            print();
+            raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        header[SESSION_ID] = set_to;
 
 
 
@@ -189,9 +223,9 @@ class CollectionManager:
         Adds or updates entries into a collection. 
         If you are updating an entry (because its UID is defined), this ignores default values.
         """
-        if len(self.getUID(adding)) > 0:
+        if len(self.getUIDObj(adding)) > 0:
             updating_dict:dict = utils.obj_to_dict(adding, ignore_default=True);
-            uid:pymongo.collection.ObjectId = pymongo.collection.ObjectId(self.getUID(adding));
+            uid:pymongo.collection.ObjectId = pymongo.collection.ObjectId(self.getUIDObj(adding));
             self.updateEntry(uid, updating_dict);
             return uid;
         else:
