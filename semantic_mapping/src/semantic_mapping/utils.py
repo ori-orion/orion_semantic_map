@@ -19,6 +19,89 @@ CROSS_REF_UID = "CRSS_REF_UID";
 PYMONGO_ID_SPECIFIER = "_id";
 
 
+# Functions for manipulating the objects directly.
+def getHeaderInfoObj(obj_querying):
+    try:
+        return obj_querying.HEADER;
+    except AttributeError:
+        rospy.logerr("`" + HEADER_ID + "` is not in the message type given.");
+        print();
+        raise Exception("`" + HEADER_ID + "` is not in the message type given.");
+def getUIDObj(obj_querying):
+    header = getHeaderInfoObj(obj_querying);
+    try:
+        return header.UID;
+    except AttributeError:
+        rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        print();
+        raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+def getSessionNumObj(obj_querying):
+    header = getHeaderInfoObj(obj_querying);
+    try:
+        return header.SESSION_ID;
+    except AttributeError:
+        rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        print();
+        raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+def setUIDObj(obj_setting, set_to):
+    header = getHeaderInfoObj(obj_setting);
+    try:
+        header.UID = set_to;
+    except AttributeError:
+        rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        print();
+        raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+def setSessionNumObj(obj_setting, set_to):
+    header = getHeaderInfoObj(obj_setting);
+    try:
+        header.SESSION_NUM = set_to;
+    except AttributeError:
+        rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        print();
+        raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+# Functions for manipulating the dictionary objects.
+def getHeaderInfoDict(dict_querying:dict) -> dict:
+    if HEADER_ID not in dict_querying:
+        rospy.logerr("`" + HEADER_ID + "` is not in the message type given.");
+        print();
+        raise Exception("`" + HEADER_ID + "` is not in the message type given.");
+    return dict_querying[HEADER_ID];
+def getUIDDict(dict_querying:dict):
+    header:dict = getHeaderInfoDict(dict_querying);
+    if UID_ENTRY not in header:
+        rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        print();
+        raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+    return header[UID_ENTRY];
+def getSessionNumDict(dict_querying:dict):
+    header:dict = getHeaderInfoDict(dict_querying);
+    if SESSION_ID not in header:
+        rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        print();
+        raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+    return header[SESSION_ID];
+def setUIDDict(dict_setting:dict, set_to):
+    header:dict = getHeaderInfoDict(dict_setting);
+    if UID_ENTRY not in header:
+        rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        print();
+        raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+    header[UID_ENTRY] = set_to;
+def setSessionNumDict(dict_setting:dict, set_to):
+    header:dict = getHeaderInfoDict(dict_setting);
+    if SESSION_ID not in header:
+        rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+        print();
+        raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+    header[SESSION_ID] = set_to;
+# Functions for manipulating the dictionary objects in a non-critical way:
+def getHeaderInfoDict_nonCrit(dict_querying:dict) -> dict:
+    if HEADER_ID not in dict_querying:
+        dict_querying[HEADER_ID] = {};
+    return dict_querying[HEADER_ID];
+
+
+# Functions for getting and setting time.
 def ROSTimeToNumericalTime(time:rospy.Time) -> int:
     """
     Converts rospy.Time (or anything with the fields `secs` and `nsecs`) into a single number.
@@ -291,7 +374,8 @@ def obj_to_dict(
             output[attr] = carry;
 
     if (session_id != -1):
-        output[SESSION_ID] = session_id;
+        output_header = getHeaderInfoDict_nonCrit(output);
+        output_header[SESSION_ID] = session_id;
 
     return output;
 
@@ -330,8 +414,3 @@ def dict_to_obj(dictionary:dict, objFillingOut):
                 setattr(objFillingOut, key, dictionary[key]);
     
     return objFillingOut;
-
-
-if __name__ == '__main__':
-    arr = [1,2,3,4,5,6,7,8,9];
-    print(getMatrix(arr));

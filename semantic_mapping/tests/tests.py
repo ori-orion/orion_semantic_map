@@ -54,6 +54,7 @@ def test_observation_input():
     querying.query.class_ = "bottle";
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
     assert(len(query_return.returns) == 2);
+    print(query_return);
 
     print("first query for person. Expecting 2 returns.")
     querying = orion_actions.srv.SOMQueryObjectsRequest();

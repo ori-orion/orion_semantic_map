@@ -99,85 +99,7 @@ class CollectionManager:
             self.visualisation_manager.query_callback = self.queryIntoCollection;
 
         self.setupServices();
-
-    
-    # Functions for manipulating the objects directly.
-    def getHeaderInfoObj(self, obj_querying):
-        try:
-            return obj_querying.HEADER;
-        except AttributeError:
-            rospy.logerr("`" + HEADER_ID + "` is not in the message type given.");
-            print();
-            raise Exception("`" + HEADER_ID + "` is not in the message type given.");
-    def getUIDObj(self, obj_querying):
-        header = self.getHeaderInfoObj(obj_querying);
-        try:
-            return header.UID;
-        except AttributeError:
-            rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-            print();
-            raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-    def getSessionNumObj(self, obj_querying):
-        header = self.getHeaderInfoObj(obj_querying);
-        try:
-            return header.SESSION_ID;
-        except AttributeError:
-            rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-            print();
-            raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-    def setUIDObj(self, obj_setting, set_to):
-        header = self.getHeaderInfoObj(obj_setting);
-        try:
-            header.UID = set_to;
-        except AttributeError:
-            rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-            print();
-            raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-    def setSessionNumObj(self, obj_setting, set_to):
-        header = self.getHeaderInfoObj(obj_setting);
-        try:
-            header.SESSION_NUM = set_to;
-        except AttributeError:
-            rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-            print();
-            raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-    # Functions for manipulating the dictionary objects.
-    def getHeaderInfoDict(self, dict_querying) -> dict:
-        if HEADER_ID not in dict_querying:
-            rospy.logerr("`" + HEADER_ID + "` is not in the message type given.");
-            print();
-            raise Exception("`" + HEADER_ID + "` is not in the message type given.");
-        return dict_querying[HEADER_ID];
-    def getUIDDict(self, dict_querying):
-        header:dict = self.getHeaderInfoDict(dict_querying);
-        if UID_ENTRY not in header:
-            rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-            print();
-            raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-        return header[UID_ENTRY];
-    def getSessionNumDict(self, dict_querying):
-        header:dict = self.getHeaderInfoDict(dict_querying);
-        if SESSION_ID not in header:
-            rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-            print();
-            raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-        return header[SESSION_ID];
-    def setUIDDict(self, dict_setting, set_to):
-        header:dict = self.getHeaderInfoDict(dict_setting);
-        if UID_ENTRY not in header:
-            rospy.logerr("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-            print();
-            raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-        header[UID_ENTRY] = set_to;
-    def setSessionNumDict(self, dict_setting, set_to):
-        header:dict = self.getHeaderInfoDict(dict_setting);
-        if SESSION_ID not in header:
-            rospy.logerr("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-            print();
-            raise Exception("`SESSION_NUM` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
-        header[SESSION_ID] = set_to;
-
-
+        
 
     def addItemToCollectionDict(self, adding_dict:dict) -> pymongo.collection.ObjectId:
         """
@@ -185,11 +107,12 @@ class CollectionManager:
         """
 
         # If SESSION_ID == CollectionManager.PRIOR_SESSION_ID, then it's a prior so...
-        if (SESSION_ID not in adding_dict) or (adding_dict[SESSION_ID] != CollectionManager.PRIOR_SESSION_ID):
+        adding_header:dict = utils.getHeaderInfoDict_nonCrit(adding_dict);
+        if (SESSION_ID not in adding_header) or (adding_header[SESSION_ID] != CollectionManager.PRIOR_SESSION_ID):
             if self.is_prior:
-                adding_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
+                adding_header[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
             else:
-                adding_dict[SESSION_ID] = self.memory_manager.current_session_id;
+                adding_header[SESSION_ID] = self.memory_manager.current_session_id;
 
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!
@@ -223,9 +146,9 @@ class CollectionManager:
         Adds or updates entries into a collection. 
         If you are updating an entry (because its UID is defined), this ignores default values.
         """
-        if len(self.getUIDObj(adding)) > 0:
+        if len(utils.getUIDObj(adding)) > 0:
             updating_dict:dict = utils.obj_to_dict(adding, ignore_default=True);
-            uid:pymongo.collection.ObjectId = pymongo.collection.ObjectId(self.getUIDObj(adding));
+            uid:pymongo.collection.ObjectId = pymongo.collection.ObjectId(utils.getUIDObj(adding));
             self.updateEntry(uid, updating_dict);
             return uid;
         else:
@@ -239,6 +162,7 @@ class CollectionManager:
         uid = self.addItemToCollection(getattr(pushing, pushing_attr[0]));
 
         response = self.types.input_response();
+
         # This needs to have the field UID in it!
         # Note that this is the service response, rather than the message definition.
         try:
@@ -247,6 +171,7 @@ class CollectionManager:
             rospy.logerr("UID is not in the response field for the service being used.");
             print();
             raise Exception("UID is not in the response field for the service being used.");
+        
         return response;
 
 
@@ -295,11 +220,12 @@ class CollectionManager:
         for callback in self.collection_query_callbacks:
             query_dict, metadata = callback(query_dict, metadata);
 
-        if SESSION_ID not in query_dict:
+        query_header:dict = utils.getHeaderInfoDict_nonCrit(query_dict);
+        if SESSION_ID not in query_header:
             if self.is_prior:
-                query_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
+                query_header[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
             else:
-                query_dict[SESSION_ID] = self.memory_manager.current_session_id;
+                query_header[SESSION_ID] = self.memory_manager.current_session_id;
 
         if (DEBUG):
             print("Querying into", self.service_name, ":\t", query_dict);
@@ -341,9 +267,10 @@ class CollectionManager:
             ros_query_dict = ros_query_dict[list(ros_query_dict.keys())[0]];
 
         # Enabling the querying by UID.
-        if utils.UID_ENTRY in ros_query_dict:
-            ros_query_dict[utils.PYMONGO_ID_SPECIFIER] = pymongo.collection.ObjectId(ros_query_dict[utils.UID_ENTRY]);
-            del ros_query_dict[utils.UID_ENTRY];
+        if (HEADER_ID in ros_query_dict) and (UID_ENTRY in ros_query_dict[HEADER_ID]):
+            ros_query_dict[utils.PYMONGO_ID_SPECIFIER] = pymongo.collection.ObjectId(ros_query_dict[HEADER_ID][UID_ENTRY]);
+            # We need to delete the UID_ENTRY because otherwise it will actually be used in the query!
+            del ros_query_dict[HEADER_ID][UID_ENTRY];
         
         response:list = self.queryIntoCollection(ros_query_dict);
 
@@ -358,7 +285,8 @@ class CollectionManager:
             if DEBUG_LONG:
                 print("Query response: \n\t",element);
 
-            element[UID_ENTRY] = str(element[utils.PYMONGO_ID_SPECIFIER]);
+            element_header:dict = utils.getHeaderInfoDict_nonCrit(element);
+            element_header[UID_ENTRY] = str(element[utils.PYMONGO_ID_SPECIFIER]);
 
             appending = self.types.base_ros_type();
             appending = utils.dict_to_obj(element, appending);

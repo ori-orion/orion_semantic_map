@@ -87,7 +87,9 @@ class RelationManager:
 
         matches = [];
         for o1 in obj1_query_result:
+            o1:dict;
             for o2 in obj2_query_result:
+                o2:dict;
                 relation_out, distance = self.get_relation_dict(cur_robot_pose, o1, o2);
                 relation_out:Relation
                 distance:float
@@ -95,8 +97,13 @@ class RelationManager:
 
                 if compare_relational_dicts(relation_out_dict):
                     match_appending = self.match_type();
+                    
+                    # Note that dict_to_obj(...) won't do the change from pymongo uid to the string representation we're using.
                     match_appending.obj1 = utils.dict_to_obj(o1, match_appending.obj1);
+                    utils.setUIDObj(match_appending.obj1, str(o1[utils.PYMONGO_ID_SPECIFIER]));
                     match_appending.obj2 = utils.dict_to_obj(o2, match_appending.obj2);
+                    utils.setUIDObj(match_appending.obj2, str(o2[utils.PYMONGO_ID_SPECIFIER]));
+
                     match_appending.relation = relation_out;
 
                     match_appending.distance = distance;
