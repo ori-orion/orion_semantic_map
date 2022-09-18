@@ -11,6 +11,7 @@ import pymongo.cursor
 import rospy;
 import genpy;
 from MemoryManager import UID_ENTRY, MemoryManager, DEBUG, DEBUG_LONG, SESSION_ID, SERVICE_ROOT;
+from utils import HEADER_ID, UID_ENTRY;
 
 import visualisation;
 
@@ -98,6 +99,25 @@ class CollectionManager:
             self.visualisation_manager.query_callback = self.queryIntoCollection;
 
         self.setupServices();
+
+    
+    def getHeaderInfo(self, obj_querying:dict):
+        try:
+            return obj_querying.HEADER;
+        except AttributeError:
+            raise Exception("`" + HEADER_ID + "` is not in the message type given.");
+    def getUID(self, obj_querying:dict):
+        header = self.getHeaderInfo(obj_querying);
+        try:
+            return header.UID;
+        except AttributeError:
+            raise Exception("`UID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
+    def getSessionId(self, obj_querying:dict):
+        header = self.getHeaderInfo(obj_querying);
+        try:
+            return header.SESSION_ID;
+        except AttributeError:
+            raise Exception("`SESSION_ID` is not in `" + HEADER_ID + "`. Please use the SOMHeader.msg type for headers.");
 
 
     def addItemToCollectionDict(self, adding_dict:dict) -> pymongo.collection.ObjectId:

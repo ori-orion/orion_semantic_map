@@ -145,13 +145,13 @@ def test_human_observation_input():
     print("\tOperator query...");
     human_query_in:orion_actions.srv.SOMQueryHumansRequest = orion_actions.srv.SOMQueryHumansRequest();
     human_query_in.query.task_role = "Operator";
-    response = human_query(human_query_in);
+    response:orion_actions.srv.SOMQueryHumansResponse = human_query(human_query_in);
     assert(len(response.returns) != 0);
     # print(response);
 
     print("\tEmpty query...");
     human_empty_query:orion_actions.srv.SOMQueryHumansRequest = orion_actions.srv.SOMQueryHumansRequest();
-    response = human_query(human_empty_query);
+    response:orion_actions.srv.SOMQueryHumansResponse = human_query(human_empty_query);
     assert(len(response.returns) != 0);
     # print(response);
 
@@ -229,14 +229,14 @@ def uid_input_test():
 
     print("Checking UID queries work.")
     querying = orion_actions.srv.SOMQueryObjectsRequest();
-    querying.query.UID = obj_return.UID;
+    querying.query.HEADER.UID = obj_return.UID;
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
     # print(query_return.returns);
     assert(len(query_return.returns) == 1);
 
     print("Checking SESSION_NUM queries work and that they are ordered by latest batch number")
     querying = orion_actions.srv.SOMQueryObjectsRequest();
-    querying.query.SESSION_NUM = 1; # The first session.
+    querying.query.HEADER.SESSION_NUM = 1; # The first session.
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
     # print(query_return.returns);
     assert(len(query_return.returns) != 0);
@@ -305,7 +305,7 @@ def test_updating_entry():
     assert(response_obs.category == "unupdated_category");
 
     updating_obs = create_obs_instance("update_entry_test");
-    updating_obs.adding.UID = obj_return.UID;
+    updating_obs.adding.HEADER.UID = obj_return.UID;
     updating_obs.adding.category = "update_category";
     push_to_db_srv(updating_obs);
 

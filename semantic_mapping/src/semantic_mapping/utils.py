@@ -11,6 +11,7 @@ import geometry_msgs.msg
 
 # SESSION_ID = "session_num";
 # UID_ENTRY = "entry_uid";
+HEADER_ID = "HEADER"
 SESSION_ID = "SESSION_NUM";
 UID_ENTRY = "UID";
 CROSS_REF_UID = "CRSS_REF_UID";
