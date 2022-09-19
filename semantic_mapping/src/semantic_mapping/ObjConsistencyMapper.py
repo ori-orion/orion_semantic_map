@@ -413,4 +413,10 @@ class ConsistencyChecker(CollectionManager):
                 if type(batch_num_query) is int and batch_num_query < 0:
                     querying[self.consistency_args.last_observation_batch] = {"$gt" : -batch_num_query};
 
+        if self.consistency_args.last_observed_attr in querying:
+            temp_query:dict = querying[self.consistency_args.last_observed_attr];
+            # querying[self.consistency_args.last_observed_attr] = {'secs': {'$gte': temp_query['secs'] }}
+            del querying[self.consistency_args.last_observed_attr];
+            querying[self.consistency_args.last_observed_attr + ".secs"] = {'$gte': temp_query['secs'] };
+            
         return querying, metadata;

@@ -359,15 +359,29 @@ def test_observation_batch_query():
 
 
 def test_temporal_queries():
-    print("Temporal queries");
-    q1 = orion_actions.srv.SOMQueryObjectsRequest();
-    print("\ttime before assignment = ", q1.query.last_observed_at);
-    q1.query.last_observed_at = rospy.Time.now();
-    print("\ttime after assignment  = ", q1.query.last_observed_at);
+    # The query rounds down, so we need to wait a second before running this.
+    rospy.sleep(1);
 
+    print("Temporal queries");
+    query_time = rospy.Time.now();
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
     get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
-    get_obj_from_db_srv(q1);
+
+    rospy.sleep(0.2);
+
+    obs1 = create_obs_instance("temporal_obs_1");
+    push_to_db_srv(obs1);
+
+    q1 = orion_actions.srv.SOMQueryObjectsRequest();
+    print("\ttime before assignment = ", q1.query.last_observed_at);
+    q1.query.last_observed_at = query_time;
+    print("\ttime after assignment  = ", q1.query.last_observed_at);
+
+    response:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(q1);
+    assert(len(response.returns) == 1);
+    assert(response.returns[0].class_ == "temporal_obs_1");
+    print("\tTemporal queries succeeded");
+
 
     pass;
 

@@ -372,11 +372,7 @@ def obj_to_dict(
         element = getattr(obj, attr);
         
         carry = pushObjToDict(element, ignore_default);
-        if carry == None:
-            # rospy.logwarn(attr + " of type " + str(type(element)) + "could not be added to an entry within the database. ");
-            pass;
-        else:
-            # rospy.loginfo("\t" + attr + "<-" + str(carry));
+        if carry != None:
             output[attr] = carry;
 
     if (session_id != -1):
