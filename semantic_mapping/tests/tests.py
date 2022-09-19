@@ -329,6 +329,8 @@ def test_human_height_transfer():
 
 
 def test_observation_batch_query():
+    # If the batch number queried is positive, then the specific batch will be queried.
+    # If it's negative, then the test will look back that number of batches.
     print("Batch number tests.");
     obs1 = create_obs_instance("obs_1", batch_num=100);
     obs2 = create_obs_instance("obs_2", batch_num=101);
@@ -360,6 +362,7 @@ def test_observation_batch_query():
 
 def test_temporal_queries():
     # The query rounds down, so we need to wait a second before running this.
+    # This will only look for objects later than the time given in the query.
     rospy.sleep(1);
 
     print("Temporal queries");

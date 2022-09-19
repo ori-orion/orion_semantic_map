@@ -48,7 +48,11 @@ This was based on Marc Rigter's original SOM code.
 ### region_query
 Regions are defined as priors within the SOM system. (They therefore have a session number of -1). They also have names. This is for querying against a given template (as per basic_query) but also within a region of name `region_name`. This will then return a list of objects within that region.
 
-    
+### objects/basic_query notes
+
+So there are multiple things to note here. Consistent objects have the following properties if relevant (all of which apply to the objects collection):
+ - Batch number queries can be for specific batches (if the number is positive) or it can query a range backwards from the latest batch number (if the number is negative). An example of this can be found within tests.py::test_observation_batch_query().
+ - Queries into the last_observed_at field always look for objects later than the value given. (Note that the query is rounded down to look only at the seconds). An example of this can be found within tests.py::test_temporal_queries().
 
 # Notes:
 
