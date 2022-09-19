@@ -253,7 +253,7 @@ class CollectionManager:
         ros_query_dict:dict = utils.obj_to_dict(
             ros_query,
             ignore_default=True,
-            ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time],
+            # ignore_of_type=[rospy.Time, rospy.Duration, genpy.rostime.Time],
             convert_caps=True
         );
 

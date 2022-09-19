@@ -357,6 +357,20 @@ def test_observation_batch_query():
 
     print("\tFinished testing batch number queries.");
 
+
+def test_temporal_queries():
+    print("Temporal queries");
+    q1 = orion_actions.srv.SOMQueryObjectsRequest();
+    print("\ttime before assignment = ", q1.query.last_observed_at);
+    q1.query.last_observed_at = rospy.Time.now();
+    print("\ttime after assignment  = ", q1.query.last_observed_at);
+
+    push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
+    get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
+    get_obj_from_db_srv(q1);
+
+    pass;
+
 if __name__ == '__main__':
     rospy.init_node('som_test_node');
 
@@ -367,6 +381,7 @@ if __name__ == '__main__':
     test_category_callback();
     test_updating_entry();
     test_observation_batch_query();
+    test_temporal_queries();
 
     uid_input_test();
     

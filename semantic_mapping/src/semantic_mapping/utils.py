@@ -333,11 +333,18 @@ def obj_to_dict(
         if output == None:
             for type_ in temporal_types:
                 if (type_ not in ignore_of_type) and isinstance(element, type_):
-                    output = ROSTimeToNumericalTime(element);
-                    output_type = type_;
+                    attributes_recursive_in:list = get_attributes(element);
+                    output:dict = obj_to_dict(
+                        element, 
+                        attributes=attributes_recursive_in, 
+                        ignore_default=ignore_default, 
+                        ignore_of_type=ignore_of_type,
+                        convert_caps=convert_caps);
+                    output_type = dict;
 
         if output == None:    
-            if (genpy.Message not in ignore_of_type) and isinstance(element, genpy.Message):                
+            if (genpy.Message not in ignore_of_type) and isinstance(element, genpy.Message):
+                # rospy.loginfo("Found element '{}', type '{}'".format(element, type_))
                 attributes_recursive_in:list = get_attributes(element);
                 output = obj_to_dict(
                     element, 
@@ -352,7 +359,6 @@ def obj_to_dict(
             if output == output_type():
                 output = None;
         
-        # rospy.loginfo("Ended with output: '{}'".format(output))
         return output;
     
     output:dict = {};
@@ -404,12 +410,12 @@ def dict_to_obj(dictionary:dict, objFillingOut):
                         carry.append(element);
                 setattr(objFillingOut, key, carry);
                 continue;
-            elif isinstance(getattr(objFillingOut, key), rospy.Time):
-                setattr(objFillingOut, key, numericalTimeToROSTime(dictionary[key]));
-            elif isinstance(getattr(objFillingOut, key), rospy.Duration):
-                setattr(objFillingOut, key, numericalTimeToROSDuration(dictionary[key]));
-            elif isinstance(getattr(objFillingOut, key), genpy.rostime.Time):
-                setattr(objFillingOut, key, numericalTimeToROSDuration(dictionary[key]));
+            # elif isinstance(getattr(objFillingOut, key), rospy.Time):
+            #     setattr(objFillingOut, key, numericalTimeToROSTime(dictionary[key]));
+            # elif isinstance(getattr(objFillingOut, key), rospy.Duration):
+            #     setattr(objFillingOut, key, numericalTimeToROSDuration(dictionary[key]));
+            # elif isinstance(getattr(objFillingOut, key), genpy.rostime.Time):
+            #     setattr(objFillingOut, key, numericalTimeToROSDuration(dictionary[key]));
             else:
                 setattr(objFillingOut, key, dictionary[key]);
     
