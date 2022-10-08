@@ -11,7 +11,7 @@ from orion_actions.msg import PoseDetectionPosition
 import rospy
 import tf2_ros
 from orion_actions.msg import DetectionArray, Detection
-from tf import TransformListener;
+# from tf import TransformListener;
 import std_msgs.msg;
 
 import utils;
@@ -114,7 +114,7 @@ class DetectToObserve:
             except:
                 p_global_frame = tf2_geometry_msgs.PoseStamped();
                 rospy.logerr("detections_to_observations.py: transform raised an error!");
-                return;
+                # return;
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;
 
