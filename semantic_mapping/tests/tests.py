@@ -388,6 +388,41 @@ def test_temporal_queries():
 
     pass;
 
+
+def test_human_temporal_queries():
+    print("Temporal queries with Humans");
+
+    rospy.sleep(0.1);
+
+    push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
+    get_human_observation = rospy.ServiceProxy('/som/humans/basic_query', orion_actions.srv.SOMQueryHumans);
+
+    obs1 = create_obs_instance("person", x = 10,y=0,z=0);
+
+    rospy.sleep(1);
+    time_between_adding = rospy.Time.now();
+    rospy.sleep(1);
+
+    obs2 = create_obs_instance("person", x = -100,y=140,z=39);
+
+    push_to_db_srv(obs1);
+    obs2_return:orion_actions.srv.SOMAddObservationResponse = push_to_db_srv(obs2);
+
+    query_1 = orion_actions.srv.SOMQueryHumansRequest();
+    query_1.query.last_observed_at = time_between_adding;
+    query_1_response:orion_actions.srv.SOMQueryHumansResponse = get_human_observation(query_1);
+    print("\tChecking that only one response is returned.")
+    assert(len(query_1_response.returns) == 1);
+    return_0:orion_actions.msg.Human = query_1_response.returns[0];
+    assert(return_0.obj_position.position.x == -100);
+    assert(return_0.obj_position.position.y == 140);
+    assert(return_0.obj_position.position.z == 39);
+
+    print("\tTemporal queries on humans succeeded");
+
+    
+
+
 if __name__ == '__main__':
     rospy.init_node('som_test_node');
 
@@ -399,6 +434,7 @@ if __name__ == '__main__':
     test_updating_entry();
     test_observation_batch_query();
     test_temporal_queries();
+    test_human_temporal_queries();
 
     uid_input_test();
     
