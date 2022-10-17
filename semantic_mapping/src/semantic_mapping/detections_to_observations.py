@@ -39,6 +39,10 @@ class DetectToObserve:
         self.observe_obj_srv = rospy.ServiceProxy(
             'som/observations/input', 
             SOMAddObservation);
+        rospy.wait_for_service('som/observations/input_array');
+        self.observe_obj_arr_srv = rospy.ServiceProxy(
+            'som/observations/input_array', 
+            SOMAddObservationArr);
         # self.observe_objs_srv = rospy.ServiceProxy('som/observe', SOMObserve)
         # self.query_objs_srv = rospy.ServiceProxy('som/query', SOMQuery)
 
@@ -69,6 +73,8 @@ class DetectToObserve:
         camera_to_global_pose.orientation.x = camera_to_global.transform.rotation.x;
         camera_to_global_pose.orientation.y = camera_to_global.transform.rotation.y;
         camera_to_global_pose.orientation.z = camera_to_global.transform.rotation.z;
+
+        som_input_message = SOMAddObservationArrRequest();
 
         for detection in data.detections:
             detection:Detection;
@@ -142,13 +148,16 @@ class DetectToObserve:
                     cov_transform_linear.append(uncertainty_rot[i,j]);
             forwarding.covariance_mat = cov_t_linear;
             forwarding.transform_cov_to_diagonal = cov_transform_linear;
-            
-            service_output:SOMObserveResponse = self.observe_obj_srv(forwarding);
-            print(forwarding.class_);
-            # addition_successful = service_output.obj_id;
-            # obj_id_returned = service_output.obj_id;
 
-            # print(obj_id_returned);
+            som_input_message.adding.append(forwarding);
+            
+            # Old system to input mesage by message.
+            # service_output:SOMObserveResponse = self.observe_obj_srv(forwarding);
+            
+            print(forwarding.class_);
+            
+        self.observe_obj_arr_srv(som_input_message);
+        
         print("--------------------------------");
         self.batch_num += 1;
 
