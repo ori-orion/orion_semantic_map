@@ -421,6 +421,36 @@ def test_human_temporal_queries():
     print("\tTemporal queries on humans succeeded");
 
     
+def test_input_array():
+    print("Testing the inputting of arrays.")
+
+    obj_name_prefix = "multi_input_";
+    input_field = orion_actions.srv.SOMAddObservationArrRequest();
+
+    print("\tSending in the message.")
+    names = ["test1", "test2", "test3"];
+    for name in names:
+        observation = orion_actions.msg.SOMObservation();
+        observation.class_ = obj_name_prefix + name;
+        observation.observation_batch_num = 15;
+        input_field.adding.append(observation);
+    
+    array_input = rospy.ServiceProxy('/som/observations/input_array', orion_actions.srv.SOMAddObservationArr);
+    object_query = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
+
+    response:orion_actions.srv.SOMAddObservationArrResponse = array_input(input_field);
+    print("\tAsserting as to the length of the response");
+    assert(len(response.UIDs) == len(names));
+
+    print("\tTesting that all observations have been correctly added to objects.")
+    for name in names:
+        query = orion_actions.srv.SOMQueryObjectsRequest();
+        query.query.class_ = obj_name_prefix + name;
+
+        query_response:orion_actions.srv.SOMQueryObjectsResponse = object_query(query);
+        assert(len(query_response.returns) == 1);
+
+    print("\tArray inputs have succeeded.");
 
 
 if __name__ == '__main__':
@@ -435,6 +465,7 @@ if __name__ == '__main__':
     test_observation_batch_query();
     test_temporal_queries();
     test_human_temporal_queries();
+    test_input_array();
 
     uid_input_test();
     
