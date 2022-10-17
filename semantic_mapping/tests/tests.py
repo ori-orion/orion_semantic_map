@@ -433,6 +433,7 @@ def test_input_array():
         observation = orion_actions.msg.SOMObservation();
         observation.class_ = obj_name_prefix + name;
         observation.observation_batch_num = 15;
+        observation.observed_at = rospy.Time.now();
         input_field.adding.append(observation);
     
     array_input = rospy.ServiceProxy('/som/observations/input_array', orion_actions.srv.SOMAddObservationArr);
