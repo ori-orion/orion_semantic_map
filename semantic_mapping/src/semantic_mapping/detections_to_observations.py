@@ -65,7 +65,7 @@ class DetectToObserve:
             self.camera_frame, 
             self.global_frame, 
             rospy.Time());
-        camera_to_global_pose = Pose;
+        camera_to_global_pose = Pose();
         camera_to_global_pose.position.x = camera_to_global.transform.translation.x;
         camera_to_global_pose.position.y = camera_to_global.transform.translation.y;
         camera_to_global_pose.position.z = camera_to_global.transform.translation.z;
@@ -153,10 +153,11 @@ class DetectToObserve:
             
             # Old system to input mesage by message.
             # service_output:SOMObserveResponse = self.observe_obj_srv(forwarding);
-            
+
             print(forwarding.class_);
             
-        self.observe_obj_arr_srv(som_input_message);
+        if len(som_input_message.adding) != 0:
+            self.observe_obj_arr_srv(som_input_message);
         
         print("--------------------------------");
         self.batch_num += 1;
