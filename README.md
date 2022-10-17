@@ -27,12 +27,16 @@ Running the overall system and `rosservice list | grep som` returns
 /som/observations/basic_query
 /som/observations/delete_entries
 /som/observations/input
+/som/observations/input_array
 ```
 
-Note there is some logic to this. First, `{objects, observations, human_observations, humans, object_regions}` refers to different collections in the system. This tells you which collection you're adding to or querying against. Then there are the final addresses of `{input, basic_query, delete_entries, relational_query, region_query}`. These are worth going into in more detail:
+Note there is some logic to this. First, `{objects, observations, human_observations, humans, object_regions}` refers to different collections in the system. This tells you which collection you're adding to or querying against. Then there are the final addresses of `{input, input_array, basic_query, delete_entries, relational_query, region_query}`. These are worth going into in more detail:
 
 ### input
 This is for inputting to a collection. The only input field is the SOM message you're inputting into the collection.
+
+### input_array
+This is for inputting multiple objects into a collection at the same time. The input field is an array of the message type.
 
 ### basic_query
 This is for performing basic queries into the system. The input is a query of the given SOM message type. You set all string/numerical/boolean fields you want to query against, and it will match any of these. Any fields that are at their default values won't be queried against. (Note that for boolean fields, this is `False` which is interesting!)

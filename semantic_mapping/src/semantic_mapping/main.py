@@ -138,7 +138,9 @@ def setup_system():
         input_parent=orion_actions.srv.SOMAddObservation,
         input_response=orion_actions.srv.SOMAddObservationResponse,
         query_parent=orion_actions.srv.SOMQueryObservations,
-        query_response=orion_actions.srv.SOMQueryObservationsResponse
+        query_response=orion_actions.srv.SOMQueryObservationsResponse,
+        input_array_parent=orion_actions.srv.SOMAddObservationArr,
+        input_array_response=orion_actions.srv.SOMAddObservationArrResponse        
     );
     observation_arg_name_defs:ConsistencyArgs = ConsistencyArgs(
         position_attr="obj_position",

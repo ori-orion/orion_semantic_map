@@ -27,7 +27,9 @@ class TypesCollection:
         input_parent:type=None,
         input_response:type=None,
         query_parent:type=None, 
-        query_response:type=None):
+        query_response:type=None,
+        input_array_parent:type=None,
+        input_array_response:type=None):
 
         self.base_ros_type:type = base_ros_type;
 
@@ -40,6 +42,9 @@ class TypesCollection:
         # The service definition for the input type.
         self.input_parent:type = input_parent;
         self.input_response:type = input_response;
+
+        self.input_array_parent:type = input_array_parent;
+        self.input_array_response:type = input_array_response;    
 
 
 class CollectionManager:
@@ -156,7 +161,10 @@ class CollectionManager:
             return self.addItemToCollectionDict(adding_dict);
 
     def rosPushToCollection(self, pushing): # -> self.types.input_response
-        pushing_attr = utils.get_attributes(pushing);        
+        """
+        The entrypoint into adding a single item into the collection.
+        """
+        pushing_attr = utils.get_attributes(pushing);
         if DEBUG:
             print("Pushing obj to", self.service_name);
         uid = self.addItemToCollection(getattr(pushing, pushing_attr[0]));
@@ -171,6 +179,31 @@ class CollectionManager:
             rospy.logerr("UID is not in the response field for the service being used.");
             print();
             raise Exception("UID is not in the response field for the service being used.");
+        
+        return response;
+
+    def rosPushToCollectionArr(self, pushing_arr):
+        """
+        The entrypoint into adding multiple items into the collection.
+        """
+        pushing_attr = utils.get_attributes(pushing_arr);
+        if DEBUG:
+            print("Pushing obj to", self.service_name);
+        pushing_array:list = getattr(pushing_arr, pushing_attr[0]);
+        uid_outputs = [];
+        for element in pushing_array:
+            uid_outputs.append(str(self.addItemToCollection(element)));
+
+        response = self.types.input_array_response();
+
+        # This needs to have the field UID in it!
+        # Note that this is the service response, rather than the message definition.
+        try:
+            response.UIDs = uid_outputs;
+        except AttributeError:
+            rospy.logerr("UIDs is not in the response field for the service being used.");
+            print();
+            raise Exception("UIDs is not in the response field for the service being used.");
         
         return response;
 
@@ -314,6 +347,12 @@ class CollectionManager:
                 SERVICE_ROOT + self.service_name + '/input', 
                 self.types.input_parent, 
                 self.rosPushToCollection);
+
+        if (self.types.input_array_parent != None):
+            rospy.Service(
+                SERVICE_ROOT + self.service_name + '/input_array', 
+                self.types.input_array_parent, 
+                self.rosPushToCollectionArr);
         
         if (self.types.query_parent != None and self.types.query_response != None):
             rospy.Service(
