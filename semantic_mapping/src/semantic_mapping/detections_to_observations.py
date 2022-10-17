@@ -56,6 +56,20 @@ class DetectToObserve:
     # We essentially want to forward detections from orion_recognition over to the SOM database. This should do that.
     def forwardDetectionsToSOM(self, data:DetectionArray):
     
+        # Getting the robot pose:
+        camera_to_global:tf2_ros.TransformStamped = self.tfBuffer.lookup_transform(
+            self.camera_frame, 
+            self.global_frame, 
+            rospy.Time());
+        camera_to_global_pose = Pose;
+        camera_to_global_pose.position.x = camera_to_global.transform.translation.x;
+        camera_to_global_pose.position.y = camera_to_global.transform.translation.y;
+        camera_to_global_pose.position.z = camera_to_global.transform.translation.z;
+        camera_to_global_pose.orientation.w = camera_to_global.transform.rotation.w;
+        camera_to_global_pose.orientation.x = camera_to_global.transform.rotation.x;
+        camera_to_global_pose.orientation.y = camera_to_global.transform.rotation.y;
+        camera_to_global_pose.orientation.z = camera_to_global.transform.rotation.z;
+
         for detection in data.detections:
             detection:Detection;
 
@@ -77,28 +91,17 @@ class DetectToObserve:
             forwarding.observation_batch_num = self.batch_num;
             forwarding.size = detection.size;
             # forwarding.timestamp = rospy.Time().now()
-
-            # Getting the robot pose:
-            camera_to_global:tf2_ros.TransformStamped = self.tfBuffer.lookup_transform(
-                self.camera_frame, 
-                self.global_frame, 
-                rospy.Time());
             
             # forwarding.robot_pose = Pose();
-            forwarding.camera_pose.position.x = camera_to_global.transform.translation.x;
-            forwarding.camera_pose.position.y = camera_to_global.transform.translation.y;
-            forwarding.camera_pose.position.z = camera_to_global.transform.translation.z;
-            forwarding.camera_pose.orientation.w = camera_to_global.transform.rotation.w;
-            forwarding.camera_pose.orientation.x = camera_to_global.transform.rotation.x;
-            forwarding.camera_pose.orientation.y = camera_to_global.transform.rotation.y;
-            forwarding.camera_pose.orientation.z = camera_to_global.transform.rotation.z;
-
+            forwarding.camera_pose = camera_to_global_pose;
+            
             # Getting the position of the object in 3D space relative to the global frame.
             obj_point_2 = tf2_geometry_msgs.PoseStamped();
             obj_point_2.header.frame_id = self.camera_frame;
             obj_point_2.header.stamp = detection.timestamp;
             obj_point_2.pose.position = Point(
-                detection.translation_x, detection.translation_y, detection.translation_z+forwarding.size.z/2);
+                detection.translation_x, detection.translation_y, 
+                detection.translation_z+forwarding.size.z/2);
             
             # object_point = PoseStamped()
             # object_point.header.frame_id = self.camera_frame;
