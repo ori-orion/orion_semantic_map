@@ -25,6 +25,7 @@ import orion_actions.msg
 import orion_actions.srv
 import geometry_msgs.msg;
 from orion_actions.msg import *;
+from orion_actions.srv import *;
 
 import os;
 
