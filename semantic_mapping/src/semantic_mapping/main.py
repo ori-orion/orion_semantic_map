@@ -106,16 +106,30 @@ class MemSys:
             # there should never be more than 1. 
             # NOTE: Maybe if True...
             # We might want it updating position all the time.
-            if len(human_query) == 0:
-                adding_human = orion_actions.msg.HumanObservation();
-                adding_human.object_uid = metadata['obj_uid'];
-                adding_human.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
-                adding_human.observed_at = utils.dict_to_obj(adding["observed_at"], rospy.Time());
-                adding_human.spoken_to_state = orion_actions.msg.Human._NOT_SPOKEN_TO;
-                adding_human.height = adding['size']['z'];
-                self.human_observation_manager.addItemToCollectionDict(
-                    utils.obj_to_dict(adding_human));
 
+            # Deprecated.
+            # if len(human_query) == 0:
+            #     adding_human = orion_actions.msg.HumanObservation();
+            #     adding_human.object_uid = metadata['obj_uid'];
+            #     adding_human.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
+            #     adding_human.observed_at = utils.dict_to_obj(adding["observed_at"], rospy.Time());
+            #     adding_human.spoken_to_state = orion_actions.msg.Human._NOT_SPOKEN_TO;
+            #     adding_human.height = adding['size']['z'];
+            #     self.human_observation_manager.addItemToCollectionDict(
+            #         utils.obj_to_dict(adding_human));
+
+            human_obs = orion_actions.msg.HumanObservation();
+            human_obs.object_uid = metadata['obj_uid'];
+            human_obs.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
+            human_obs.observed_at = utils.dict_to_obj(adding["observed_at"], rospy.Time());
+            human_obs.observation_batch_num = adding["last_observation_batch"];
+            if len(human_query) == 0:
+                human_obs.spoken_to_state = orion_actions.msg.Human._NOT_SPOKEN_TO;
+                human_obs.height = adding['size']['z'];
+            else:
+                human_obs.HEADER.UID = str(human_query[0][utils.PYMONGO_ID_SPECIFIER]);
+            self.human_observation_manager.addItemToCollection(human_obs);
+            
         return adding, metadata;
 
 

@@ -420,6 +420,46 @@ def test_human_temporal_queries():
 
     print("\tTemporal queries on humans succeeded");
 
+
+def test_human_update_functionality():
+    print("Temporal queries with Humans");
+
+    rospy.sleep(0.1);
+
+    push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
+    get_human_observation = rospy.ServiceProxy('/som/humans/basic_query', orion_actions.srv.SOMQueryHumans);
+
+    obs1 = create_obs_instance(
+        "person",
+        x=190,y=195,z=-456,
+        batch_num=200);
+
+    rospy.sleep(1.5);
+    temporal_arg = rospy.Time.now();
+
+    obs2 = create_obs_instance(
+        "person",
+        x=190,y=195,z=-456.5,
+        batch_num=201);
+
+    query = orion_actions.srv.SOMQueryHumans();
+    query.query.last_observed_at = temporal_arg;
+    query_response:list = get_human_observation(query).returns;
+    obj_found = False;
+    for human in query_response:
+        if (human.obj_position.position.x == 190 and
+            human.obj_position.position.y == 195 and
+            human.obj_position.position.z == -456.5):
+
+            obj_found = True;
+            pass;
+    
+
+
+
+    
+    pass;
+
     
 def test_input_array():
     print("Testing the inputting of arrays.")
