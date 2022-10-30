@@ -122,7 +122,11 @@ class MemSys:
             human_obs.object_uid = metadata['obj_uid'];
             human_obs.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
             human_obs.observed_at = utils.dict_to_obj(adding["observed_at"], rospy.Time());
-            human_obs.observation_batch_num = adding["last_observation_batch"];
+            print(adding);
+            if "last_observation_batch" in adding:
+                human_obs.observation_batch_num = adding["last_observation_batch"];
+            else:
+                human_obs.observation_batch_num = adding["observation_batch_num"];
             if len(human_query) == 0:
                 human_obs.spoken_to_state = orion_actions.msg.Human._NOT_SPOKEN_TO;
                 human_obs.height = adding['size']['z'];

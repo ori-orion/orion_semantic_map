@@ -422,7 +422,7 @@ def test_human_temporal_queries():
 
 
 def test_human_update_functionality():
-    print("Temporal queries with Humans");
+    print("Updating human entries.");
 
     rospy.sleep(0.1);
 
@@ -442,9 +442,11 @@ def test_human_update_functionality():
         x=190,y=195,z=-456.5,
         batch_num=201);
 
-    query = orion_actions.srv.SOMQueryHumans();
+    query = orion_actions.srv.SOMQueryHumansRequest();
+    # print(dir(query));
     query.query.last_observed_at = temporal_arg;
     query_response:list = get_human_observation(query).returns;
+    assert(len(query_response) == 1);
     obj_found = False;
     for human in query_response:
         if (human.obj_position.position.x == 190 and
@@ -454,9 +456,11 @@ def test_human_update_functionality():
             obj_found = True;
             pass;
     
-
-
-
+    if obj_found == False:
+        print("\tUpdated human not found.")
+        assert(False);
+    else:
+        print("\tHuman update tests passed.")
     
     pass;
 
@@ -506,7 +510,10 @@ if __name__ == '__main__':
     test_observation_batch_query();
     test_temporal_queries();
     test_human_temporal_queries();
-    test_input_array();
+    test_human_update_functionality();
+
+    # Not enabled in current configuration.
+    # test_input_array();
 
     uid_input_test();
     
