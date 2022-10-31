@@ -25,6 +25,7 @@ def create_obs_instance(class_, x=0, y=0, z=0, batch_num=0, category="") -> orio
 
 
 def test_observation_input():
+    print("Testing observation input pipeline.");
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
     get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
 
@@ -47,16 +48,16 @@ def test_observation_input():
 
     adding = create_obs_instance("bottle", -0.05, 0, 0, batch_num=1, category="vessel");
     obj_return = push_to_db_srv(adding);
-    print(obj_return);
+    # print(obj_return);
     
-    print("first query for bottle. Expecting 2 returns.")
+    print("\tfirst query for bottle. Expecting 2 returns.")
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.class_ = "bottle";
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
     assert(len(query_return.returns) == 2);
-    print(query_return);
+    # print(query_return);
 
-    print("first query for person. Expecting 2 returns.")
+    print("\tfirst query for person. Expecting 2 returns.")
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.class_ = "person";
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
@@ -68,19 +69,19 @@ def test_observation_input():
     adding = create_obs_instance("apple", -0.1,0,0);
     adding.adding.category = "fruit";
     obj_return = push_to_db_srv(adding);
-    print(obj_return);
+    # print(obj_return);
 
     rospy.sleep(0.2);
     adding = create_obs_instance("person", 0,0,0);
     adding.adding.category = "person";
     obj_return = push_to_db_srv(adding);
-    print(obj_return);
+    # print(obj_return);
 
     rospy.sleep(0.2);
     adding = create_obs_instance("person", 1,1,0);
     adding.adding.category = "person";
     obj_return = push_to_db_srv(adding);
-    print(obj_return);
+    # print(obj_return);
     
 
     # get_obvs_from_db_srv = rospy.ServiceProxy('/som/observations/basic_query', orion_actions.srv.SOMQueryObservations);
@@ -92,19 +93,20 @@ def test_observation_input():
     # print(query_return);
 
 
-    get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
+    # get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
 
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.class_ = "bottle";
     query_return = get_obj_from_db_srv(querying);
     # print(query_return);
     assert(len(query_return.returns) != 0)
-    print("Length of returns for `bottle`:", len(query_return.returns));
+    print("\tLength of returns for `bottle`:", len(query_return.returns));
 
     pass;
 
 
 def test_human_observation_input():
+    print("Testing the observation of humans");
     human_input:rospy.Service = rospy.ServiceProxy('/som/human_observations/input', orion_actions.srv.SOMAddHumanObs);
     human_query:rospy.Service = rospy.ServiceProxy('/som/humans/basic_query', orion_actions.srv.SOMQueryHumans);
 
@@ -117,7 +119,7 @@ def test_human_observation_input():
     human_1.adding.observed_at = rospy.Time.now();
 
     response = human_input(human_1);
-    print(response);
+    # print(response);
 
     rospy.sleep(0.1);
 
@@ -130,7 +132,7 @@ def test_human_observation_input():
     human_2.adding.observed_at = rospy.Time.now();
 
     response = human_input(human_2);
-    print(response);
+    # print(response);
 
     human_3:orion_actions.srv.SOMAddHumanObsRequest = orion_actions.srv.SOMAddHumanObsRequest();
     human_3.adding.task_role = "unknown";
@@ -141,7 +143,7 @@ def test_human_observation_input():
     human_3.adding.observed_at = rospy.Time.now();
 
     response = human_input(human_3);
-    print(response);
+    # print(response);
 
     print("\tOperator query...");
     human_query_in:orion_actions.srv.SOMQueryHumansRequest = orion_actions.srv.SOMQueryHumansRequest();
@@ -154,10 +156,12 @@ def test_human_observation_input():
     human_empty_query:orion_actions.srv.SOMQueryHumansRequest = orion_actions.srv.SOMQueryHumansRequest();
     response:orion_actions.srv.SOMQueryHumansResponse = human_query(human_empty_query);
     assert(len(response.returns) != 0);
+    print("\tTests passed.")
     # print(response);
 
 
 def test_obj_relational_query():
+    print("\tTesting relational queries.")
     # NOTE: the suffix of `_rel` is to distinguish objects added here from
     # those added in the other tests. 
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
@@ -180,7 +184,7 @@ def test_obj_relational_query():
     query1.obj2.class_ = "banana_rel";
     query1.current_robot_pose = geometry_msgs.msg.Pose();
     query1_output:orion_actions.srv.SOMRelObjQueryResponse = relational_query_srv(query1);
-    print("Length of relational query 1: ", len(query1_output.matches));
+    print("\tLength of relational query 1: ", len(query1_output.matches));
     # print(query1_output);
 
     # Note that here the window is infront of the banana. Also, the banana is to the right of the window 
@@ -197,13 +201,13 @@ def test_obj_relational_query():
     assert(match0.relation.above == True);
     assert(match0.relation.below == False);
 
-    print("Behind query");
+    print("\tBehind query");
     query2 = orion_actions.srv.SOMRelObjQueryRequest();
     query2.obj1.class_ = "window_rel";
     query2.relation.behind = True;
     query2_output:orion_actions.srv.SOMRelObjQueryResponse = relational_query_srv(query2);
-    print("Length of relational query 2: ", len(query2_output.matches));
-    print(query2_output);
+    print("\tLength of relational query 2: ", len(query2_output.matches));
+    # print(query2_output);
     for element in query2_output.matches:
         element:orion_actions.msg.Match;
         assert(element.relation.behind == True);
@@ -220,22 +224,25 @@ def test_obj_relational_query():
     assert(match0.obj1.class_ == "window_rel");
     assert(match0.obj2.class_ == "banana_rel");
 
+    print("\tRelational queries passed");
+
 
 def uid_input_test():
+    print("UID input test: Updating an entry.")
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
     get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
 
     adding = create_obs_instance("uid_test_input_obj", 0.1, 0, 0, batch_num=0);
     obj_return:orion_actions.srv.SOMAddObservationResponse = push_to_db_srv(adding);
 
-    print("Checking UID queries work.")
+    print("\tChecking UID queries work.")
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.HEADER.UID = obj_return.UID;
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
     # print(query_return.returns);
     assert(len(query_return.returns) == 1);
 
-    print("Checking SESSION_NUM queries work and that they are ordered by latest batch number")
+    print("\tChecking SESSION_NUM queries work and that they are ordered by latest batch number")
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.HEADER.SESSION_NUM = 1; # The first session.
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
@@ -248,23 +255,26 @@ def uid_input_test():
         l = len(return_batch_nums);
         if (l >= 2):
             assert(return_batch_nums[l-2] >= return_batch_nums[l-1]);
-    print(return_batch_nums);
+    # print(return_batch_nums);
+    print("\tUID queries and SOM queries passed.")
 
 
 def test_category_callback():
+    print("Checking category assignment.")
     push_to_db_srv = rospy.ServiceProxy('/som/observations/input', orion_actions.srv.SOMAddObservation);
     get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
 
     adding = create_obs_instance("food_tray", 0,0,1);
     push_to_db_srv(adding);
 
-    print("Checking category assignment");
     querying = orion_actions.srv.SOMQueryObjectsRequest();
     querying.query.class_ = "food_tray";
     query_return:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(querying);
     assert(len(query_return.returns) != 0);
     return_0:orion_actions.msg.SOMObject = query_return.returns[0];
     assert(return_0.category == "containers");
+
+    print("\tTests passed.");
 
 
 def test_covariance_method():
@@ -287,6 +297,7 @@ def test_covariance_method():
     print("\tQuerying for the results");
     query_response:orion_actions.srv.SOMQueryObjectsResponse = get_obj_from_db_srv(query);
     print(len(query_response.returns));
+    print("\t\tNo Asserts performed");
 
 
 def test_updating_entry():
