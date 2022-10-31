@@ -127,12 +127,16 @@ class MemSys:
                 human_obs.observation_batch_num = adding["last_observation_batch"];
             else:
                 human_obs.observation_batch_num = adding["observation_batch_num"];
+            
             if len(human_query) == 0:
                 human_obs.spoken_to_state = orion_actions.msg.Human._NOT_SPOKEN_TO;
                 human_obs.height = adding['size']['z'];
             else:
-                human_obs.HEADER.UID = str(human_query[0][utils.PYMONGO_ID_SPECIFIER]);
+                # human_obs. = str(human_query[0][utils.PYMONGO_ID_SPECIFIER]);
+                pass;
             self.human_observation_manager.addItemToCollection(human_obs);
+
+            
             
         return adding, metadata;
 

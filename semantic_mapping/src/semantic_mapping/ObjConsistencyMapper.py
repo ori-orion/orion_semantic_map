@@ -361,6 +361,7 @@ class ConsistencyChecker(CollectionManager):
                 if self.consistency_args.observation_counter_attr != None:
                     num_prev_observations = element[self.consistency_args.observation_counter_attr];
                 max_distance = dist;
+                # print("Updating ", element);
 
 
         if (updating == None):

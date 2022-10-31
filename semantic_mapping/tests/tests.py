@@ -433,6 +433,7 @@ def test_human_update_functionality():
         "person",
         x=190,y=195,z=-456,
         batch_num=200);
+    push_to_db_srv(obs1);
 
     rospy.sleep(1.5);
     temporal_arg = rospy.Time.now();
@@ -441,6 +442,7 @@ def test_human_update_functionality():
         "person",
         x=190,y=195,z=-456.5,
         batch_num=201);
+    push_to_db_srv(obs2);
 
     query = orion_actions.srv.SOMQueryHumansRequest();
     # print(dir(query));
@@ -452,6 +454,7 @@ def test_human_update_functionality():
         if (human.obj_position.position.x == 190 and
             human.obj_position.position.y == 195 and
             human.obj_position.position.z == -456.5):
+            print("\tPosition matches.")
 
             obj_found = True;
             pass;
@@ -461,8 +464,6 @@ def test_human_update_functionality():
         assert(False);
     else:
         print("\tHuman update tests passed.")
-    
-    pass;
 
     
 def test_input_array():
