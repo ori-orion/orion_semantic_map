@@ -223,9 +223,6 @@ class CollectionManager:
         Note also, _id is an internal mongodb convention
         """
 
-        if DEBUG:
-            print("Updating...");
-
         self.collection.update_one(
             {utils.PYMONGO_ID_SPECIFIER:uid}, 
             { "$set": update_to}
@@ -298,6 +295,15 @@ class CollectionManager:
             ros_query_dict = {};
         else:
             ros_query_dict = ros_query_dict[list(ros_query_dict.keys())[0]];
+            # Getting rid of list queries.
+            # NOTE: May well want to get rid of this at some point.
+            keys_deleting = [];
+            for key in ros_query_dict:
+                if type(ros_query_dict[key]) is list:
+                    keys_deleting.append(key);
+            for key in keys_deleting:
+                del ros_query_dict[key];
+
 
         # Enabling the querying by UID.
         if (HEADER_ID in ros_query_dict) and (UID_ENTRY in ros_query_dict[HEADER_ID]):

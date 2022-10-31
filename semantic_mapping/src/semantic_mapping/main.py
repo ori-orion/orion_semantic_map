@@ -370,7 +370,7 @@ class DetectToObserve:
                 # return;
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;
-
+            forwarding.observed_at = rospy.Time.now();
             forwarding.colour = detection.color;
 
             # forwarding.header = std_msgs.msg.Header();
