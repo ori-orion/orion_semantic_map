@@ -22,7 +22,7 @@ PREFIX = init_hsr_ethernet
 tmux -2 new-session -d -s $SESSION
 tmux new-window -t $SESSION:0 -n 'mongod'
 tmux new-window -t $SESSION:1 -n 'semantic_mapping'
-tmux new-window -t $SESSION:2 -n 'detections_to_observations'
+# tmux new-window -t $SESSION:2 -n 'detections_to_observations'
 
 tmux select-window -t $SESSION:0
 [ -f $DEVELOPMENT_WS_ROBOT ] && `$_SRC_ENV_ROBOT` && `$CLEAR_PANE`
