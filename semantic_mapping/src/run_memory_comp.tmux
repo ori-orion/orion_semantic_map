@@ -32,9 +32,10 @@ tmux select-window -t $SESSION:1
 [ -f $DEVELOPMENT_WS_ROBOT ] && `$_SRC_ENV_ROBOT` && `$CLEAR_PANE`
 tmux -u send-keys "rosrun semantic_mapping main.py" C-m
 
-tmux select-window -t $SESSION:2
-[ -f $DEVELOPMENT_WS_ROBOT ] && `$_SRC_ENV_ROBOT` && `$CLEAR_PANE`
-tmux -u send-keys "rosrun semantic_mapping detections_to_observations.py" C-m
+# Now deprecated
+# tmux select-window -t $SESSION:2
+# [ -f $DEVELOPMENT_WS_ROBOT ] && `$_SRC_ENV_ROBOT` && `$CLEAR_PANE`
+# tmux -u send-keys "rosrun semantic_mapping detections_to_observations.py" C-m
 
 # Set default window
 tmux select-window -t $SESSION:1
