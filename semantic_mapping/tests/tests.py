@@ -8,6 +8,8 @@ import orion_actions.srv
 import orion_actions.msg
 
 import std_srvs.srv;
+import std_msgs.msg;
+import numpy as np;
 
 
 def create_obs_instance(class_, x=0, y=0, z=0, batch_num=0, category="") -> orion_actions.srv.SOMAddObservationRequest:
@@ -476,6 +478,44 @@ def test_human_update_functionality():
     else:
         print("\tHuman update tests passed.")
 
+
+def test_visual_pipeline():
+    print("Testing the visual pipeline into SOM");
+    from orion_actions.msg import Detection, DetectionArray, Label
+    from geometry_msgs.msg import Point
+
+    detections_pub = rospy.Publisher('/vision/bbox_detections', DetectionArray, queue_size=10)
+
+    header = std_msgs.msg.Header()
+    header.stamp = rospy.Time.now()
+
+    score_lbl = Label("pipeline_test", np.float64(1));
+    center_x = 0;
+    center_y = 0;
+    width = 1;
+    height = 1;
+    size = Point(1,1,1);
+    obj = [1,2,3];
+    stamp = rospy.Time.now();
+    colour = "purple";
+
+    print("\tSending in the observation");
+    detection = Detection(score_lbl, center_x, center_y, width, height,
+                      size, colour, obj[0], obj[1], obj[2], stamp)
+    detectionArr = DetectionArray(header, [detection]);
+    detections_pub.publish(detectionArr);
+    for i in range(3):
+        rospy.sleep(0.1);
+        detection.timestamp = rospy.Time.now();
+        header.stamp = rospy.Time.now();
+        detections_pub.publish(detectionArr);
+
+    get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', orion_actions.srv.SOMQueryObjects);
+    q1 = orion_actions.srv.SOMQueryObjectsRequest();
+    q1.query.class_ = "pipeline_test";
+    result = get_obj_from_db_srv(q1);
+    assert(len(result.returns) == 1);
+    print("\tObservation pipeline tests working.");
     
 def test_input_array():
     print("Testing the inputting of arrays.")
@@ -523,6 +563,7 @@ if __name__ == '__main__':
     test_temporal_queries();
     test_human_temporal_queries();
     test_human_update_functionality();
+    test_visual_pipeline();
 
     # Not enabled in current configuration.
     # test_input_array();
