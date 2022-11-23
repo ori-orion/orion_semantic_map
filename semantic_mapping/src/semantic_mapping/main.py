@@ -218,7 +218,7 @@ class MemSys:
         self.observation_arg_name_defs:ConsistencyArgs = ConsistencyArgs(
             position_attr="obj_position",
             size_attr="size",
-            max_distance={"default":1, "person":3},
+            max_distance={"default":1, "person":0.5},
             class_identifier="class_",
             first_observed_attr="first_observed_at",
             last_observed_attr="last_observed_at",
