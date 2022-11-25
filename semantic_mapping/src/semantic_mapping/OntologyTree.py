@@ -13,30 +13,42 @@ class OntologyTree:
     @classmethod
     def from_file(cls, filename='./taxonomyLabels.txt', base_label='Obj') -> 'OntologyTree':
         """
-        Load a `OntologyTree` from a file. The file should have a term for each line, with all its 
-        parent categories (except for the tree base label) separated by `/`. For example:
+        Load a `OntologyTree` from a file. The file should have a term for each line, written in
+        the form <parent>/<term>. If the parent has not yet been added, it will be added directly 
+        to the root of the tree. For example:
         
-        food/fruit/apple
-        food/snacks/Lollipops
-        ...
+        food/fruit
+        fruit/apple
+        food/cookie
+        
+        will create a tree with branches: 
+            <base_label> -> food -> fruit -> apple  
+            <base_label> -> food -> cookie
         """
         tree = cls(base_label)
 
         with open(filename) as input_file:
             for line in input_file.readlines():
                 cleaned_line = line.replace('\n', '') # Remove line endings
-                categories = cleaned_line.split('/')
-                tree.add_term(categories)
+                parent, child = cleaned_line.split('/')
+                tree.add_term(parent, child)
 
         return tree
 
-    def add_term(self, term_categories: List[str]):
+    def add_term(self, parent: str, child: str):
         """
-        Add the term to the tree. `term_categories` should contain the hierarchy of the term, from the 
-        most general category (excluding the base label of the tree) and ending with the term to be added.
-        If a category is not already present, it will be added to the tree.
+        Add the `child` term to the tree as child of `parent`. If the parent is not yet in the 
+        tree, it will be added as child of the root node.
         """
-        self.root.add_term(term_categories)
+        hierarchy = self.search_term(parent)
+
+        categories = [parent]
+        if hierarchy:
+            categories = hierarchy[1:] # Exclude the base label
+        
+        categories += [child]
+        self.root.add_term(categories)
+
     
     def search_term(self, term: str) -> List[str]:
         """
@@ -75,6 +87,9 @@ class OntologyTree:
 
         return 2*least_common_subsumer_depth / (len(categories1) + len(categories2))
 
+    def print_tree(self):
+        self.root.print_graph()
+
 
 if __name__ == '__main__':
     tree = OntologyTree.from_file(os.path.dirname(__file__) + '/taxonomyLabels.txt')
@@ -85,3 +100,5 @@ if __name__ == '__main__':
     print(tree.similarity('Sour_Candy_bag', 'Sour_Candy_bag'))
     print(tree.similarity('Sour_Candy_bag', 'Gummy_Candy_bag'))
     print(tree.similarity('Melons', 'pasta_bowl'))
+
+    tree.print_tree()
