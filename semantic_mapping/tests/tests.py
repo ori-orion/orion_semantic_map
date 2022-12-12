@@ -463,6 +463,7 @@ def test_human_update_functionality():
     query_response:list = get_human_observation(query).returns;
     assert(len(query_response) == 1);
     obj_found = False;
+    print(query_response);
     for human in query_response:
         if (human.obj_position.position.x == 190 and
             human.obj_position.position.y == 195 and
