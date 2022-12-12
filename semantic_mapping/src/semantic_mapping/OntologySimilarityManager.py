@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Author: Matteo Cati
+Maintainer: Matteo Cati
+"""
+
 import rospy
 
 from orion_actions.srv import SOMSimilarityQuery, SOMSimilarityQueryResponse, SOMSimilarityQueryRequest
@@ -34,8 +40,12 @@ class OntologySimilarityManager:
 
 
 if __name__ == '__main__':
-    manager = OntologySimilarityManager('./taxonomyLabels.txt', 'similarity_srv')
+    rospy.init_node("som_ontology_node_standalone")
+
+    manager = OntologySimilarityManager('./taxonomyLabels.txt', 'similarity')
 
     message = SOMSimilarityQueryRequest('Sour_Candy_bag', 'Gummy_Candy_bag')
     print(manager.compute_similarity_callback(message))
+
+    rospy.spin();
     
