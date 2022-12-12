@@ -463,7 +463,7 @@ def test_human_update_functionality():
     query_response:list = get_human_observation(query).returns;
     assert(len(query_response) == 1);
     obj_found = False;
-    print(query_response);
+    # print(query_response);
     for human in query_response:
         if (human.obj_position.position.x == 190 and
             human.obj_position.position.y == 195 and
@@ -481,7 +481,7 @@ def test_human_update_functionality():
 
 
 def test_visual_pipeline():
-    print("Testing the visual pipeline into SOM");
+    print("Testing the visual pipeline into SOM. NEEDS TF TREE TO BE RUNNING!");
     from orion_actions.msg import Detection, DetectionArray, Label
     from geometry_msgs.msg import Point
 
@@ -564,7 +564,9 @@ if __name__ == '__main__':
     test_temporal_queries();
     test_human_temporal_queries();
     test_human_update_functionality();
-    test_visual_pipeline();
+
+    # Needs the tf tree to be running.
+    # test_visual_pipeline();
 
     # Not enabled in current configuration.
     # test_input_array();
