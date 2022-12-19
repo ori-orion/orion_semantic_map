@@ -19,6 +19,7 @@ class TestObservationInputDistanceUpdate(unittest.TestCase):
     def setUpClass(cls):
         cls.push_to_db_srv = rospy.ServiceProxy('/som/observations/input', act_srv.SOMAddObservation)
         cls.get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', act_srv.SOMQueryObjects)
+        cls.get_human_from_db_srv = rospy.ServiceProxy('/som/humans/basic_query', act_srv.SOMQueryHumans)
 
     def test_adding_two_close_objects_create_only_one_object(self):
         """If two observation from two different batches contains the same object within 1m of each other, there should only be one object in the db."""
@@ -47,7 +48,10 @@ class TestObservationInputDistanceUpdate(unittest.TestCase):
         self.assertEqual(len(query_return.returns), 2, 'Two distant observations should create two different objects.')
 
     def test_max_distance_for_updating_person_is_different_from_objects(self):
-        """If two persons are added, and they are further away than 0.5m but closer than 1m, they should still be considered different people."""
+        """If two persons are added, and they are distant at least 0.5m but closer than 1m, they should still be considered different people."""
+        rospy.sleep(1)
+        temporal_arg = rospy.Time.from_sec(time.time()) # Time used to get only the humans created in this test
+
         adding = create_obs_instance("person", 0,2,0, batch_num=0)
         _ = self.push_to_db_srv(adding)
 
@@ -56,11 +60,46 @@ class TestObservationInputDistanceUpdate(unittest.TestCase):
         adding = create_obs_instance("person", 0, 2.7, 0, batch_num=1)
         _ = self.push_to_db_srv(adding)
 
+        query = act_srv.SOMQueryHumansRequest()
+        query.query.last_observed_at = temporal_arg
+        query_response: act_srv.SOMQueryHumansResponse = self.get_human_from_db_srv(query)
+        self.assertEqual(len(query_response.returns), 2, 'The db should contain two separate humans.')
+
         querying = act_srv.SOMQueryObjectsRequest()
         querying.query.class_ = "person"
+        querying.query.last_observed_at = temporal_arg
         query_return: act_srv.SOMQueryObjectsResponse = self.get_obj_from_db_srv(querying)
 
-        self.assertEqual(len(query_return.returns), 2, 'The person should not have updated the old observation.')
+        self.assertEqual(len(query_return.returns), 2, 'The person should not have updated the old object.')
+
+    def test_adding_two_close_people_create_only_one_human(self):
+        """If two observation from two different batches contains the two people closer than 0.5m of each other, there should only be one object and one human in the db."""
+        rospy.sleep(1)
+        temporal_arg = rospy.Time.from_sec(time.time()) # Time used to get only the humans created in this test
+        
+        pos1 = [190, 195, -456]
+        pos2 = [190, 195, -456.4]
+
+        obs1 = create_obs_instance("person", x=pos1[0], y=pos1[1], z=pos1[2], batch_num=0)
+        self.push_to_db_srv(obs1)
+
+        obs2 = create_obs_instance("person", x=pos2[0], y=pos2[1], z=pos2[2], batch_num=1)
+        self.push_to_db_srv(obs2)
+
+        query = act_srv.SOMQueryHumansRequest()
+        query.query.last_observed_at = temporal_arg
+        query_response: act_srv.SOMQueryHumansResponse = self.get_human_from_db_srv(query)
+
+        self.assertEqual(len(query_response.returns), 1, 'Only one human should have been added to the db.')
+
+        querying = act_srv.SOMQueryObjectsRequest()
+        querying.query.class_ = "person"
+        querying.query.last_observed_at = temporal_arg
+        query_return: act_srv.SOMQueryObjectsResponse = self.get_obj_from_db_srv(querying)
+
+        self.assertEqual(len(query_return.returns), 1, 'Only one person object should have been added to the db.')
+
+
 
 
 class TestHumanObservationInput(unittest.TestCase):
@@ -313,7 +352,6 @@ class TestRetrievingObservationByBatchNumber(unittest.TestCase):
         q2 = act_srv.SOMQueryObjectsRequest()
         q2.query.last_observation_batch = -101
         q2_response: act_srv.SOMQueryObjectsResponse = self.get_obj_from_db_srv(q2)
-
         self.assertEqual(len(q2_response.returns), 1, 'There should be one observation in this range.')
         self.assertEqual(q2_response.returns[0].class_, self.obs_batch_102.adding.class_, 'The object returned is not the one from the correct batch.')
 
