@@ -35,7 +35,7 @@ class TestObservationInputDistanceUpdate(unittest.TestCase):
         self.assertEqual(len(query_return.returns), 1, 'The last observation should have updated the object already present.')
     
     def test_adding_two_observation_with_same_object_far_away_creates_two_objects(self):
-        """If two observation from two different batches contain the same object but they are further than 1m of each other, they will be considered different objects."""
+        """If two observations from two different batches contain the same object but they are further than 1m of each other, they will be considered different objects."""
         adding = create_obs_instance("distant_object", 0.1, 0, 0, batch_num=0, category="vessel")
         self.push_to_db_srv(adding)
         adding = create_obs_instance("distant_object", 1.25, 0, 0, batch_num=1, category="vessel")
@@ -73,7 +73,7 @@ class TestObservationInputDistanceUpdate(unittest.TestCase):
         self.assertEqual(len(query_return.returns), 2, 'The person should not have updated the old object.')
 
     def test_adding_two_close_people_create_only_one_human(self):
-        """If two observation from two different batches contains the two people closer than 0.5m of each other, there should only be one object and one human in the db."""
+        """If two observations from two different batches contain two people closer than 0.5m of each other, there should only be one object and one human in the db."""
         rospy.sleep(1)
         temporal_arg = rospy.Time.from_sec(time.time()) # Time used to get only the humans created in this test
         
@@ -138,6 +138,7 @@ class TestHumanObservationInput(unittest.TestCase):
         _ = cls.human_input(human_3)
 
     def test_querying_specific_task_role_returns_humans_with_that_role(self):
+        """If a role is included in a humans query, all humans with that role should be returned."""
         human_query_in = act_srv.SOMQueryHumansRequest()
         human_query_in.query.task_role = "Operator"
 
@@ -150,6 +151,7 @@ class TestHumanObservationInput(unittest.TestCase):
             self.assertEqual(human.task_role, "Operator", 'Returned humans should have the queried role.')
 
     def test_empty_human_query_returns_all_humans(self):
+        """If a human query is empty, it should return all humans stored in the database."""
         human_empty_query = act_srv.SOMQueryHumansRequest()
         
         response: act_srv.SOMQueryHumansResponse = self.human_query(human_empty_query)
@@ -175,16 +177,17 @@ class TestObjectRelationalQuery(unittest.TestCase):
         cls.push_to_db_srv(obj1)
 
     def test_relations_are_correct(self):
+        """When asking the relation between two object, they should be correct.
+        Note that here the banana is in front of the window. Also, the banana is to the right of the window 
+        (Construct a set of cartesian coordinates to show this).
+        """
         query = act_srv.SOMRelObjQueryRequest()
         query.obj1.class_ = "window_rel"
         query.obj2.class_ = "banana_rel"
         query.current_robot_pose = geom_msg.Pose()
         query_output: act_srv.SOMRelObjQueryResponse = self.relational_query_srv(query)
 
-        # Note that here the banana is in front of the window. Also, the banana is to the right of the window 
-        # (Construct a set of cartesian coordinates to show this.)
-        # There should also be only one output (given that there are only these two objects in position at the
-        # moment.)
+        # There should also be only one output (given that there are only these two objects in position at the moment).
         self.assertEqual(len(query_output.matches), 1, 'There should only be one match.')
 
         match0: act_msg.Match = query_output.matches[0]
@@ -198,6 +201,7 @@ class TestObjectRelationalQuery(unittest.TestCase):
         self.assertFalse(match0.relation.below, '"banana" should not be below "window".')
 
     def test_querying_for_relation_return_only_objects_with_that_relation(self):
+        """If querying for objects with a specific relation, all the objects returned should have that relation."""
         query = act_srv.SOMRelObjQueryRequest()
         query.obj1.class_ = "window_rel"
         query.relation.behind = True
@@ -208,6 +212,7 @@ class TestObjectRelationalQuery(unittest.TestCase):
             self.assertTrue(element.relation.behind, "Elements returned should have the queried relation.")
 
     def test_querying_by_category_and_relation_gives_correct_objects(self):
+        """Querying by relation+category should give the objects with those characteristics."""
         query = act_srv.SOMRelObjQueryRequest()
         query.obj1.category = "a"
         query.obj2.category = "b"
@@ -229,6 +234,7 @@ class TestUidInput(unittest.TestCase):
         cls.get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', act_srv.SOMQueryObjects)
 
     def test_uid_queries_return_correct_object(self):
+        """Querying by specific UID should return only one object, with that UID."""
         adding = create_obs_instance("uid_test_input_obj", 0.1, 0, 0, batch_num=0)
         obj_return: act_srv.SOMAddObservationResponse = self.push_to_db_srv(adding)
 
@@ -241,6 +247,7 @@ class TestUidInput(unittest.TestCase):
 
     @skipTest('Can only run successfully if current session number is 1.')
     def test_querying_by_session_number_return_list_sorted_by_latest_batch_number(self):
+        """Querying a specific session number should return all the objects, sorted by last_observation_batch."""
         obs_1 = create_obs_instance("uid_test_input_obj", 0.1, 0, 0, batch_num=0)
         self.push_to_db_srv(obs_1)
 
@@ -264,6 +271,7 @@ class TestCategoryCallback(unittest.TestCase):
         cls.get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', act_srv.SOMQueryObjects)
 
     def test_category_is_inferred_correctly(self):
+        """If an objet is sent without category, it should be inferred."""
         adding = create_obs_instance("food_tray", 0,0,1)
         self.push_to_db_srv(adding)
 
@@ -283,6 +291,7 @@ class TestCovarianceMethod(unittest.TestCase):
         cls.get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', act_srv.SOMQueryObjects)
 
     def test_covariance_raises_no_exception(self):
+        """Adding an observation with covariance matrix  and querying the object should not raise any error."""
         obj_name = "covariance_test"
         
         adding_1 = create_obs_instance(obj_name, 0.1,0,0, 2)
@@ -304,6 +313,7 @@ class TestUpdatingEntry(unittest.TestCase):
         cls.get_obs_from_db_srv = rospy.ServiceProxy('/som/observations/basic_query', act_srv.SOMQueryObservations)
 
     def test_updating_entry_works_correctly(self):
+        """Sending an observation with an object UID should update that object."""
         category_before_update = 'unupdated_category'
         category_after_update = 'updated_category'
         entry_class = 'update_entry_test'
@@ -348,7 +358,7 @@ class TestRetrievingObservationByBatchNumber(unittest.TestCase):
         self.assertEqual(q1_response.returns[0].class_, self.obs_batch_100.adding.class_, 'The object returned is not the one from the correct batch.')
 
     def test_query_interval_of_batches_returns_correct_value(self):
-        """If the batch number queried is negative, then the test will look back that number of batches."""
+        """If the last observation batch number queried is negative (-m), then the test will return all objects that were observed after batch m."""
         q2 = act_srv.SOMQueryObjectsRequest()
         q2.query.last_observation_batch = -101
         q2_response: act_srv.SOMQueryObjectsResponse = self.get_obj_from_db_srv(q2)
@@ -363,6 +373,7 @@ class TestTemporalQueries(unittest.TestCase):
         cls.get_human_observation = rospy.ServiceProxy('/som/humans/basic_query', act_srv.SOMQueryHumans)
 
     def test_querying_objects_with_time_returns_only_objects_seen_later(self):
+        """If the last_observed_at parameter is passed in a object query, it should only return objects observed after that time."""
         past_obs = create_obs_instance("temporal_obs_1")
         self.push_to_db_srv(past_obs)
 
@@ -382,6 +393,7 @@ class TestTemporalQueries(unittest.TestCase):
         self.assertEqual(response.returns[0].class_, new_obs.adding.class_, 'The object returned is not the one created after the given time.')
 
     def test_querying_humans_with_time_returns_only_humans_seen_later(self):
+        """If the last_observed_at parameter is passed in a human query, it should only return humans observed after that time."""
         obs1 = create_obs_instance("person", x=10, y=0, z=0)
 
         rospy.sleep(1)
@@ -412,6 +424,7 @@ class TestVisualPipeline(unittest.TestCase):
         cls.get_obj_from_db_srv = rospy.ServiceProxy('/som/objects/basic_query', act_srv.SOMQueryObjects)
 
     def test_observation_published_in_bbox_detection_is_added_to_db(self):
+        """Publishing a detection in vision should add the object to the database."""
         header = std_msg.Header()
         header.stamp = rospy.Time.from_sec(time.time())
 
@@ -428,7 +441,7 @@ class TestVisualPipeline(unittest.TestCase):
         detection = act_msg.Detection(score_lbl, center_x, center_y, width, height,
                         size, colour, obj[0], obj[1], obj[2], stamp)
         detectionArr = act_msg.DetectionArray(header, [detection])
-        self.detections_pub.publish(detectionArr);
+        self.detections_pub.publish(detectionArr)
         for _ in range(3):
             rospy.sleep(0.1)
             detection.timestamp = rospy.Time.from_sec(time.time())
@@ -449,6 +462,7 @@ class TestArrayInput(unittest.TestCase):
         cls.object_query = rospy.ServiceProxy('/som/objects/basic_query', act_srv.SOMQueryObjects)
 
     def test_all_observations_in_array_are_added(self):
+        """Sending an array input should add all objects to the databse."""
         obj_name_prefix = "multi_input_"
         input_field = act_srv.SOMAddObservationArrRequest()
 
