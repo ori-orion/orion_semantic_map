@@ -11,7 +11,8 @@ from CollectionManager import CollectionManager, TypesCollection;
 from ObjConsistencyMapper import ConsistencyChecker, ConsistencyArgs;
 from RelationManager import RelationManager;
 from RegionManager import RegionManager;
-import Ontology;
+import Ontology
+from OntologySimilarityManager import OntologySimilarityManager
 from visualisation import RvizVisualisationManager;
 import utils;
 
@@ -65,8 +66,13 @@ class MemSys:
 
 
     def setupOntology(self):
-        self.ontology_tree:Ontology.ontology_member = Ontology.read_file(
-            os.path.dirname(__file__) + "/labels.txt");
+        current_dir = os.path.dirname(__file__)
+        
+        self.ontology_tree = Ontology.read_file(current_dir + "/labels.txt")
+
+        self.similarity_manager = OntologySimilarityManager(
+            current_dir + '/taxonomyLabels.txt',
+            'similarity')
 
     # This will be a callback within observations for assigning the category of an object.
     def ontology_observation_getCategory_callback(self, adding_dict:dict, metadata:dict):
