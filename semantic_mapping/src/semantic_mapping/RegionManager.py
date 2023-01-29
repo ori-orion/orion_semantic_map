@@ -221,7 +221,7 @@ class RegionManager(CollectionManager):
         """
         Returns whether the point is in the region.
         """
-        transformed_point:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(point, self.region_tf_prefix + region.UID);
+        transformed_point:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(point, self.region_tf_prefix + region.HEADER.UID);
 
         # print(transformed_point);
 
@@ -278,7 +278,7 @@ class RegionManager(CollectionManager):
                 for box in boxes:
                     # print(box);
                     box_som_msg:SOMBoxRegion = utils.dict_to_obj(box, SOMBoxRegion());
-                    box_som_msg.UID = str(box[utils.PYMONGO_ID_SPECIFIER]);
+                    box_som_msg.HEADER.UID = str(box[utils.PYMONGO_ID_SPECIFIER]);
                     # print(box_som_msg);
 
                     if self.point_in_region(box_som_msg, pos):
