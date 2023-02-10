@@ -12,6 +12,7 @@ Owner: Matthew Munks
 """
 
 
+from typing import List
 import numpy
 import utils;
 from CollectionManager import CollectionManager, TypesCollection, SERVICE_ROOT;
@@ -217,7 +218,7 @@ class RegionManager(CollectionManager):
         pass;
 
 
-    def point_in_region(self, region:SOMBoxRegion, point:geometry_msgs.msg.Point) -> bool:
+    def is_point_in_region(self, region: SOMBoxRegion, point: geometry_msgs.msg.Point) -> bool:
         """
         Returns whether the point is in the region.
         """
@@ -237,7 +238,14 @@ class RegionManager(CollectionManager):
 
         return True;
     
-    
+    def is_point_in_region_group(self, regions: List[SOMBoxRegion], point: geometry_msgs.msg.Point) -> bool:
+        """
+        Check if point is inside one of the regions.
+        """
+        for region in regions:
+            if self.is_point_in_region(region, point):
+                return True
+        return False
 
     def queryRegionROSEntryPoint(self, query:orion_actions.srv.SOMRegionQueryRequest) -> orion_actions.srv.SOMRegionQueryResponse:
         """
@@ -251,6 +259,13 @@ class RegionManager(CollectionManager):
         region_name = query.region_name;
         # All regions are priors...
         boxes = self.queryIntoCollection({"name":region_name});
+
+        def convert_to_box_region(box: dict) -> SOMBoxRegion:
+            box_som_msg: SOMBoxRegion = utils.dict_to_obj(box, SOMBoxRegion())
+            box_som_msg.HEADER.UID = str(box[utils.PYMONGO_ID_SPECIFIER])
+            return box_som_msg
+
+        box_objs = list(map(convert_to_box_region, boxes))
 
         # This is the query into the thing we're looking for the objects.
         # This should mirror CollectionManager.rosQueryEntrypoint(...).
@@ -275,20 +290,13 @@ class RegionManager(CollectionManager):
                         query_response[self.positional_parameter], 
                         geometry_msgs.msg.Pose()).position;
 
-                for box in boxes:
-                    # print(box);
-                    box_som_msg:SOMBoxRegion = utils.dict_to_obj(box, SOMBoxRegion());
-                    box_som_msg.HEADER.UID = str(box[utils.PYMONGO_ID_SPECIFIER]);
-                    # print(box_som_msg);
+                if self.is_point_in_region_group(box_objs, pos):
+                    output_list.append(utils.dict_to_obj(query_response, orion_actions.msg.SOMObject()))
 
-                    if self.point_in_region(box_som_msg, pos):
-                        output_list.append(utils.dict_to_obj(query_response, orion_actions.msg.SOMObject()));
-
-                        if self.querying_within.visualisation_manager != None and DEBUG_REGION_VISUALISATIONS:
-                            self.querying_within.visualisation_manager.add_obj_dict(
-                                query_response, 
-                                str(query_response[utils.PYMONGO_ID_SPECIFIER]));
-
+                    if self.querying_within.visualisation_manager != None and DEBUG_REGION_VISUALISATIONS:
+                        self.querying_within.visualisation_manager.add_obj_dict(
+                            query_response,
+                            str(query_response[utils.PYMONGO_ID_SPECIFIER]))
 
         output.returns = output_list;
         return output;
