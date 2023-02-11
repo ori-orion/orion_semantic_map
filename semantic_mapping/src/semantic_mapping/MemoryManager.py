@@ -24,7 +24,7 @@ SERVICE_ROOT = "som/";
 
 
 class MemoryManager:
-    def __init__(self, root="localhost", port=62345):
+    def __init__(self, root="localhost", port=62345, connect_to_current_latest=False):
         self.client = pymongo.MongoClient(root, port);
         # self.clear_db();
         self.database = self.client.database_test;
@@ -38,15 +38,19 @@ class MemoryManager:
             # => .find().sort(...).limit(...) is actually quite efficient
             previous_session_cursor:pymongo.cursor.Cursor = session_log.find().sort(SESSION_ID, -1).limit(1);
             previous_session:list = list(previous_session_cursor);
-            self.current_session_id = previous_session[0][SESSION_ID] + 1;
+            if connect_to_current_latest == True:
+                self.current_session_id = previous_session[0][SESSION_ID];
+            else:
+                self.current_session_id = previous_session[0][SESSION_ID] + 1;
         else:
             self.current_session_id = 1;
         print("Session:", self.current_session_id);
 
-        session_log.insert_one({
-            SESSION_ID: self.current_session_id,
-            GLOBAL_TIME_STAMP_ENTRY: datetime.datetime.now()
-        });
+        if self.current_session_id == 1 or connect_to_current_latest==False:
+            session_log.insert_one({
+                SESSION_ID: self.current_session_id,
+                GLOBAL_TIME_STAMP_ENTRY: datetime.datetime.now()
+            });
         #endregion
 
         self.setup_services();
