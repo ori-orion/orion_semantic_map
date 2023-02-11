@@ -35,7 +35,7 @@ class ConsistencyArgs:
         use_running_average_position:bool=True,
         suppress_double_detections:bool=False,
         suppression_default_distance:float=0,
-        suppression_distance_dict:dict={}):
+        suppression_distance_dict:dict=None):
 
         """
         Constructor:
@@ -130,7 +130,10 @@ class ConsistencyArgs:
         # suppression distance.
         self.suppress_double_detections = suppress_double_detections;
         self.suppression_default_distance = suppression_default_distance;
-        self.suppression_distance_dict = suppression_distance_dict;
+        if suppression_distance_dict == None:
+            self.suppression_distance_dict = {};
+        else:
+            self.suppression_distance_dict = suppression_distance_dict;
 
         # There are some things for which we will want to do a frequency analysis. (Say for instance that you have a 
         # segmentation algorithm and you want to couple object names to the segmented objects. For this, you would
@@ -157,7 +160,7 @@ class ConsistencyChecker(CollectionManager):
             types:TypesCollection, 
             service_name:str,
             consistency_args:ConsistencyArgs=ConsistencyArgs(),
-            collection_input_callbacks:list = []):
+            collection_input_callbacks:list=None):
         
         super(ConsistencyChecker, self).__init__(
             types=types, 
@@ -171,6 +174,8 @@ class ConsistencyChecker(CollectionManager):
         # to define parameters. This does this!
         self.consistency_args:ConsistencyArgs = consistency_args;
 
+        if collection_input_callbacks == None:
+            collection_input_callbacks = [];
         if self.consistency_args.suppress_double_detections and self.consistency_args.batch_nums_setup():
             collection_input_callbacks.insert(0, self.suppression_callback);
         

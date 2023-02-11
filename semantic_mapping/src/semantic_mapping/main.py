@@ -11,7 +11,8 @@ from CollectionManager import CollectionManager, TypesCollection;
 from ObjConsistencyMapper import ConsistencyChecker, ConsistencyArgs;
 from RelationManager import RelationManager;
 from RegionManager import RegionManager;
-import Ontology;
+import Ontology
+from OntologySimilarityManager import OntologySimilarityManager
 from visualisation import RvizVisualisationManager;
 import utils;
 
@@ -65,8 +66,13 @@ class MemSys:
 
 
     def setupOntology(self):
-        self.ontology_tree:Ontology.ontology_member = Ontology.read_file(
-            os.path.dirname(__file__) + "/labels.txt");
+        current_dir = os.path.dirname(__file__)
+        
+        self.ontology_tree = Ontology.read_file(current_dir + "/labels.txt")
+
+        self.similarity_manager = OntologySimilarityManager(
+            current_dir + '/taxonomyLabels.txt',
+            'similarity')
 
     # This will be a callback within observations for assigning the category of an object.
     def ontology_observation_getCategory_callback(self, adding_dict:dict, metadata:dict):
@@ -218,7 +224,7 @@ class MemSys:
         self.observation_arg_name_defs:ConsistencyArgs = ConsistencyArgs(
             position_attr="obj_position",
             size_attr="size",
-            max_distance={"default":1, "person":0.5},
+            max_distance={"default":1, "person":0.7},
             class_identifier="class_",
             first_observed_attr="first_observed_at",
             last_observed_attr="last_observed_at",
@@ -227,7 +233,7 @@ class MemSys:
             last_observation_batch="last_observation_batch",
             positional_covariance_attr="covariance_mat",
             observation_counter_attr="num_observations",
-            suppress_double_detections=True,       # Currently the suppression of double detections if off!
+            suppress_double_detections=False,       # Currently the suppression of double detections if off!
             suppression_distance_dict={'suppression_test_type':0.1, 'person':0.5}
         );
         self.observation_arg_name_defs.dont_transfer.append("covariance_mat");
@@ -274,7 +280,7 @@ class MemSys:
 
 class DetectToObserve:
     def __init__(self, mem_sys:MemSys):
-        queue_size = 10;
+        queue_size = 1;
         
         # Data about transform frames
         self.camera_frame = "head_rgbd_sensor_rgb_frame"
@@ -312,7 +318,7 @@ class DetectToObserve:
         for detection in data.detections:
             detection:Detection;
 
-            if detection.label.confidence < 0.8:
+            if detection.label.confidence < 0.5:
                 continue;
             
             forwarding = SOMObservation();
@@ -363,11 +369,16 @@ class DetectToObserve:
             
             try:
                 p_global_frame:tf2_geometry_msgs.PoseStamped = self.tfBuffer.transform(
-                    obj_point_2, self.global_frame, timeout=rospy.Duration(0.1));
+                    obj_point_2, self.global_frame, timeout=rospy.Duration(0.5));
             except:
-                p_global_frame = tf2_geometry_msgs.PoseStamped();
-                rospy.logerr("detections_to_observations.py: transform raised an error!");
-                # return;
+                try:
+                    obj_point_2.header.stamp = rospy.Time.now();
+                    p_global_frame:tf2_geometry_msgs.PoseStamped = self.tfBuffer.transform(
+                        obj_point_2, self.global_frame, timeout=rospy.Duration(0.5));
+                except:
+                    p_global_frame = tf2_geometry_msgs.PoseStamped();
+                    rospy.logerr("detections_to_observations.py: transform raised an error!");
+                    return;
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;
             forwarding.observed_at = rospy.Time.now();

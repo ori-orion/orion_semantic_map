@@ -113,7 +113,7 @@ class RvizVisualisationManager:
         box_marker.color.r = self.colour_r;
         box_marker.color.g = self.colour_g;
         box_marker.color.b = self.colour_b;
-        box_marker.color.a = self.colour_a * num_observations/100;
+        box_marker.color.a = self.colour_a * num_observations/10;
         if box_marker.color.a > self.colour_a:
             box_marker.color.a = self.colour_a;
 

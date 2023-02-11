@@ -129,8 +129,8 @@ class CollectionManager:
 
         # If no obj_id was returned from the callback, then we assume there is no cross-referencing
         # and thus nothing to add here!
-        if ('obj_id' in metadata):
-            adding_dict[utils.CROSS_REF_UID] = str(metadata['obj_id']);
+        if ('obj_uid' in metadata):
+            adding_dict[utils.CROSS_REF_UID] = str(metadata['obj_uid']);
 
         if (DEBUG_LONG):
             print("Adding an entry to", self.service_name ,"\n\t", adding_dict, "\n");
