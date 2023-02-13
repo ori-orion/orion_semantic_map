@@ -2,16 +2,16 @@
 
 import rospy
 
-import orion_actions.srv
-import orion_actions.msg
+import orion_actions.srv as orion_srv
+import orion_actions.msg as orion_msg
 
-import std_srvs.srv;
+import std_srvs.srv as std_srv
 
 import unittest
 from typing import List
 
 
-def create_region(name: str, position: List[int], size: List[int] = None, rotation: List[int]=None) -> orion_actions.msg.SOMBoxRegion:
+def create_region(name: str, position: List[int], size: List[int] = None, rotation: List[int]=None) -> orion_msg.SOMBoxRegion:
     """Create a SOMBoxRegion with the given attributes.
     
     INPUT:
@@ -26,7 +26,7 @@ def create_region(name: str, position: List[int], size: List[int] = None, rotati
     if rotation is None:
         rotation = [0, 0, 0, 1]
 
-    region_to_add = orion_actions.msg.SOMBoxRegion()
+    region_to_add = orion_msg.SOMBoxRegion()
     region_to_add.name = name
     region_to_add.dimension.x = size[0]
     region_to_add.dimension.y = size[1]
@@ -42,7 +42,7 @@ def create_region(name: str, position: List[int], size: List[int] = None, rotati
     return region_to_add
 
 
-def create_object_instance(class_: str, x: float=0, y: float=0, z: float=0, category: str=None) -> orion_actions.srv.SOMAddObservationRequest:
+def create_object_instance(class_: str, x: float=0, y: float=0, z: float=0, category: str=None) -> orion_srv.SOMAddObservationRequest:
     """Creeate a SOMAddObservationRequest with the given attributes. The size is always (0.1, 0.1, 0.1) 
     and the number of observations is set to 100.
     
@@ -51,7 +51,7 @@ def create_object_instance(class_: str, x: float=0, y: float=0, z: float=0, cate
     - x, y, z -- the position of the object, they are all zero by default
     - category -- teh category attribute of the object, it is None by default
     """
-    output = orion_actions.srv.SOMAddObjectRequest()
+    output = orion_srv.SOMAddObjectRequest()
     output.adding.category = category
     output.adding.class_ = class_
     output.adding.obj_position.position.x = x
@@ -68,46 +68,46 @@ def create_object_instance(class_: str, x: float=0, y: float=0, z: float=0, cate
 class TestRegionManager(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.region_input = rospy.ServiceProxy('/som/object_regions/input', orion_actions.srv.SOMAddRegion)
-        cls.region_basic_query = rospy.ServiceProxy('/som/object_regions/basic_query', orion_actions.srv.SOMQueryRegions)
-        cls.region_region_query = rospy.ServiceProxy('/som/object_regions/region_query', orion_actions.srv.SOMRegionQuery)
-        cls.object_input = rospy.ServiceProxy('/som/objects/input', orion_actions.srv.SOMAddObject)
-        cls.region_delete_srv = rospy.ServiceProxy('/som/object_regions/delete_entries', std_srvs.srv.Empty)
+        cls.region_input = rospy.ServiceProxy('/som/object_regions/input', orion_srv.SOMAddRegion)
+        cls.region_basic_query = rospy.ServiceProxy('/som/object_regions/basic_query', orion_srv.SOMQueryRegions)
+        cls.region_region_query = rospy.ServiceProxy('/som/object_regions/region_query', orion_srv.SOMRegionQuery)
+        cls.object_input = rospy.ServiceProxy('/som/objects/input', orion_srv.SOMAddObject)
+        cls.region_delete_srv = rospy.ServiceProxy('/som/object_regions/delete_entries', std_srv.Empty)
 
         # Get the regions that are currently in the database, so they can be restored
-        response: orion_actions.srv.SOMQueryRegionsResponse = cls.region_basic_query(orion_actions.srv.SOMQueryRegionsRequest())
-        cls.stored_regions: List[orion_actions.msg.SOMBoxRegion] = response.returns
+        response: orion_srv.SOMQueryRegionsResponse = cls.region_basic_query(orion_srv.SOMQueryRegionsRequest())
+        cls.stored_regions: List[orion_msg.SOMBoxRegion] = response.returns
 
     @classmethod
     def tearDownClass(cls):
         """After all tests have run, restore the regions that were present before running the tests."""
-        cls.region_delete_srv(std_srvs.srv.EmptyRequest())
+        cls.region_delete_srv(std_srv.EmptyRequest())
         for region in cls.stored_regions:
-            cls.region_input(orion_actions.srv.SOMAddRegionRequest(region))
+            cls.region_input(orion_srv.SOMAddRegionRequest(region))
 
     def setUp(self):
         """Before running each test, delete all regions that may have been created previously."""
-        self.region_delete_srv(std_srvs.srv.EmptyRequest())
+        self.region_delete_srv(std_srv.EmptyRequest())
 
 
     def test_querying_regions_return_only_objects_inside(self):
         """When querying in a region, objects outside of it should not be returned."""
         region_to_add = create_region('Test_Region1', [1, 1, 0])
-        self.region_input(orion_actions.srv.SOMAddRegionRequest(region_to_add))
+        self.region_input(orion_srv.SOMAddRegionRequest(region_to_add))
 
         obj_category = 'correct_objs'
         obj_inside = create_object_instance('obj_inside', 1.5, 1.5, 0.5, obj_category)
         self.object_input(obj_inside)
         self.object_input(create_object_instance('obj_outside', category=obj_category)) # Add object outside the region
 
-        region_request = orion_actions.srv.SOMRegionQueryRequest()
+        region_request = orion_srv.SOMRegionQueryRequest()
         region_request.region_name = region_to_add.name
         region_request.query.category = obj_category
-        response: orion_actions.srv.SOMRegionQueryResponse = self.region_region_query(region_request)
+        response: orion_srv.SOMRegionQueryResponse = self.region_region_query(region_request)
 
         self.assertEqual(len(response.returns), 1, 'Only one object should be inside the region.')
 
-        resp_obj = response.returns[0]
+        resp_obj: orion_msg.SOMObject = response.returns[0]
         self.assertEqual(resp_obj.class_, obj_inside.adding.class_, 'Object returned is not the one positioned inside the region.')
 
 
@@ -118,8 +118,8 @@ class TestRegionManager(unittest.TestCase):
         region_name = 'Test_Multiple_Regions'
         region_to_add_1 = create_region(region_name, [1, 1, 0])
         region_to_add_2 = create_region(region_name, [-1, -1, 0])
-        self.region_input(orion_actions.srv.SOMAddRegionRequest(region_to_add_1))
-        self.region_input(orion_actions.srv.SOMAddRegionRequest(region_to_add_2))
+        self.region_input(orion_srv.SOMAddRegionRequest(region_to_add_1))
+        self.region_input(orion_srv.SOMAddRegionRequest(region_to_add_2))
 
         obj_category = 'multiple_regions_objs'
         inside_objs = [('obj_inside_1', [1.5, 1.5, 0.5]), 
@@ -132,10 +132,10 @@ class TestRegionManager(unittest.TestCase):
             obj = create_object_instance(name, pos[0], pos[1], pos[2], obj_category)
             self.object_input(obj)
 
-        region_request = orion_actions.srv.SOMRegionQueryRequest()
+        region_request = orion_srv.SOMRegionQueryRequest()
         region_request.region_name = region_name
         region_request.query.category = obj_category
-        response: orion_actions.srv.SOMRegionQueryResponse = self.region_region_query(region_request)
+        response: orion_srv.SOMRegionQueryResponse = self.region_region_query(region_request)
 
         self.assertEqual(len(response.returns), len(inside_objs), 'Number of objects returned is not correct.')
 
@@ -149,9 +149,9 @@ class TestRegionManager(unittest.TestCase):
             the region that was queried.
         """
         region1 = create_region('Test_Region_Queried_1', [1, 1, 0])
-        self.region_input(orion_actions.srv.SOMAddRegionRequest(region1))
+        self.region_input(orion_srv.SOMAddRegionRequest(region1))
         region2 = create_region('Test_Region_Queried_2', [-1, -1, 0])
-        self.region_input(orion_actions.srv.SOMAddRegionRequest(region2))
+        self.region_input(orion_srv.SOMAddRegionRequest(region2))
 
         obj_category = 'only_selected_region_objs'
         # This object is inside the region that will be queried
@@ -160,10 +160,10 @@ class TestRegionManager(unittest.TestCase):
         # This object is inside the region that will NOT be queried
         self.object_input(create_object_instance('SecondObj', -0.5, -0.5, 0.5, obj_category))
 
-        region_request = orion_actions.srv.SOMRegionQueryRequest()
+        region_request = orion_srv.SOMRegionQueryRequest()
         region_request.region_name = region1.name
         region_request.query.category = obj_category
-        response: orion_actions.srv.SOMRegionQueryResponse = self.region_region_query(region_request)
+        response: orion_srv.SOMRegionQueryResponse = self.region_region_query(region_request)
 
         self.assertEqual(len(response.returns), 1, 'Only one object should be inside the region.')
 
@@ -179,18 +179,18 @@ class TestRegionManager(unittest.TestCase):
         region_name = 'Test_Regions_Intersection'
         region1 = create_region(region_name, [0, 0, 0], [2, 2, 1])
         region2 = create_region(region_name, [1, 1, 0], [1, 1, 1])
-        self.region_input(orion_actions.srv.SOMAddRegionRequest(region1))
-        self.region_input(orion_actions.srv.SOMAddRegionRequest(region2))
+        self.region_input(orion_srv.SOMAddRegionRequest(region1))
+        self.region_input(orion_srv.SOMAddRegionRequest(region2))
 
         # The object is located in the intersection of the two regions
         obj_category = 'intersection_obj'
         obj_inside = create_object_instance('test_intersection_obj', 1.5, 1.5, 0.5, obj_category)
         self.object_input(obj_inside)
 
-        region_request = orion_actions.srv.SOMRegionQueryRequest()
+        region_request = orion_srv.SOMRegionQueryRequest()
         region_request.region_name = region_name
         region_request.query.category = obj_category
-        response:orion_actions.srv.SOMRegionQueryResponse = self.region_region_query(region_request)
+        response:orion_srv.SOMRegionQueryResponse = self.region_region_query(region_request)
 
         self.assertEqual(len(response.returns), 1, 'The object has been returned more than once.')
 
