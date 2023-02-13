@@ -74,6 +74,16 @@ class TestRegionManager(unittest.TestCase):
         cls.object_input = rospy.ServiceProxy('/som/objects/input', orion_actions.srv.SOMAddObject)
         cls.region_delete_srv = rospy.ServiceProxy('/som/object_regions/delete_entries', std_srvs.srv.Empty)
 
+        # Get the regions that are currently in the database, so they can be restored
+        response: orion_actions.srv.SOMQueryRegionsResponse = cls.region_basic_query(orion_actions.srv.SOMQueryRegionsRequest())
+        cls.stored_regions: List[orion_actions.msg.SOMBoxRegion] = response.returns
+
+    @classmethod
+    def tearDownClass(cls):
+        """After all tests have run, restore the regions that were present before running the tests."""
+        cls.region_delete_srv(std_srvs.srv.EmptyRequest())
+        for region in cls.stored_regions:
+            cls.region_input(orion_actions.srv.SOMAddRegionRequest(region))
 
     def setUp(self):
         """Before running each test, delete all regions that may have been created previously."""
