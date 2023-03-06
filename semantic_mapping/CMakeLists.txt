@@ -10,6 +10,7 @@ project(semantic_mapping)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  rostest
   std_msgs
   geometry_msgs
   sensor_msgs

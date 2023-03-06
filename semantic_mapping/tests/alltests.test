@@ -1,0 +1,7 @@
+<launch>
+  <arg name="node_start_delay" default="1.0" />  
+  <node pkg="semantic_mapping" type="main.py" name="som_main"/>
+  <test test-name="tests" pkg="semantic_mapping" type="tests.py" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " />
+  <test test-name="test_detection_suppression" pkg="semantic_mapping" type="test_detection_suppression.py" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " />
+  <test test-name="test_similarity" pkg="semantic_mapping" type="test_similarity.py" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " />
+</launch>
