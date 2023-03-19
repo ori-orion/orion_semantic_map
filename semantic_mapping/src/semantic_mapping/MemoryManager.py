@@ -24,7 +24,19 @@ SERVICE_ROOT = "som/";
 
 
 class MemoryManager:
+    """
+    The manager for the connecting to the pymongo database.
+    """
     def __init__(self, root="localhost", port=62345, connect_to_current_latest=False):
+        """
+        Most of these are self explanatory - the pymongo database hosts itself in localhost on 
+        a given port.
+
+        connect_to_current_latest - Let's say there are multiple memory systems (or instances of
+            this class) running on the robot at a given time. If this flag is True, then it will
+            latch onto the previous session (hopefully the one started in the other rosnode) rather 
+            than creating a new one. That does however imply a start up order for the rosnodes.
+        """
         self.client = pymongo.MongoClient(root, port);
         # self.clear_db();
         self.database = self.client.database_test;
