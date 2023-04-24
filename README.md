@@ -84,3 +84,53 @@ So we want something that can be object specific, but also something with a defa
       - If it doesn't, this should be automatically filled with math.inf.
       - This will be the field that gets used in the most general case.
    - Otherwise, max_distance[class_identifier] will be used to obtain the minimum consistent distance, where class_identifier is yet another field to set in main.py.
+
+### Notes on how to add separate to the pymongo database from other ROS nodes.
+
+So `semantic_mapping/src/semantic_mapping/MemoryManager.py` is a class that interfaces with the pymongo server. We start this server by running `mongod --port 62345 --dbpath /home/$USER/orion_ws/db`. 
+
+```
+# Get a collection of a given name.
+def getCollection(memory_manager:MemoryManager, collection_name:str) -> pymongo.collection.Collection:
+   return memory_manager.addCollection(collection_name);
+
+# Inserts inserting into the database and returns the _id field. 
+def insert_into_collection(collection:pymongo.collection.Collection, inserting:dict):
+   result = collection.insert_one(inserting);
+   return result.inserted_id;
+```
+
+For objects in the SOM system, at present the dictionary form for adding an object can be found below.
+```
+{
+	"HEADER": {
+		"SESSION_NUM": [int - don't worry about this for now],
+		"UID": [int - Leave blank when adding. Might need to get rid of this...]
+	},
+	"class_":[str - Object type e.g., "bottle", "cup",...],
+	"colour":[str - Less important for now],
+	"last_observation_batch":[uint16 - Assuming the observations come in batches, this will be the batch number of the last time you saw an object],
+	"num_observations": [uint - Number of times you've seen a given object],
+	"category": [str - Will explain when we get to it. Should be easy to implement.]
+	"obj_position" : {	// A vec3 and a quaternion... it's in this form because of how the Mem system reads the entries and encodes to a message type.
+		"position" : {
+			"x" : [float],
+			"y" : [float],
+			"z" : [float]
+		},
+		"orientation": {
+			"x" : [float],
+			"y" : [float],
+			"z" : [float],
+			"w" : [float]}
+	"pickupable" : [bool - Self explanatory, not necessary for the moment],
+	"picked_up" : [bool - False for your purposes],
+	"first_observed_at" : [time - When did you first observe an object],
+	"last_observed_at" : [time - Time of most recent observation],
+	"size" : {		// Might be able to do something more complex here given segmentation stuff, but we also want efficiency.
+		"x" : [float],
+		"y" : [float],
+		"z" : [float]
+	}
+}
+```
