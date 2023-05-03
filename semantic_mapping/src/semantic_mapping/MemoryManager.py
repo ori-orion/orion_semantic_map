@@ -21,7 +21,7 @@ DEBUG_LONG = False;
 
 # The root for all things som related.
 SERVICE_ROOT = "som/";
-
+DELETE_ALL_SERVICE_NAME = SERVICE_ROOT + "delete_databases";
 
 class MemoryManager:
     """
@@ -51,6 +51,8 @@ class MemoryManager:
             previous_session_cursor:pymongo.cursor.Cursor = session_log.find().sort(SESSION_ID, -1).limit(1);
             previous_session:list = list(previous_session_cursor);
             if connect_to_current_latest == True:
+                rospy.wait_for_service(DELETE_ALL_SERVICE_NAME);
+                rospy.sleep(0.1);   # Make sure the service is set up. The race condition should be solved by wait_for_service, but this is just for robustness.
                 self.current_session_id = previous_session[0][SESSION_ID];
             else:
                 self.current_session_id = previous_session[0][SESSION_ID] + 1;
@@ -65,7 +67,9 @@ class MemoryManager:
             });
         #endregion
 
-        self.setup_services();
+        # We only want to set up the services if we are on the root directory. 
+        if connect_to_current_latest == False:
+            self.setup_services();
 
     def addCollection(self, collection_name:str) -> pymongo.collection.Collection:
         """
@@ -92,4 +96,4 @@ class MemoryManager:
         """
         Function to setup all the services.
         """
-        rospy.Service(SERVICE_ROOT + "delete_databases", std_srvs.srv.Empty, self.clear_database_ROS_server);
+        rospy.Service(DELETE_ALL_SERVICE_NAME, std_srvs.srv.Empty, self.clear_database_ROS_server);
