@@ -113,6 +113,13 @@ class PerceptionInterface:
         # The name of the som collection for humans is "humans"
         self.human_collection = self.memory_manager.addCollection("humans");
         pass;
+    
+    def getTimeDict(self) -> dict:
+        time_of_creation = rospy.Time.now();
+        time_of_creation_dict = {
+            "secs" : time_of_creation.secs,
+            "nsecs" : time_of_creation.nsecs }
+        return time_of_creation_dict;
 
     def createNewObject(
             self, 
@@ -126,10 +133,7 @@ class PerceptionInterface:
         returns the uid of the object in the database.
         """
         
-        time_of_creation = rospy.Time.now();
-        time_of_creation_dict = {
-            "secs" : time_of_creation.secs,
-            "nsecs" : time_of_creation.nsecs }
+        time_of_creation_dict = self.getTimeDict();
         adding_dict = {
             "HEADER" : {
                 "SESSION_NUM" : self.memory_manager.current_session_id
@@ -157,3 +161,37 @@ class PerceptionInterface:
         result = self.object_collection.insert_one(adding_dict);
         result_id:pymongo.collection.ObjectId = result.inserted_id;
         return str(result_id);
+    
+    def updateObject(
+            self,
+            uid_updating:str,
+            current_batch_num:int,
+            position:Tuple[float]) -> None:
+        """
+        Updates a given object (based on a uid reference)
+        This is what should be done through object tracking.
+
+        Assumptions:
+            Object class stays the same, as does the object category.
+        """
+
+        time_of_observation_dict = self.getTimeDict();
+        update_dict = {
+            "$inc" : {"num_observations" : 1},
+            "$set" : {
+                "last_observed_at" : time_of_observation_dict,
+                "last_observation_batch" : current_batch_num,
+                "obj_position" : {
+                    "position" : {
+                        "x" : position[0], "y" : position[1], "z" : position[2]
+                    },
+                    "orientation" : {
+                        "x" : 0, "y" : 0, "z" : 0, "w" : 1
+                    }
+                }
+            }
+        }
+
+        self.object_collection.find_one_and_update(
+            filter={"_id":pymongo.collection.ObjectId(uid_updating)},
+            update=update_dict);
