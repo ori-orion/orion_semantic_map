@@ -8,6 +8,7 @@ import pymongo.cursor
 import pymongo.collection
 import datetime
 import rospy
+from typing import Tuple;
 
 import std_srvs.srv;
 
@@ -97,3 +98,62 @@ class MemoryManager:
         Function to setup all the services.
         """
         rospy.Service(DELETE_ALL_SERVICE_NAME, std_srvs.srv.Empty, self.clear_database_ROS_server);
+
+
+class PerceptionInterface:
+    """
+    This is the interface with perception into the memory system.
+    """
+    def __init__(self, memory_manager:MemoryManager):
+        self.memory_manager:MemoryManager = memory_manager;
+
+        # The name of the som collection for objects is "objects"
+        self.object_collection = self.memory_manager.addCollection("objects");
+
+        # The name of the som collection for humans is "humans"
+        self.human_collection = self.memory_manager.addCollection("humans");
+        pass;
+
+    def createNewObject(
+            self, 
+            obj_class:str, 
+            observation_batch:int, 
+            category:str,
+            position:Tuple[float]) -> str:
+        """
+        Creates a new instance of an object.
+
+        returns the uid of the object in the database.
+        """
+        
+        time_of_creation = rospy.Time.now();
+        time_of_creation_dict = {
+            "secs" : time_of_creation.secs,
+            "nsecs" : time_of_creation.nsecs }
+        adding_dict = {
+            "HEADER" : {
+                "SESSION_NUM" : self.memory_manager.current_session_id
+            },
+            "class_" : obj_class,
+            # "colour" : ...,
+            "last_observation_batch" : observation_batch,
+            "num_observations" : 1,
+            "category" : category,
+            "obj_position" : {
+                "position" : {
+                    "x" : position[0], "y" : position[1], "z" : position[2]
+                },
+                "orientation" : {
+                    "x" : 0, "y" : 0, "z" : 0, "w" : 1
+                }
+            },
+            # "pickupable" : ...,
+            "picked_up" : False,
+            "first_observed_at" : time_of_creation_dict,
+            "last_observed_at" : time_of_creation_dict,
+            # "size" : ...,
+        }
+
+        result = self.object_collection.insert_one(adding_dict);
+        result_id:pymongo.collection.ObjectId = result.inserted_id;
+        return str(result_id);
