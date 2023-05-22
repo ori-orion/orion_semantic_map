@@ -101,32 +101,6 @@ def getHeaderInfoDict_nonCrit(dict_querying:dict) -> dict:
     return dict_querying[HEADER_ID];
 
 
-# # Functions for getting and setting time.
-# def ROSTimeToNumericalTime(time:rospy.Time) -> int:
-#     """
-#     Converts rospy.Time (or anything with the fields `secs` and `nsecs`) into a single number.
-#     This makes us able to sort w.r.t. the time field.
-#     """
-#     output = time.nsecs + time.secs * 1e9;
-#     return output;
-# def numericalTimeToROSTime(time:int) -> rospy.Time:
-#     """
-#     Converts from the single number representation of time into rospy.Time.
-#     """
-#     output = rospy.Time();
-#     output.nsecs = int(time % 1e9);
-#     output.secs = int((time - output.nsecs) / 1e9);
-#     # print(output.secs);
-#     return output;
-# def numericalTimeToROSDuration(time:int) -> rospy.Duration:
-#     """
-#     Converts from the single number representation of time into rospy.Duration.
-#     """
-#     output = rospy.Duration();
-#     output.nsecs = int(time % 1e9);
-#     output.secs = int((time - output.nsecs) / 1e9);
-#     # print(output.secs);
-#     return output;
 
 
 # The point here is that we could get either a pose or a point as input. 
