@@ -303,9 +303,7 @@ class DetectToObserve:
         self.tfBuffer = tf2_ros.Buffer();
         self.listener = tf2_ros.TransformListener(self.tfBuffer);
         # We are also going to want it to publish tf information so that we get consistent tfs per object.
-        # self.transform_broadcaster = tf2_ros.TransformBroadcaster();
-        # A mapping from the ROS object id to the object name. (Simplest architecture).
-        # self.tf_names:Dict[str, str] = {};
+        self.transform_broadcaster = tf2_ros.TransformBroadcaster();
 
         # Initialising the SOM services
         # rospy.wait_for_service('som/observe')
@@ -333,6 +331,11 @@ class DetectToObserve:
     # We essentially want to forward detections from orion_recognition over to the SOM database. This should do that.
     def forwardDetectionsToSOM(self, data:DetectionArray):
         printing = "";
+
+        tf_header = data.header;
+        tf_header.stamp = rospy.Time.now();
+        tf_list = [];
+
         for detection in data.detections:
             detection:Detection;
 
@@ -426,6 +429,8 @@ class DetectToObserve:
             printing += "\t" + forwarding.class_ + "\n";
 
             mem_sys.observation_manager.addItemToCollection(forwarding);
+        
+            individual_tf = geometry_msgs.msg.TransformStamped();
 
             # addition_successful = service_output.obj_id;
             # obj_id_returned = service_output.obj_id;
