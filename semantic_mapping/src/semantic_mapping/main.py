@@ -29,6 +29,7 @@ from orion_actions.msg import *;
 from orion_actions.srv import *;
 
 import os;
+from typing import Dict
 
 # import semantic_mapping.srv
 # import semantic_mapping.msg
@@ -288,6 +289,10 @@ class DetectToObserve:
 
         self.tfBuffer = tf2_ros.Buffer();
         self.listener = tf2_ros.TransformListener(self.tfBuffer);
+        # We are also going to want it to publish tf information so that we get consistent tfs per object.
+        # self.transform_broadcaster = tf2_ros.TransformBroadcaster();
+        # A mapping from the ROS object id to the object name. (Simplest architecture).
+        # self.tf_names:Dict[str, str] = {};
 
         # Initialising the SOM services
         # rospy.wait_for_service('som/observe')

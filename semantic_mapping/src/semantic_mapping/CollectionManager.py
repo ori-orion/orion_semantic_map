@@ -150,6 +150,9 @@ class CollectionManager:
         """
         Adds or updates entries into a collection. 
         If you are updating an entry (because its UID is defined), this ignores default values.
+
+        Returns the object id of the item added from the current collection, rather than from any potential 
+        cross reference. 
         """
         if len(utils.getUIDObj(adding)) > 0:
             updating_dict:dict = utils.obj_to_dict(adding, ignore_default=True);
