@@ -215,6 +215,19 @@ class MemSys:
             return query_dict, metadata;
         self.object_manager.collection_query_callbacks.append(num_observation_threshold_query_callback);
 
+        # For assigning the tf names.
+        self.latest_tf_index:Dict[str,int] = {};
+        def assign_tf_name_input_callback(adding:dict, metadata:dict):
+            if adding["class_"] in self.latest_tf_index:
+                self.latest_tf_index[adding["class_"]] += 1;
+            else:
+                self.latest_tf_index[adding["class_"]] = 0;
+            tf_name = adding["class_"] + " " + str(self.latest_tf_index[adding["class_"]]);
+            adding["tf_name"] = tf_name;
+            metadata["tf_name"] = tf_name;
+            return adding, metadata;
+        self.object_manager.collection_input_callbacks.append(assign_tf_name_input_callback);
+
         self.observation_types:TypesCollection = TypesCollection(
             base_ros_type=orion_actions.msg.SOMObservation,
             input_parent=orion_actions.srv.SOMAddObservation,
