@@ -17,6 +17,8 @@ import visualisation;
 
 import std_srvs.srv;
 
+from typing import List, Callable, Tuple
+
 
 class TypesCollection:
     """
@@ -87,10 +89,10 @@ class CollectionManager:
         # collections. (Observations get amalgamated into Objects for instance.) 
         # However, note that obj_id will propagate through all callbacks after it's assigned which in
         # itself is quite useful.  
-        self.collection_input_callbacks = [];
+        self.collection_input_callbacks:List[Callable[[dict,dict],Tuple[dict,dict]]] = [];
         # This goes right at the beginning of the query infrastructure. It only takes
         # query_dict:dict as an input/output.
-        self.collection_query_callbacks = [];
+        self.collection_query_callbacks:List[Callable[[dict,dict],Tuple[dict,dict]]] = [];
 
         # An attribute of a sortable type (such as int or float).
         # This is what we sort entries by for the query return.

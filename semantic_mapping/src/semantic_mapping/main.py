@@ -30,7 +30,7 @@ from orion_actions.srv import *;
 
 import os;
 import math;
-from typing import Dict
+from typing import Dict, List
 
 # import semantic_mapping.srv
 # import semantic_mapping.msg
@@ -335,7 +335,7 @@ class DetectToObserve:
 
         tf_header = data.header;
         tf_header.stamp = rospy.Time.now();
-        tf_list = [];
+        tf_list:List[geometry_msgs.msg.TransformStamped] = [];
 
         for detection in data.detections:
             detection:Detection;
@@ -431,6 +431,7 @@ class DetectToObserve:
 
             mem_sys.observation_manager.addItemToCollection(forwarding);
         
+            # Dealing with the publishing of tfs. Based on orion_recognition/.../detection_tf_publisher.py
             individual_tf = geometry_msgs.msg.TransformStamped();
             individual_tf.header = tf_header;
             individual_tf.child_frame_id = mem_sys.object_manager.metadata_latent["tf_name"];
