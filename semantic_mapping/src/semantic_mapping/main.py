@@ -29,6 +29,7 @@ from orion_actions.msg import *;
 from orion_actions.srv import *;
 
 import os;
+import math;
 from typing import Dict
 
 # import semantic_mapping.srv
@@ -431,6 +432,16 @@ class DetectToObserve:
             mem_sys.observation_manager.addItemToCollection(forwarding);
         
             individual_tf = geometry_msgs.msg.TransformStamped();
+            individual_tf.header = tf_header;
+            individual_tf.child_frame_id = mem_sys.object_manager.metadata_latent["tf_name"];
+            individual_tf.transform.translation.x = detection.translation_x;
+            individual_tf.transform.translation.y = detection.translation_y;
+            individual_tf.transform.translation.z = detection.translation_z;
+            individual_tf.transform.rotation.z = math.sin( -math.pi / 4 );
+            individual_tf.transform.rotation.w = math.cos( -math.pi / 4 );
+            tf_list.append(individual_tf);
+
+            self.transform_broadcaster.sendTransform(tf_list);
 
             # addition_successful = service_output.obj_id;
             # obj_id_returned = service_output.obj_id;
