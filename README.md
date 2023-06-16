@@ -5,6 +5,18 @@ READMEs are included in each subfolder.
 
 Current active branch is `noetic`.
 
+# Running the memory system.
+
+Terminal 1:
+```
+rosrun semantic_mapping main.py
+```
+Terminal 2:
+```
+mongod --port 62345 --dbpath /home/$USER/orion_ws/db
+```
+You also need the folder described by "/home/$USER/orion_ws/db" to exist.
+
 # Notes on current implementation...
 
 ## ROS message definitions:
