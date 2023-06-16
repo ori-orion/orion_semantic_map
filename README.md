@@ -134,3 +134,47 @@ For objects in the SOM system, at present the dictionary form for adding an obje
 	}
 }
 ```
+
+# Examples for current implementation.
+
+## Querying for all objects.
+
+```
+rospy.wait_for_service('/som/objects/basic_query');
+object_query_srv = rospy.ServiceProxy('/som/objects/basic_query', SOMQueryObjects);
+query = SOMQueryObjectsRequest();
+result:SOMQueryObjectsResponse = object_query_srv(query);
+print(result);
+```
+`result` then has the attribute `result.returns:List[SOMObject]` which gives all the objects ever seen.
+
+## Querying for an object of a given class.
+
+```
+rospy.wait_for_service('/som/objects/basic_query');
+object_query_srv = rospy.ServiceProxy('/som/objects/basic_query', SOMQueryObjects);
+query = SOMQueryObjectsRequest();
+query.query.class_ = "bottle";
+result:SOMQueryObjectsResponse = object_query_srv(query);
+print(result);
+```
+The logic here is that `query.query` is of the type `SOMObject`. Any fields that are filled in within this query type will then be matched. Thus, if we fill in the `class_` attribute, we will be querying for an element of that class.
+
+This we can also do with the category of an object using `query.query.category`
+
+## Querying for something seen in the last minute.
+
+```
+rospy.wait_for_service('/som/objects/basic_query');
+object_query_srv = rospy.ServiceProxy('/som/objects/basic_query', SOMQueryObjects);
+query = SOMQueryObjectsRequest();
+query.query.class_ = "bottle";
+query.query.last_observed_at = rospy.Time.now() - rospy.Duration(60);
+result:SOMQueryObjectsResponse = object_query_srv(query);
+print(result);
+```
+If a temporal field is filled in, it will query for items seen in the time interval from then to now. The most likely use for this is as above where we want to seen an object of class `bottle` that was observed in the last 60 seconds. (Syntax for durations needs checking here).
+
+## Concluding remark
+
+Similar things can also be done for humans, observations, etc. It is also very easy to set up new collections in the database with query functionality similar to that described above.
