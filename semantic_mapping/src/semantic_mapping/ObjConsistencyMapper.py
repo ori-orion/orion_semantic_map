@@ -35,7 +35,8 @@ class ConsistencyArgs:
         use_running_average_position:bool=True,
         suppress_double_detections:bool=False,
         suppression_default_distance:float=0,
-        suppression_distance_dict:dict=None):
+        suppression_distance_dict:dict=None,
+        tf_name_attr:str=None):
 
         """
         Constructor:
@@ -79,6 +80,8 @@ class ConsistencyArgs:
             suppress_double_detections:bool
             suppression_default_distance:float
             suppression_distance_dict:dict
+        Tf name getting
+            tf_name_attr:str
         """
 
 
@@ -139,6 +142,10 @@ class ConsistencyArgs:
         # segmentation algorithm and you want to couple object names to the segmented objects. For this, you would
         # want to take all of the classes that the recogniser thinks it might be and then take the most common of those.)
         self.frequency_analysis_attrs = [];
+
+        # If we want the tf name to be stored in self.metadata_latent_adding for the sake of#
+        # tf publishing, we need that to get through to the update function.
+        self.tf_name_attr = tf_name_attr;
 
         # -------------------- Not yet implemented --------------------
 
@@ -373,6 +380,9 @@ class ConsistencyChecker(CollectionManager):
             metadata['obj_uid'] = self.createNewConsistentObj(adding);
             return adding, metadata;
         else:
+            if self.consistency_args.tf_name_attr != None and self.consistency_args.tf_name_attr in updating:
+                self.pushing_to.metadata_latent_adding = {self.consistency_args.tf_name_attr:updating[self.consistency_args.tf_name_attr]};
+
             # Update an existing entry.
             self.updateConsistentObj(adding, updating[utils.PYMONGO_ID_SPECIFIER], num_prev_observations);
             metadata['obj_uid'] = str(updating[utils.PYMONGO_ID_SPECIFIER]);
@@ -384,6 +394,7 @@ class ConsistencyChecker(CollectionManager):
         This is the callback for the suppression of double detections 
         (where suppression is done by distance).
         """
+        print("Suppression callback")
         if self.consistency_args.class_identifier not in adding:
             return adding, metadata;
 

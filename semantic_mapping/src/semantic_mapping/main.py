@@ -30,6 +30,7 @@ from orion_actions.srv import *;
 
 import os;
 import math;
+import copy;
 from typing import Dict, List
 
 # import semantic_mapping.srv
@@ -78,6 +79,7 @@ class MemSys:
 
     # This will be a callback within observations for assigning the category of an object.
     def ontology_observation_getCategory_callback(self, adding_dict:dict, metadata:dict):
+        print("Ontology callback");
         if (len(adding_dict["category"]) == 0):
             ontological_result = self.ontology_tree.search_for_term(adding_dict["class_"]);
             if (ontological_result == None):
@@ -94,16 +96,18 @@ class MemSys:
         return adding_dict, metadata;
 
     # This will set the flag for whether something is pickupable or not.
-    def pickupable_callback(self, adding_dict:dict, obj_id:str):
+    def pickupable_callback(self, adding_dict:dict, metadata:dict):
+        print("Pickupable callback");
         non_pickupable:list = ["table", "person"];
         if adding_dict["class_"] in non_pickupable:
             adding_dict["pickupable"] = False;
         else:
             adding_dict["pickupable"] = True;
-        return adding_dict, obj_id;
+        return adding_dict, metadata;
 
     # Pushing persons to the human collection.
     def push_person_callback(self, adding:dict, metadata:dict):
+        print("Push person callback");
         if len(metadata['obj_uid']) == 0:
             return adding, metadata;
 
@@ -143,8 +147,6 @@ class MemSys:
                 # human_obs. = str(human_query[0][utils.PYMONGO_ID_SPECIFIER]);
                 pass;
             self.human_observation_manager.addItemToCollection(human_obs);
-
-            
             
         return adding, metadata;
 
@@ -219,10 +221,12 @@ class MemSys:
         # For assigning the tf names.
         self.latest_tf_index:Dict[str,int] = {};
         def assign_tf_name_input_callback(adding:dict, metadata:dict):
+            print("Tf name callback");
             if adding["class_"] in self.latest_tf_index:
                 self.latest_tf_index[adding["class_"]] += 1;
             else:
                 self.latest_tf_index[adding["class_"]] = 0;
+            print(adding);
             tf_name = adding["class_"] + "_" + str(self.latest_tf_index[adding["class_"]]);
             adding["tf_name"] = tf_name;
             metadata["tf_name"] = tf_name;
@@ -249,7 +253,8 @@ class MemSys:
             positional_covariance_attr="covariance_mat",
             observation_counter_attr="num_observations",
             suppress_double_detections=False,       # Currently the suppression of double detections if off!
-            suppression_distance_dict={'suppression_test_type':0.1, 'person':0.5}
+            suppression_distance_dict={'suppression_test_type':0.1, 'person':0.5},
+            tf_name_attr="tf_name"
         );
         self.observation_arg_name_defs.dont_transfer.append("covariance_mat");
         self.observation_arg_name_defs.dont_transfer.append("transform_cov_to_diagonal");
@@ -336,6 +341,7 @@ class DetectToObserve:
         tf_header = data.header;
         tf_header.stamp = rospy.Time.now();
         tf_list:List[geometry_msgs.msg.TransformStamped] = [];
+        tf_name_list = [];
 
         for detection in data.detections:
             detection:Detection;
@@ -435,21 +441,27 @@ class DetectToObserve:
             individual_tf = geometry_msgs.msg.TransformStamped();
             individual_tf.header = tf_header;
             print(mem_sys.object_manager.metadata_latent_adding);
-            individual_tf.child_frame_id = mem_sys.object_manager.metadata_latent_adding["tf_name"];
+            tf_name = copy.copy(mem_sys.object_manager.metadata_latent_adding["tf_name"]);
+            individual_tf.child_frame_id = tf_name;
             individual_tf.transform.translation.x = detection.translation_x;
             individual_tf.transform.translation.y = detection.translation_y;
             individual_tf.transform.translation.z = detection.translation_z;
             individual_tf.transform.rotation.z = math.sin( -math.pi / 4 );
             individual_tf.transform.rotation.w = math.cos( -math.pi / 4 );
             tf_list.append(individual_tf);
+            tf_name_list.append(tf_name);
 
             # addition_successful = service_output.obj_id;
             # obj_id_returned = service_output.obj_id;
 
             # print(obj_id_returned);
+        print(mem_sys.latest_tf_index);
+        print(tf_name_list);
         self.transform_broadcaster.sendTransform(tf_list);
         print(printing + "--------------------------------")
         self.batch_num += 1;
+        print(mem_sys.object_manager.collection_input_callbacks);
+        print(mem_sys.observation_manager.collection_input_callbacks);
 
 
 

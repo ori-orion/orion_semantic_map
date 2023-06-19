@@ -16,7 +16,7 @@ from utils import UID_ENTRY, SESSION_ID
 GLOBAL_TIME_STAMP_ENTRY = "global_timestamp";
 
 
-DEBUG = True;
+DEBUG = False;
 DEBUG_LONG = False;
 
 # The root for all things som related.
