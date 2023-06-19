@@ -223,7 +223,7 @@ class MemSys:
                 self.latest_tf_index[adding["class_"]] += 1;
             else:
                 self.latest_tf_index[adding["class_"]] = 0;
-            tf_name = adding["class_"] + " " + str(self.latest_tf_index[adding["class_"]]);
+            tf_name = adding["class_"] + "_" + str(self.latest_tf_index[adding["class_"]]);
             adding["tf_name"] = tf_name;
             metadata["tf_name"] = tf_name;
             return adding, metadata;
@@ -434,7 +434,8 @@ class DetectToObserve:
             # Dealing with the publishing of tfs. Based on orion_recognition/.../detection_tf_publisher.py
             individual_tf = geometry_msgs.msg.TransformStamped();
             individual_tf.header = tf_header;
-            individual_tf.child_frame_id = mem_sys.object_manager.metadata_latent["tf_name"];
+            print(mem_sys.object_manager.metadata_latent_adding);
+            individual_tf.child_frame_id = mem_sys.object_manager.metadata_latent_adding["tf_name"];
             individual_tf.transform.translation.x = detection.translation_x;
             individual_tf.transform.translation.y = detection.translation_y;
             individual_tf.transform.translation.z = detection.translation_z;
@@ -442,12 +443,11 @@ class DetectToObserve:
             individual_tf.transform.rotation.w = math.cos( -math.pi / 4 );
             tf_list.append(individual_tf);
 
-            self.transform_broadcaster.sendTransform(tf_list);
-
             # addition_successful = service_output.obj_id;
             # obj_id_returned = service_output.obj_id;
 
             # print(obj_id_returned);
+        self.transform_broadcaster.sendTransform(tf_list);
         print(printing + "--------------------------------")
         self.batch_num += 1;
 
