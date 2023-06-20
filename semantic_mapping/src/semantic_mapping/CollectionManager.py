@@ -107,7 +107,8 @@ class CollectionManager:
 
         # Stores the last metadata produced by the input or query callbacks.
         # Useful for getting information out of the system.
-        self.metadata_latent:dict = None;
+        self.metadata_latent_adding:dict = None;
+        self.metadata_latent_querying:dict = None;
 
         self.setupServices();
         
@@ -129,9 +130,11 @@ class CollectionManager:
         # If we're cross referencing entries in the dictionary, we're going to need to log this!
         metadata:dict = { 'prevent_from_adding':False };
         for callback in self.collection_input_callbacks:
+            print(callback);
             adding_dict, metadata = callback(adding_dict, metadata);
+            print(metadata);
             if metadata["prevent_from_adding"] == True:
-                self.metadata_latent = metadata;
+                self.metadata_latent_adding = metadata;
                 return "";
 
         # If no obj_id was returned from the callback, then we assume there is no cross-referencing
@@ -139,7 +142,7 @@ class CollectionManager:
         if ('obj_uid' in metadata):
             adding_dict[utils.CROSS_REF_UID] = str(metadata['obj_uid']);
         
-        self.metadata_latent = metadata;
+        self.metadata_latent_adding = metadata;
 
         if (DEBUG_LONG):
             print("Adding an entry to", self.service_name ,"\n\t", adding_dict, "\n");
@@ -262,7 +265,7 @@ class CollectionManager:
         for callback in self.collection_query_callbacks:
             query_dict, metadata = callback(query_dict, metadata);
         
-        self.metadata_latent = metadata;
+        self.metadata_latent_querying = metadata;
 
         query_header:dict = utils.getHeaderInfoDict_nonCrit(query_dict);
         if SESSION_ID not in query_header:
