@@ -93,6 +93,7 @@ fruits/Melons
 fruits/Apricots
 fruits/Mixed
 fruits/Apples
+fruits/apple
 snacks/Mints_bag
 snacks/Fruit_Snacks
 snacks/Vegetable_Chips_&_Crisps
