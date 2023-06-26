@@ -282,7 +282,7 @@ class CollectionManager:
 
         #print("\tself.sort_queries_by=", self.sort_queries_by);
         if self.sort_queries_by != None:
-            print("\tSorting results by", self.sort_queries_by);
+            # print("\tSorting results by", self.sort_queries_by);
             query_result_list.sort(key=lambda x:x[self.sort_queries_by], reverse=True);
 
         if DEBUG:

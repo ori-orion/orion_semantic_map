@@ -79,7 +79,7 @@ class MemSys:
 
     # This will be a callback within observations for assigning the category of an object.
     def ontology_observation_getCategory_callback(self, adding_dict:dict, metadata:dict):
-        print("Ontology callback");
+        # print("Ontology callback");
         if (len(adding_dict["category"]) == 0):
             ontological_result = self.ontology_tree.search_for_term(adding_dict["class_"]);
             if (ontological_result == None):
@@ -88,7 +88,7 @@ class MemSys:
             else:
                 # So this will go [class, category, "Objs"];
                 adding_dict["category"] = ontological_result[1];
-                print(ontological_result);
+                # print(ontological_result);
 
             if (DEBUG):
                 print("setting category to", adding_dict["category"]);
@@ -97,7 +97,7 @@ class MemSys:
 
     # This will set the flag for whether something is pickupable or not.
     def pickupable_callback(self, adding_dict:dict, metadata:dict):
-        print("Pickupable callback");
+        # print("Pickupable callback");
         non_pickupable:list = ["table", "person"];
         if adding_dict["class_"] in non_pickupable:
             adding_dict["pickupable"] = False;
@@ -107,7 +107,7 @@ class MemSys:
 
     # Pushing persons to the human collection.
     def push_person_callback(self, adding:dict, metadata:dict):
-        print("Push person callback");
+        # print("Push person callback");
         if len(metadata['obj_uid']) == 0:
             return adding, metadata;
 
@@ -134,7 +134,7 @@ class MemSys:
             human_obs.object_uid = metadata['obj_uid'];
             human_obs.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
             human_obs.observed_at = utils.dict_to_obj(adding["observed_at"], rospy.Time());
-            print(adding);
+            # print(adding);
             if "last_observation_batch" in adding:
                 human_obs.observation_batch_num = adding["last_observation_batch"];
             else:
@@ -221,12 +221,12 @@ class MemSys:
         # For assigning the tf names.
         self.latest_tf_index:Dict[str,int] = {};
         def assign_tf_name_input_callback(adding:dict, metadata:dict):
-            print("Tf name callback");
+            # print("Tf name callback");
             if adding["class_"] in self.latest_tf_index:
                 self.latest_tf_index[adding["class_"]] += 1;
             else:
                 self.latest_tf_index[adding["class_"]] = 0;
-            print(adding);
+            # print(adding);
             tf_name = adding["class_"] + "_" + str(self.latest_tf_index[adding["class_"]]);
             adding["tf_name"] = tf_name;
             metadata["tf_name"] = tf_name;
@@ -441,7 +441,7 @@ class DetectToObserve:
             # Dealing with the publishing of tfs. Based on orion_recognition/.../detection_tf_publisher.py
             individual_tf = geometry_msgs.msg.TransformStamped();
             individual_tf.header = tf_header;
-            print(mem_sys.object_manager.metadata_latent_adding);
+            # print(mem_sys.object_manager.metadata_latent_adding);
             tf_name = copy.copy(mem_sys.object_manager.metadata_latent_adding["tf_name"]);
             individual_tf.child_frame_id = tf_name;
             individual_tf.transform.translation.x = detection.translation_x;
@@ -456,13 +456,13 @@ class DetectToObserve:
             # obj_id_returned = service_output.obj_id;
 
             # print(obj_id_returned);
-        print(mem_sys.latest_tf_index);
+        # print(mem_sys.latest_tf_index);
         print(tf_name_list);
         self.transform_broadcaster.sendTransform(tf_list);
         print(printing + "--------------------------------")
         self.batch_num += 1;
-        print(mem_sys.object_manager.collection_input_callbacks);
-        print(mem_sys.observation_manager.collection_input_callbacks);
+        # print(mem_sys.object_manager.collection_input_callbacks);
+        # print(mem_sys.observation_manager.collection_input_callbacks);
 
 
 
