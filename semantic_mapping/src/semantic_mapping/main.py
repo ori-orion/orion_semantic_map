@@ -254,7 +254,8 @@ class MemSys:
             observation_counter_attr="num_observations",
             suppress_double_detections=False,       # Currently the suppression of double detections if off!
             suppression_distance_dict={'suppression_test_type':0.1, 'person':0.5},
-            tf_name_attr="tf_name"
+            tf_name_attr="tf_name",
+            use_running_average_position=False
         );
         self.observation_arg_name_defs.dont_transfer.append("covariance_mat");
         self.observation_arg_name_defs.dont_transfer.append("transform_cov_to_diagonal");
