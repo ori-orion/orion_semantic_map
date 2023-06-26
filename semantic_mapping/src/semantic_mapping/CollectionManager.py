@@ -130,9 +130,9 @@ class CollectionManager:
         # If we're cross referencing entries in the dictionary, we're going to need to log this!
         metadata:dict = { 'prevent_from_adding':False };
         for callback in self.collection_input_callbacks:
-            print(callback);
+            # print(callback);
             adding_dict, metadata = callback(adding_dict, metadata);
-            print(metadata);
+            # print(metadata);
             if metadata["prevent_from_adding"] == True:
                 self.metadata_latent_adding = metadata;
                 return "";

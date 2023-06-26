@@ -277,7 +277,7 @@ class ConsistencyChecker(CollectionManager):
         update_entry_input[self.consistency_args.last_observed_attr] = \
             updating_info[self.consistency_args.observed_at_attr];
 
-        print("Batch nums set up...", self.consistency_args.batch_nums_setup());
+        # print("Batch nums set up...", self.consistency_args.batch_nums_setup());
         if self.consistency_args.batch_nums_setup():
             update_entry_input[self.consistency_args.last_observation_batch] = \
                 updating_info[self.consistency_args.observation_batch_num];
@@ -362,7 +362,7 @@ class ConsistencyChecker(CollectionManager):
                 max_distance = max_distance[ConsistencyArgs.DEFAULT_PARAM];
 
         # Doing the filtering to work out which object you want to look at (if any).
-        print("Max distance", max_distance);
+        # print("Max distance", max_distance);
         updating = None;
         num_prev_observations = math.inf;
         for element in possible_results:
@@ -394,7 +394,7 @@ class ConsistencyChecker(CollectionManager):
         This is the callback for the suppression of double detections 
         (where suppression is done by distance).
         """
-        print("Suppression callback")
+        # print("Suppression callback")
         if self.consistency_args.class_identifier not in adding:
             return adding, metadata;
 
