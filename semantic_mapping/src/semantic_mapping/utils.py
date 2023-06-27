@@ -207,7 +207,7 @@ def get_mean_over_samples(means, covariances) -> numpy.array:
     This will do x = (sum(inv(cov[i])))^(-1) * sum(inv(cov[i])*mean[i]), as per MLE.
     """
     assert(len(means) == len(covariances));
-    print("get_mean_over_samples");
+    # print("get_mean_over_samples");
 
     sum_inv_cov = numpy.zeros((3,3));
     # print("\t", sum_inv_cov);

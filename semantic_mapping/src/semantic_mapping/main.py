@@ -354,6 +354,7 @@ class DetectToObserve:
             # print(dir(forwarding))
             # print(dir(forwarding.robot_pose));
 
+            detection.label.name = detection.label.name.lower();
 
             # NOTE: Assuming SOMObservation.type is for the name of the object. This is most likely wrong!
             if "/" in detection.label.name:
