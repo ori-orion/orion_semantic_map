@@ -31,6 +31,8 @@ from orion_actions.srv import *;
 import os;
 import math;
 import copy;
+import time;
+
 from typing import Dict, List
 
 # import semantic_mapping.srv
@@ -344,8 +346,13 @@ class DetectToObserve:
         tf_list:List[geometry_msgs.msg.TransformStamped] = [];
         tf_name_list = [];
 
+        add_to_collection_av_time = 0;
+        tf_transformation_av_time = 0;
+        num_items = 0;
+
         for detection in data.detections:
             detection:Detection;
+            num_items += 1;
 
             if detection.label.confidence < 0.5:
                 continue;
@@ -396,6 +403,8 @@ class DetectToObserve:
             # transformed_stamped = self.tfBuffer.transform(
             #     object_point, self.global_frame, timeout=rospy.Duration(1));
             
+            tic = time.perf_counter();
+
             try:
                 p_global_frame:tf2_geometry_msgs.PoseStamped = self.tfBuffer.transform(
                     obj_point_2, self.global_frame, timeout=rospy.Duration(0.5));
@@ -408,6 +417,9 @@ class DetectToObserve:
                     p_global_frame = tf2_geometry_msgs.PoseStamped();
                     rospy.logerr("detections_to_observations.py: transform raised an error!");
                     return;
+            toc = time.perf_counter();
+            tf_transformation_av_time += toc-tic;    
+    
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;
             forwarding.observed_at = rospy.Time.now();
@@ -436,7 +448,10 @@ class DetectToObserve:
             # service_output:SOMObserveResponse = self.observe_obj_srv(forwarding);
             printing += "\t" + forwarding.class_ + "\n";
 
+            tic = time.perf_counter();
             mem_sys.observation_manager.addItemToCollection(forwarding);
+            toc = time.perf_counter();
+            add_to_collection_av_time += toc-tic;
         
             # Dealing with the publishing of tfs. Based on orion_recognition/.../detection_tf_publisher.py
             individual_tf = geometry_msgs.msg.TransformStamped();
@@ -463,6 +478,10 @@ class DetectToObserve:
         self.batch_num += 1;
         # print(mem_sys.object_manager.collection_input_callbacks);
         # print(mem_sys.observation_manager.collection_input_callbacks);
+
+        print("Average times:");
+        print("\tGetting global pose: ", tf_transformation_av_time/num_items);
+        print("\tAdding to collection:", add_to_collection_av_time/num_items);
 
 
 
