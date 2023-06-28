@@ -475,14 +475,15 @@ class DetectToObserve:
         # print(mem_sys.latest_tf_index);
         print(tf_name_list);
         self.transform_broadcaster.sendTransform(tf_list);
+        print("Average times:");
+        print("\tGetting global pose: ", tf_transformation_av_time/num_items);
+        print("\tAdding to collection:", add_to_collection_av_time/num_items);
         print(printing + "--------------------------------")
         self.batch_num += 1;
         # print(mem_sys.object_manager.collection_input_callbacks);
         # print(mem_sys.observation_manager.collection_input_callbacks);
 
-        print("Average times:");
-        print("\tGetting global pose: ", tf_transformation_av_time/num_items);
-        print("\tAdding to collection:", add_to_collection_av_time/num_items);
+
 
 
 
