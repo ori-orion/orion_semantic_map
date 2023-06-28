@@ -73,7 +73,8 @@ class MemSys:
     def setupOntology(self):
         current_dir = os.path.dirname(__file__)
         
-        self.ontology_tree = Ontology.read_file(current_dir + "/labels.txt")
+        self.ontology_tree = Ontology.read_file(current_dir + "/labels.txt");
+        self.ontology_tree.print_graph();
 
         self.similarity_manager = OntologySimilarityManager(
             current_dir + '/taxonomyLabels.txt',

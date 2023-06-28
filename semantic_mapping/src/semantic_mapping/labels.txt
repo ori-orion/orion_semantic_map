@@ -38,6 +38,14 @@ tableware/coffee_cup
 tableware/dinner_plate
 tableware/sushi_plate
 tableware/wine_glasses
+tableware/plate
+tableware/wine_glass
+tableware/cup
+tableware/fork
+tableware/knife
+tableware/spoon
+tableware/bowl
+tableware/scissors
 drinks/Cocoa_drink_bottle
 drinks/juice_carton
 drinks/Coffee_drink_bottle
@@ -55,6 +63,7 @@ drinks/iced_tea
 drinks/Energy_Drink
 drinks/chocolate_drink_bottle
 drinks/soft_drink_bottle
+drinks/bottle
 cutlery/Knives
 cutlery/chopsticks
 cutlery/plastic_fork
@@ -93,7 +102,11 @@ fruits/Melons
 fruits/Apricots
 fruits/Mixed
 fruits/Apples
+fruits/banana
 fruits/apple
+fruits/orange
+fruits/broccoli
+fruits/carrot
 snacks/Mints_bag
 snacks/Fruit_Snacks
 snacks/Vegetable_Chips_&_Crisps
@@ -142,6 +155,11 @@ food/Cereals_box
 food/canned_soup
 food/instant_Soup
 food/Macaroni_&_Cheese_box
+food/sandwich
+food/hot_dog
+food/pizza
+food/donut
+food/cake
 cleaning_stuff/Paper_Towels
 cleaning_stuff/Floor_Cleaners
 cleaning_stuff/Carpet_Cleaners

@@ -68,7 +68,7 @@ def read_file(filename="./labels.txt") -> ontology_member:
         if not line:
             break;
 
-        ontology_root.add_term(line.split('/'));
+        ontology_root.add_term(line.lower().split('/'));
 
     file.close();
 
