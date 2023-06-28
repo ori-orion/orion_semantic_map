@@ -252,7 +252,7 @@ class MemSys:
             observed_at_attr="observed_at",
             observation_batch_num="observation_batch_num",
             last_observation_batch="last_observation_batch",
-            positional_covariance_attr="covariance_mat",
+            # positional_covariance_attr="covariance_mat",
             observation_counter_attr="num_observations",
             suppress_double_detections=False,       # Currently the suppression of double detections if off!
             suppression_distance_dict={'suppression_test_type':0.1, 'person':0.5},

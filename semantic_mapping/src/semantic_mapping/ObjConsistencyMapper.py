@@ -4,11 +4,11 @@ Owner: Matthew Munks
 """
 
 import math
-from re import S
 import numpy
 import utils;
 from CollectionManager import CollectionManager, TypesCollection;
 import pymongo.collection
+import time;
 
 from MemoryManager import DEBUG_LONG;
 
@@ -225,7 +225,13 @@ class ConsistencyChecker(CollectionManager):
         """
         # updating_info is an observation, rather than an object.
 
-        previously_added:list = self.queryIntoCollection({utils.CROSS_REF_UID: str(obj_id_to_update)})        
+        previously_added:list = None;
+
+        def getPreviouslyAdded():
+            if previously_added == None:
+                previously_added = self.queryIntoCollection({utils.CROSS_REF_UID: str(obj_id_to_update)});
+            return previously_added;
+
         update_entry_input = {};
 
         # We want to update everything to match the observtion.
@@ -241,6 +247,7 @@ class ConsistencyChecker(CollectionManager):
 
             means = [];
             covariances = [];
+            previously_added = getPreviouslyAdded();
             for element in previously_added:
                 means.append(numpy.asarray(utils.getPoint(element[self.consistency_args.position_attr])));
                 cov_mat = utils.getMatrix(element[self.consistency_args.positional_covariance_attr]);
@@ -257,6 +264,7 @@ class ConsistencyChecker(CollectionManager):
         # Executes a simple average. (To be used if B14 stuff is not to be!)
         elif self.consistency_args.use_running_average_position:
             points = [];
+            previously_added = getPreviouslyAdded();
             point_av = utils.getPoint(updating_info[self.consistency_args.position_attr]);
             num_points = 1;
             for element in previously_added:
@@ -290,6 +298,7 @@ class ConsistencyChecker(CollectionManager):
         #region Doing frequency analysis over discrete parameters (like strings).
         for attr in self.consistency_args.frequency_analysis_attrs:
             frequency_keys = {};
+            previously_added = getPreviouslyAdded();
             max_freq = 0;
             updating_attr_to = None;
             for result in previously_added:
@@ -342,7 +351,10 @@ class ConsistencyChecker(CollectionManager):
             query[self.consistency_args.last_observation_batch] = \
                 {"$lt" : adding[self.consistency_args.observation_batch_num]}
 
+        tic = time.perf_counter();
         possible_results:list = self.pushing_to.queryIntoCollection(query);
+        toc = time.perf_counter();
+        print("\t\t\tqueryIntoCollection(...) took {0} seconds.".format(toc-tic));
 
         if len(possible_results) == 0:
             # print("No matches.")
@@ -350,7 +362,7 @@ class ConsistencyChecker(CollectionManager):
             return adding, metadata;
 
         # print("There were", len(possible_results), "possible matches");
-
+        tic = time.perf_counter();
         # Working out what the max distance should be.
         max_distance = self.consistency_args.max_distance;
         if type(max_distance) is dict and self.consistency_args.class_identifier != None:
@@ -374,17 +386,25 @@ class ConsistencyChecker(CollectionManager):
                     num_prev_observations = element[self.consistency_args.observation_counter_attr];
                 max_distance = dist;
                 # print("Updating ", element);
+        toc = time.perf_counter();
+        print("\t\t\tWorking out max distance and updating obj took {0}s".format(toc-tic));
 
 
         if (updating == None):
+            tic = time.perf_counter();
             metadata['obj_uid'] = self.createNewConsistentObj(adding);
+            toc = time.perf_counter();
+            print("\t\t\tAdding a new consistent obj took {0}s".format(toc-tic));
             return adding, metadata;
         else:
             if self.consistency_args.tf_name_attr != None and self.consistency_args.tf_name_attr in updating:
                 self.pushing_to.metadata_latent_adding = {self.consistency_args.tf_name_attr:updating[self.consistency_args.tf_name_attr]};
 
             # Update an existing entry.
+            tic = time.perf_counter();
             self.updateConsistentObj(adding, updating[utils.PYMONGO_ID_SPECIFIER], num_prev_observations);
+            toc = time.perf_counter();
+            print("\t\t\tUpdating a consistent obj took {0}s".format(toc-tic));
             metadata['obj_uid'] = str(updating[utils.PYMONGO_ID_SPECIFIER]);
             return adding, metadata;
 
