@@ -127,22 +127,22 @@ class CollectionManager:
             else:
                 adding_header[SESSION_ID] = self.memory_manager.current_session_id;
 
-        tic = time.perf_counter();
+        # tic = time.perf_counter();
         # This is for inserting stuff into the higher level system.
         # If we're cross referencing entries in the dictionary, we're going to need to log this!
         metadata:dict = { 'prevent_from_adding':False };
-        print("Length of callbacks: ", len(self.collection_input_callbacks));
-        print(self.collection_input_callbacks);
+        # print("Length of callbacks: ", len(self.collection_input_callbacks));
+        # print(self.collection_input_callbacks);
         for i, callback in enumerate(self.collection_input_callbacks):
-            tic_2 = time.perf_counter();
+            # tic_2 = time.perf_counter();
             adding_dict, metadata = callback(adding_dict, metadata);
             if metadata["prevent_from_adding"] == True:
                 self.metadata_latent_adding = metadata;
                 return "";
-            toc_2 = time.perf_counter();
-            print("\t\tCallback {0} took time {1}".format(i, toc_2-tic_2));
-        toc = time.perf_counter();
-        print("\tRunning though callbacks took ", toc-tic);
+            # toc_2 = time.perf_counter();
+            # print("\t\tCallback {0} took time {1}".format(i, toc_2-tic_2));
+        # toc = time.perf_counter();
+        # print("\tRunning though callbacks took ", toc-tic);
 
         # If no obj_id was returned from the callback, then we assume there is no cross-referencing
         # and thus nothing to add here!
