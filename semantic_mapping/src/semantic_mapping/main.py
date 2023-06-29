@@ -289,7 +289,7 @@ class MemSys:
         );
         region_visualisation_manager:RvizVisualisationManager = RvizVisualisationManager(
             im_server=interactive_marker_server_regions,
-            colour_a=0.7, colour_r=0.9, colour_g=0.2, colour_b=0.2,
+            colour_a=0.5, colour_r=0.2, colour_g=0.2, colour_b=0.9,
             class_attr="name", size_attr="dimension", position_attr="corner_loc"
         );
         self.object_region_manager:RegionManager = RegionManager(
