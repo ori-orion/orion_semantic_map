@@ -141,7 +141,7 @@ class RegionManager(CollectionManager):
         This creates a single region, both adding it to the database, and to tf.
         """
 
-        if DEBUG:
+        if True: #DEBUG:
             print("Creating a region");
 
         adding = SOMBoxRegion();
@@ -157,6 +157,7 @@ class RegionManager(CollectionManager):
         self.publish_transform(transform_stamped, self.region_tf_prefix + region_id);
 
         if self.region_visualisation_manager != None:
+            print("Visualising region");
             self.publish_visualisation_box(transform_stamped, region_name, size, region_id);
         
         return region_id;
@@ -196,7 +197,7 @@ class RegionManager(CollectionManager):
         rotation_mat:numpy.matrix = utils.quaternion_to_rot_mat(transform.transform.rotation);
         rotated_corner_point = numpy.matmul(rotation_mat, numpy.asarray([size.x/2, size.y/2, size.z/2]));
 
-        print("Half size:", half_size_point, " rotated to", rotated_corner_point);
+        print("\t\tHalf size:", half_size_point, " rotated to", rotated_corner_point);
 
         # transformed_hf_size then needs to be added to the corner loc to get the centre loc.
         centre_loc = geometry_msgs.msg.Pose();
