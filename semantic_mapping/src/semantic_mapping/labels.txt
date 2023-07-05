@@ -197,3 +197,5 @@ cleaning_stuff/Nitrile_Gloves
 cleaning_stuff/Dustpans
 cleaning_stuff/Replacement_Heads
 cleaning_stuff/Kitchen_Cleaners
+luggage/handbag
+luggage/suitcase
