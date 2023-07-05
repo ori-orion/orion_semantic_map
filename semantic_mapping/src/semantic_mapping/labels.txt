@@ -199,3 +199,4 @@ cleaning_stuff/Replacement_Heads
 cleaning_stuff/Kitchen_Cleaners
 luggage/handbag
 luggage/suitcase
+luggage/backpack
