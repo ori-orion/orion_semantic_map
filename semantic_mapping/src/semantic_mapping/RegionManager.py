@@ -12,10 +12,11 @@ Owner: Matthew Munks
 """
 
 
+from typing import Optional
 import numpy
 import utils;
 from CollectionManager import CollectionManager, TypesCollection, SERVICE_ROOT;
-from MemoryManager import DEBUG, MemoryManager, SESSION_ID;
+from MemoryManager import MemoryManager
 from visualisation import RvizVisualisationManager;
 
 from orion_actions.msg import SOMBoxRegion;
@@ -43,7 +44,7 @@ class RegionManager(CollectionManager):
         service_name:str,
         querying_within:CollectionManager,
         positional_parameter:str,
-        region_visualisation_manager:RvizVisualisationManager=None):
+        region_visualisation_manager: Optional[RvizVisualisationManager]=None):
         
         # The method here is completely different! We therefore don't want the default
         # service to be created.
@@ -119,7 +120,6 @@ class RegionManager(CollectionManager):
         into the tf tree.
         """
         regions_already_in_som:list = self.queryIntoCollection({});
-        # print(regions_already_in_som[0])
         for region in regions_already_in_som:
             region_som_msg:SOMBoxRegion = utils.dict_to_obj(region, SOMBoxRegion());
             
@@ -151,7 +151,6 @@ class RegionManager(CollectionManager):
 
         region_dict:dict = utils.obj_to_dict(adding);
         # region_dict[SESSION_ID] = CollectionManager.PRIOR_SESSION_ID;
-        # print(region_dict);
         region_id:str = str(self.addItemToCollectionDict(region_dict));
 
         self.publish_transform(transform_stamped, self.region_tf_prefix + region_id);
@@ -194,7 +193,7 @@ class RegionManager(CollectionManager):
         half_size_point.z = size.z/2# + transform.transform.translation.z;
         # transformed_hf_size:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(half_size_point, self.region_tf_prefix + region_id);
 
-        rotation_mat:numpy.matrix = utils.quaternion_to_rot_mat(transform.transform.rotation);
+        rotation_mat = utils.quaternion_to_rot_mat(transform.transform.rotation);
         rotated_corner_point = numpy.matmul(rotation_mat, numpy.asarray([size.x/2, size.y/2, size.z/2]));
 
         print("\t\tHalf size:", half_size_point, " rotated to", rotated_corner_point);
@@ -210,21 +209,20 @@ class RegionManager(CollectionManager):
         # centre_loc.position.z = transform.transform.translation.z;
         centre_loc.orientation = transform.transform.rotation;
 
-        self.region_visualisation_manager.add_object(
-            id=self.region_tf_prefix + region_id,
-            pose=centre_loc,
-            size=size,
-            obj_class=region_name);
-        pass;
+        if self.region_visualisation_manager is not None:
+            self.region_visualisation_manager.add_object(
+                id=self.region_tf_prefix + region_id,
+                pose=centre_loc,
+                size=geometry_msgs.msg.Point(x=size.x, y = size.y, z = size.z),
+                obj_class=region_name)
 
 
     def point_in_region(self, region:SOMBoxRegion, point:geometry_msgs.msg.Point) -> bool:
         """
         Returns whether the point is in the region.
         """
-        transformed_point:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(point, self.region_tf_prefix + region.UID);
+        transformed_point:tf2_geometry_msgs.PointStamped = self.transform_pt_to_global(point, self.region_tf_prefix + region.HEADER.UID);
 
-        # print(transformed_point);
 
         attr = ["x", "y", "z"];
 
@@ -277,10 +275,8 @@ class RegionManager(CollectionManager):
                         geometry_msgs.msg.Pose()).position;
 
                 for box in boxes:
-                    # print(box);
                     box_som_msg:SOMBoxRegion = utils.dict_to_obj(box, SOMBoxRegion());
-                    box_som_msg.UID = str(box[utils.PYMONGO_ID_SPECIFIER]);
-                    # print(box_som_msg);
+                    box_som_msg.HEADER.UID = str(box[utils.PYMONGO_ID_SPECIFIER]);
 
                     if self.point_in_region(box_som_msg, pos):
                         output_list.append(utils.dict_to_obj(query_response, orion_actions.msg.SOMObject()));

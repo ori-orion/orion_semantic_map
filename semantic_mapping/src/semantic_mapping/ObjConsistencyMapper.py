@@ -4,11 +4,11 @@ Owner: Matthew Munks
 """
 
 import math
+from typing import Dict, Optional, Tuple, Union
+from bson import ObjectId
 import numpy
 import utils;
 from CollectionManager import CollectionManager, TypesCollection;
-import pymongo.collection
-import time;
 
 from MemoryManager import DEBUG_LONG;
 
@@ -23,20 +23,20 @@ class ConsistencyArgs:
         self, 
         position_attr=None, 
         size_attr=None,
-        max_distance=math.inf,
-        first_observed_attr:str=None,
-        last_observed_attr:str=None,
-        observed_at_attr:str=None,
-        observation_batch_num:str=None,
-        last_observation_batch:str=None,
-        class_identifier:str=None,
-        positional_covariance_attr:str=None,
-        observation_counter_attr:str=None,
+        max_distance: Union[Dict[str, float], float]=math.inf,
+        first_observed_attr: Optional[str]=None,
+        last_observed_attr: Optional[str]=None,
+        observed_at_attr: Optional[str]=None,
+        observation_batch_num: Optional[str]=None,
+        last_observation_batch: Optional[str]=None,
+        class_identifier: Optional[str]=None,
+        positional_covariance_attr: Optional[str]=None,
+        observation_counter_attr: Optional[str]=None,
         use_running_average_position:bool=True,
         suppress_double_detections:bool=False,
         suppression_default_distance:float=0,
-        suppression_distance_dict:dict=None,
-        tf_name_attr:str=None):
+        suppression_distance_dict: Optional[dict]=None,
+        tf_name_attr: Optional[str]=None):
 
         """
         Constructor:
@@ -167,7 +167,7 @@ class ConsistencyChecker(CollectionManager):
             types:TypesCollection, 
             service_name:str,
             consistency_args:ConsistencyArgs=ConsistencyArgs(),
-            collection_input_callbacks:list=None):
+            collection_input_callbacks: Optional[list]=None):
         
         super(ConsistencyChecker, self).__init__(
             types=types, 
@@ -179,7 +179,7 @@ class ConsistencyChecker(CollectionManager):
         # We don't really want hard coded values here, BUT, in order to average over 
         # position in an intelligent way (using \Sigma), we're going to start to need
         # to define parameters. This does this!
-        self.consistency_args:ConsistencyArgs = consistency_args;
+        self.consistency_args = consistency_args;
 
         if collection_input_callbacks == None:
             collection_input_callbacks = [];
@@ -216,7 +216,7 @@ class ConsistencyChecker(CollectionManager):
 
         return str(self.pushing_to.addItemToCollectionDict(adding));
 
-    def updateConsistentObj(self, updating_info:dict, obj_id_to_update:pymongo.collection.ObjectId, num_observations=math.inf):
+    def updateConsistentObj(self, updating_info:dict, obj_id_to_update: ObjectId, num_observations=math.inf):
         """
         Updates an object of uid `obj_id_to_update` with the dictionary `updating_info`.
         This also does the positional updating averaging stuff/carries out the B14 stuff. 
@@ -225,9 +225,10 @@ class ConsistencyChecker(CollectionManager):
         """
         # updating_info is an observation, rather than an object.
 
-        previously_added:list = None;
+        previously_added: Optional[list] = None;
 
         def getPreviouslyAdded():
+            nonlocal previously_added
             if previously_added == None:
                 previously_added = self.queryIntoCollection({utils.CROSS_REF_UID: str(obj_id_to_update)});
             return previously_added;
@@ -252,12 +253,10 @@ class ConsistencyChecker(CollectionManager):
                 means.append(numpy.asarray(utils.getPoint(element[self.consistency_args.position_attr])));
                 cov_mat = utils.getMatrix(element[self.consistency_args.positional_covariance_attr]);
                 covariances.append(cov_mat);
-                #print(cov_mat);
 
             means.append(numpy.asarray(utils.getPoint(updating_info[self.consistency_args.position_attr])));
             cov_mat = utils.getMatrix(updating_info[self.consistency_args.positional_covariance_attr])
             covariances.append(cov_mat);
-            #print(cov_mat);
 
             updating_info[self.consistency_args.position_attr] = \
                 utils.setPoint(updating_info[self.consistency_args.position_attr], utils.get_mean_over_samples(means, covariances));
@@ -272,8 +271,7 @@ class ConsistencyChecker(CollectionManager):
                 points.append(pt);
                 point_av += pt;
                 num_points += 1;
-                
-            point_av /= num_points;
+            point_av = point_av /  num_points;
 
             updating_info[self.consistency_args.position_attr] = \
                 utils.setPoint(updating_info[self.consistency_args.position_attr], point_av);
@@ -285,7 +283,6 @@ class ConsistencyChecker(CollectionManager):
         update_entry_input[self.consistency_args.last_observed_attr] = \
             updating_info[self.consistency_args.observed_at_attr];
 
-        # print("Batch nums set up...", self.consistency_args.batch_nums_setup());
         if self.consistency_args.batch_nums_setup():
             update_entry_input[self.consistency_args.last_observation_batch] = \
                 updating_info[self.consistency_args.observation_batch_num];
@@ -331,7 +328,7 @@ class ConsistencyChecker(CollectionManager):
 
 
     # Returns the str id that the object has gone into.
-    def push_item_to_pushing_to(self, adding:dict, metadata:dict) -> str:
+    def push_item_to_pushing_to(self, adding:dict, metadata:dict) -> Tuple[dict, dict]:
         """
         The callback that adds observations to the object collection.
         This gets the full adding dict (with all default fields).
@@ -351,30 +348,27 @@ class ConsistencyChecker(CollectionManager):
             query[self.consistency_args.last_observation_batch] = \
                 {"$lt" : adding[self.consistency_args.observation_batch_num]}
 
-        # tic = time.perf_counter();
         possible_results:list = self.pushing_to.queryIntoCollection(query);
-        # toc = time.perf_counter();
-        # print("\t\t\tqueryIntoCollection(...) took {0} seconds.".format(toc-tic));
 
         if len(possible_results) == 0:
             # print("No matches.")
             metadata['obj_uid'] = self.createNewConsistentObj(adding);
             return adding, metadata;
 
-        # print("There were", len(possible_results), "possible matches");
-        # tic = time.perf_counter();
         # Working out what the max distance should be.
-        max_distance = self.consistency_args.max_distance;
-        if type(max_distance) is dict and self.consistency_args.class_identifier != None:
-            max_distance:dict;
-            obj_class = adding[self.consistency_args.class_identifier];
-            if obj_class in max_distance:
-                max_distance = max_distance[obj_class];
+        max_distance = math.inf;
+        if isinstance(self.consistency_args.max_distance, dict):
+            if self.consistency_args.class_identifier != None:
+                obj_class = adding[self.consistency_args.class_identifier];
+                if obj_class in self.consistency_args.max_distance:
+                    max_distance = self.consistency_args.max_distance[obj_class];
+                else:
+                    max_distance = self.consistency_args.max_distance[ConsistencyArgs.DEFAULT_PARAM];
             else:
-                max_distance = max_distance[ConsistencyArgs.DEFAULT_PARAM];
-
+                max_distance = self.consistency_args.max_distance[ConsistencyArgs.DEFAULT_PARAM];
+        else:
+            max_distance = self.consistency_args.max_distance
         # Doing the filtering to work out which object you want to look at (if any).
-        # print("Max distance", max_distance);
         updating = None;
         num_prev_observations = math.inf;
         for element in possible_results:
@@ -385,26 +379,17 @@ class ConsistencyChecker(CollectionManager):
                 if self.consistency_args.observation_counter_attr != None:
                     num_prev_observations = element[self.consistency_args.observation_counter_attr];
                 max_distance = dist;
-                # print("Updating ", element);
-        # toc = time.perf_counter();
-        # print("\t\t\tWorking out max distance and updating obj took {0}s".format(toc-tic));
 
 
         if (updating == None):
-            # tic = time.perf_counter();
             metadata['obj_uid'] = self.createNewConsistentObj(adding);
-            # toc = time.perf_counter();
-            # print("\t\t\tAdding a new consistent obj took {0}s".format(toc-tic));
             return adding, metadata;
         else:
             if self.consistency_args.tf_name_attr != None and self.consistency_args.tf_name_attr in updating:
                 self.pushing_to.metadata_latent_adding = {self.consistency_args.tf_name_attr:updating[self.consistency_args.tf_name_attr]};
 
             # Update an existing entry.
-            # tic = time.perf_counter();
             self.updateConsistentObj(adding, updating[utils.PYMONGO_ID_SPECIFIER], num_prev_observations);
-            # toc = time.perf_counter();
-            # print("\t\t\tUpdating a consistent obj took {0}s".format(toc-tic));
             metadata['obj_uid'] = str(updating[utils.PYMONGO_ID_SPECIFIER]);
             return adding, metadata;
 
@@ -414,7 +399,6 @@ class ConsistencyChecker(CollectionManager):
         This is the callback for the suppression of double detections 
         (where suppression is done by distance).
         """
-        # print("Suppression callback")
         if self.consistency_args.class_identifier not in adding:
             return adding, metadata;
 
@@ -450,9 +434,8 @@ class ConsistencyChecker(CollectionManager):
                 if type(batch_num_query) is int and batch_num_query < 0:
                     querying[self.consistency_args.last_observation_batch] = {"$gt" : -batch_num_query};
 
-        if self.consistency_args.last_observed_attr in querying:
+        if self.consistency_args.last_observed_attr is not None and self.consistency_args.last_observed_attr in querying:
             temp_query:dict = querying[self.consistency_args.last_observed_attr];
-            # querying[self.consistency_args.last_observed_attr] = {'secs': {'$gte': temp_query['secs'] }}
             del querying[self.consistency_args.last_observed_attr];
             querying[self.consistency_args.last_observed_attr + ".secs"] = {'$gte': temp_query['secs'] };
             

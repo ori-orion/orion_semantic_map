@@ -5,12 +5,15 @@ Author: Matthew Munks
 Owner: Matthew Munks
 """
 
+from typing import Optional
+
+
 class ontology_member:
     def __init__(self, label:str="Objs"):
         self.label:str = label;
         self.children:list = [];
 
-    def search_for_term(self, term:str) -> list:
+    def search_for_term(self, term:str) -> Optional[list]:
         if (term == self.label):
             return [self.label];
 
@@ -47,15 +50,11 @@ class ontology_member:
                 element.add_term(adding[1:]);
                 return;
 
-        # print("Adding a new element: category:", self.label, " type: ", adding[0]," len(children)=", len(self.children));
         # Not currently in the tree;
         appending = ontology_member(label=adding[0]);
         if len(adding) > 1:
             appending.add_term(adding[1:]);
         self.children.append(appending);
-        
-        # print(adding[1:]);
-
         
 
 def read_file(filename="./labels.txt") -> ontology_member:

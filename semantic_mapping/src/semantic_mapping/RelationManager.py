@@ -5,13 +5,14 @@ Author: Matthew Munks
 Owner: Matthew Munks
 """
 
+from typing import Tuple
 import numpy;
 import utils;
 import rospy;
 import genpy;
 
 from orion_actions.msg import Relation;
-from geometry_msgs.msg import Pose, Point;
+from geometry_msgs.msg import Pose
 
 from CollectionManager import CollectionManager, SERVICE_ROOT;
 
@@ -115,7 +116,7 @@ class RelationManager:
         return output;
 
     
-    def get_relation_dict(self, cur_robot_pose:Pose, obj1:dict, obj2:dict) -> Relation:
+    def get_relation_dict(self, cur_robot_pose:Pose, obj1:dict, obj2:dict) -> Tuple[Relation, float]:
         """
         HEAVILY inspired by Mark Richter's relational code from the old system.
 
@@ -131,10 +132,6 @@ class RelationManager:
         obj_one_pos = utils.getPoint(obj1[self.positional_attr]);
         obj_two_pos = utils.getPoint(obj2[self.positional_attr]);
 
-        # print(robot_pos);
-        # print(obj_one_pos);
-        # print(obj_two_pos);
-
         robot_to_two = obj_two_pos - robot_pos
         two_to_one = obj_one_pos - obj_two_pos
 
@@ -143,7 +140,7 @@ class RelationManager:
         # if the distance between the two objects is greater than the threshold then none of the relations are true
         if distance > dist_thr:
             output_relation.not_near = True
-            return output_relation, distance
+            return output_relation, float(distance)
         else:
             output_relation.near = True
         # near, not_near set.
@@ -175,7 +172,7 @@ class RelationManager:
         # but that won't happen here (because we're only looking at two objects, not
         # the whole set).
 
-        return output_relation, distance;
+        return output_relation, float(distance)
 
 
     def setup_ROS_services(self):

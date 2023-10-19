@@ -19,7 +19,7 @@ import utils;
 import rospy;
 import numpy;
 import tf2_ros;
-from geometry_msgs.msg import PoseStamped, Point, Pose
+from geometry_msgs.msg import Point
 import tf2_geometry_msgs
 
 import orion_actions.msg
@@ -34,11 +34,6 @@ import copy;
 import time;
 
 from typing import Dict, List
-
-# import semantic_mapping.srv
-# import semantic_mapping.msg
-
-# print(__file__);
 
 
 NUM_OBSERVATIONS_THRESHOLD_FOR_QUERY = 0;
@@ -59,7 +54,7 @@ class MemSys:
         # needs to be created first.
         self.observation_manager.collection_input_callbacks.append(self.push_person_callback);
 
-        object_relational_manager:RelationManager = RelationManager(
+        object_relational_manager = RelationManager(
             operating_on=self.object_manager,
             positional_attr="obj_position",
             service_base=orion_actions.srv.SOMRelObjQuery,
@@ -82,7 +77,6 @@ class MemSys:
 
     # This will be a callback within observations for assigning the category of an object.
     def ontology_observation_getCategory_callback(self, adding_dict:dict, metadata:dict):
-        # print("Ontology callback");
         if (len(adding_dict["category"]) == 0):
             ontological_result = self.ontology_tree.search_for_term(adding_dict["class_"]);
             if (ontological_result == None):
@@ -91,7 +85,6 @@ class MemSys:
             else:
                 # So this will go [class, category, "Objs"];
                 adding_dict["category"] = ontological_result[1];
-                # print(ontological_result);
 
             if (DEBUG):
                 print("setting category to", adding_dict["category"]);
@@ -100,7 +93,6 @@ class MemSys:
 
     # This will set the flag for whether something is pickupable or not.
     def pickupable_callback(self, adding_dict:dict, metadata:dict):
-        # print("Pickupable callback");
         non_pickupable:list = ["table", "person"];
         if adding_dict["class_"] in non_pickupable:
             adding_dict["pickupable"] = False;
@@ -110,7 +102,6 @@ class MemSys:
 
     # Pushing persons to the human collection.
     def push_person_callback(self, adding:dict, metadata:dict):
-        # print("Push person callback");
         if len(metadata['obj_uid']) == 0:
             return adding, metadata;
 
@@ -137,7 +128,6 @@ class MemSys:
             human_obs.object_uid = metadata['obj_uid'];
             human_obs.obj_position = utils.dict_to_obj(adding["obj_position"], geometry_msgs.msg.Pose());
             human_obs.observed_at = utils.dict_to_obj(adding["observed_at"], rospy.Time());
-            # print(adding);
             if "last_observation_batch" in adding:
                 human_obs.observation_batch_num = adding["last_observation_batch"];
             else:
@@ -147,7 +137,6 @@ class MemSys:
                 human_obs.spoken_to_state = orion_actions.msg.Human._NOT_SPOKEN_TO;
                 human_obs.height = adding['size']['z'];
             else:
-                # human_obs. = str(human_query[0][utils.PYMONGO_ID_SPECIFIER]);
                 pass;
             self.human_observation_manager.addItemToCollection(human_obs);
             
@@ -224,12 +213,10 @@ class MemSys:
         # For assigning the tf names.
         self.latest_tf_index:Dict[str,int] = {};
         def assign_tf_name_input_callback(adding:dict, metadata:dict):
-            # print("Tf name callback");
             if adding["class_"] in self.latest_tf_index:
                 self.latest_tf_index[adding["class_"]] += 1;
             else:
                 self.latest_tf_index[adding["class_"]] = 0;
-            # print(adding);
             tf_name = adding["class_"] + "_" + str(self.latest_tf_index[adding["class_"]]);
             adding["tf_name"] = tf_name;
             metadata["tf_name"] = tf_name;
@@ -336,31 +323,29 @@ class DetectToObserve:
         rospy.Subscriber('/vision/bbox_detections', DetectionArray, self.forwardDetectionsToSOM, queue_size=queue_size)
 
         self.batch_num = 1;        
-        pass;
+
+        self.add_to_collection_av_time = [0., 0.];
+        self.tf_transformation_av_time = [0., 0.];
+        self.num_items = [0, 0];
 
     # We essentially want to forward detections from orion_recognition over to the SOM database. This should do that.
     def forwardDetectionsToSOM(self, data:DetectionArray):
+       
         printing = "";
 
         tf_header = data.header;
         tf_header.stamp = rospy.Time.now();
+        tf_header.frame_id = self.camera_frame
         tf_list:List[geometry_msgs.msg.TransformStamped] = [];
         tf_name_list = [];
 
-        add_to_collection_av_time = 0;
-        tf_transformation_av_time = 0;
-        num_items = 0;
 
-        for detection in data.detections:
-            detection:Detection;
-            num_items += 1;
-
+        for detection in data.detections: # type:ignore
+            detection:Detection; 
             if detection.label.confidence < 0.5:
                 continue;
             
             forwarding = SOMObservation();
-            # print(dir(forwarding))
-            # print(dir(forwarding.robot_pose));
 
             detection.label.name = detection.label.name.lower();
 
@@ -374,6 +359,9 @@ class DetectToObserve:
             forwarding.observation_batch_num = self.batch_num;
             forwarding.size = detection.size;
             # forwarding.timestamp = rospy.Time().now()
+
+            idx = 1 if forwarding.class_ == "person" else 0
+            self.num_items[idx] += 1;
 
             # Getting the robot pose:
             camera_to_global:tf2_ros.TransformStamped = self.tfBuffer.lookup_transform(
@@ -404,23 +392,21 @@ class DetectToObserve:
             #     detection.translation_x, detection.translation_y, detection.translation_z);
             # transformed_stamped = self.tfBuffer.transform(
             #     object_point, self.global_frame, timeout=rospy.Duration(1));
-            
             tic = time.perf_counter();
-
             try:
                 p_global_frame:tf2_geometry_msgs.PoseStamped = self.tfBuffer.transform(
-                    obj_point_2, self.global_frame, timeout=rospy.Duration(0.5));
+                    obj_point_2, self.global_frame, timeout=rospy.Duration(secs=1));
             except:
                 try:
                     obj_point_2.header.stamp = rospy.Time.now();
                     p_global_frame:tf2_geometry_msgs.PoseStamped = self.tfBuffer.transform(
-                        obj_point_2, self.global_frame, timeout=rospy.Duration(0.5));
+                        obj_point_2, self.global_frame, timeout=rospy.Duration(secs=1));
                 except:
                     p_global_frame = tf2_geometry_msgs.PoseStamped();
                     rospy.logerr("detections_to_observations.py: transform raised an error!");
                     return;
             toc = time.perf_counter();
-            tf_transformation_av_time += toc-tic;    
+            self.tf_transformation_av_time[idx] += toc-tic;    
     
             # transformed_obj_point:PoseStamped = p_global_frame;
             forwarding.obj_position = p_global_frame.pose;
@@ -435,7 +421,7 @@ class DetectToObserve:
             # Setting up the covariance stuff.
             # Note that the covariance matrix is symmetric, so the order doesn't matter.
             # Note also that the parameters here could probably be adjusted!
-            uncertainty_rot:numpy.matrix = utils.quaternion_to_rot_mat(camera_to_global.transform.rotation);
+            uncertainty_rot = utils.quaternion_to_rot_mat(camera_to_global.transform.rotation);
             cov_mat = numpy.matrix([[3,0,0],[0,0.5,0],[0,0,0.5]]);
             cov_transformed = numpy.matmul(uncertainty_rot.transpose(), numpy.matmul(cov_mat, uncertainty_rot));
             cov_t_linear = [];
@@ -453,13 +439,12 @@ class DetectToObserve:
             tic = time.perf_counter();
             mem_sys.observation_manager.addItemToCollection(forwarding);
             toc = time.perf_counter();
-            add_to_collection_av_time += toc-tic;
+            self.add_to_collection_av_time[idx] += toc-tic;
         
             # Dealing with the publishing of tfs. Based on orion_recognition/.../detection_tf_publisher.py
             individual_tf = geometry_msgs.msg.TransformStamped();
             individual_tf.header = tf_header;
-            # print(mem_sys.object_manager.metadata_latent_adding);
-            tf_name = copy.copy(mem_sys.object_manager.metadata_latent_adding["tf_name"]);
+            tf_name = copy.copy(mem_sys.object_manager.metadata_latent_adding["tf_name"]); # type:ignore
             individual_tf.child_frame_id = tf_name;
             individual_tf.transform.translation.x = detection.translation_x;
             individual_tf.transform.translation.y = detection.translation_y;
@@ -472,17 +457,14 @@ class DetectToObserve:
             # addition_successful = service_output.obj_id;
             # obj_id_returned = service_output.obj_id;
 
-            # print(obj_id_returned);
-        # print(mem_sys.latest_tf_index);
-        print(tf_name_list);
         self.transform_broadcaster.sendTransform(tf_list);
-        print("Average times:");
-        print("\tGetting global pose: ", tf_transformation_av_time/num_items);
-        print("\tAdding to collection:", add_to_collection_av_time/num_items);
-        print(printing + "--------------------------------")
+        if self.num_items[0] > 0 and self.num_items[1] > 0:
+            print("Average times:");
+            print("\tAvg over:", self.num_items)
+            print("\tGetting global pose: ", self.tf_transformation_av_time[0]/self.num_items[0], self.tf_transformation_av_time[1]/self.num_items[1]);
+            print("\tAdding to collection:", self.add_to_collection_av_time[0]/self.num_items[0], self.add_to_collection_av_time[1]/self.num_items[1]);
+            print(printing + "--------------------------------")
         self.batch_num += 1;
-        # print(mem_sys.object_manager.collection_input_callbacks);
-        # print(mem_sys.observation_manager.collection_input_callbacks);
 
 
 

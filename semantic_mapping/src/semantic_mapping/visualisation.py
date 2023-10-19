@@ -5,7 +5,10 @@ Author: Marc Rigter, Matthew Munks
 Owner: Matthew Munks
 """
 
-import math;
+import math
+from typing import Callable, Optional
+
+from bson import ObjectId;
 import rospy
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Pose
@@ -38,7 +41,7 @@ class RvizVisualisationManager:
         self.size_attr = size_attr;
         self.position_attr = position_attr;
 
-        self.query_callback = None;
+        self.query_callback: Optional[Callable[[dict], list]] = None;
 
     def delete_object(self, id):
         """
@@ -53,7 +56,7 @@ class RvizVisualisationManager:
         """
         if (self.query_callback != None):
             obj:list = self.query_callback(
-                {utils.PYMONGO_ID_SPECIFIER:pymongo.collection.ObjectId(input.marker_name)});
+                {utils.PYMONGO_ID_SPECIFIER: ObjectId(input.marker_name)});
 
             if len(obj) > 0:
                 rospy.loginfo(obj);
@@ -120,9 +123,9 @@ class RvizVisualisationManager:
         button_control = InteractiveMarkerControl()
         button_control.interaction_mode = InteractiveMarkerControl.BUTTON
         button_control.always_visible = True
-        button_control.markers.append(box_marker);
-        int_marker.controls.append(button_control);
+        button_control.markers.append(box_marker); #type: ignore
+        int_marker.controls.append(button_control); # type:ignore
 
-        self.im_server.insert(int_marker, self.handle_viz_input)
+        self.im_server.insert(int_marker, self.handle_viz_input) #type: ignore
         self.im_server.applyChanges();
         return

@@ -4,10 +4,13 @@ Owner: Matthew Munks
 """
 
 import math
+from typing import Optional
 import rospy;
 import genpy;
 import numpy;
 import geometry_msgs.msg
+
+from numpy.typing import NDArray
 
 # SESSION_ID = "session_num";
 # UID_ENTRY = "entry_uid";
@@ -133,14 +136,14 @@ def getHeaderInfoDict_nonCrit(dict_querying:dict) -> dict:
 # We therefore want to separate these out.
 # We also know that the dict obj we might be trying to decipher is a ROS
 # Pose object, so we know that "position" is the string we want.
-def getPoint(obj:dict) -> numpy.array:
+def getPoint(obj:dict) -> NDArray:
     """
     Returns the numpy.array 3D point from a Point or Pose object.
     """
     if "position" in obj:
         obj = obj["position"];
     return numpy.asarray([obj["x"], obj["y"], obj["z"]]);
-def setPoint(obj:dict, new_pt:numpy.array) -> dict:
+def setPoint(obj:dict, new_pt:NDArray) -> dict:
     """
     Sets the position in either a Point or Pose object from a numpy.array 3D point.
     """
@@ -164,7 +167,7 @@ def getMatrix(obj:list, num_rows:int=3) -> numpy.matrix:
     obj_2D = obj_array.reshape((num_rows, -1));
     return numpy.matrix(obj_2D);
 
-def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
+def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> NDArray:
     """
     Gets the 3x3 rotation matrix from a quaternion.
     https://automaticaddison.com/how-to-convert-a-quaternion-to-a-rotation-matrix/
@@ -189,7 +192,7 @@ def quaternion_to_rot_mat(quat:geometry_msgs.msg.Quaternion) -> numpy.array:
     
     return output;
 
-def get_multi_likelihood(mean:numpy.array, covariance_matrix:numpy.matrix, location:numpy.array) -> numpy.float64:
+def get_multi_likelihood(mean: NDArray, covariance_matrix:numpy.matrix, location: NDArray) -> float:
     """
     Gets the likelihood out from a multidimensional likelihood out for a given position and covariance matrix.
     Note that this is NOT the probability.
@@ -198,7 +201,7 @@ def get_multi_likelihood(mean:numpy.array, covariance_matrix:numpy.matrix, locat
     cov_det = numpy.linalg.det(covariance_matrix);
     return (1/math.sqrt(2*math.pi * cov_det)) * math.exp(exponent);
 
-def get_mean_over_samples(means, covariances) -> numpy.array:
+def get_mean_over_samples(means, covariances) -> NDArray:
     """
     For MLE, there is an covariance matrix weighted average that is used. This implements that. 
 
@@ -207,28 +210,22 @@ def get_mean_over_samples(means, covariances) -> numpy.array:
     This will do x = (sum(inv(cov[i])))^(-1) * sum(inv(cov[i])*mean[i]), as per MLE.
     """
     assert(len(means) == len(covariances));
-    # print("get_mean_over_samples");
 
     sum_inv_cov = numpy.zeros((3,3));
-    # print("\t", sum_inv_cov);
     for i in range(len(means)):
         covariances[i] = numpy.linalg.inv(covariances[i]);
         sum_inv_cov += covariances[i];
-        # print("\t", sum_inv_cov);
     
     sum_invcov_mu = numpy.zeros((3,1));
-    # print(sum_invcov_mu);
     for i in range(len(means)):
         temp = numpy.asarray(numpy.matmul(covariances[i], means[i])).reshape((3,1));
-        #print(temp);
-        #print(sum_invcov_mu);
+        
         sum_invcov_mu += temp;
 
     # inv_sum_inv_cov = numpy.linalg.inv(sum_inv_cov);
-    #print(inv_sum_inv_cov);
-    #print(sum_invcov_mu);
+   
     output = numpy.matmul(numpy.linalg.inv(sum_inv_cov), sum_invcov_mu);
-    return [output[0,0], output[1,0], output[2,0]];
+    return numpy.asarray([output[0,0], output[1,0], output[2,0]]);
 
 
 #removes attributes of a ROS msg that we're not interested in.
@@ -267,7 +264,7 @@ def get_attributes(obj) -> list:
 #   yet unknown types that need to be dealt with)!
 def obj_to_dict(
     obj, 
-    attributes:list=None, 
+    attributes:Optional[list]=None, 
     session_id:int=-1, 
     ignore_default:bool=False, 
     ignore_of_type:list=[],
@@ -289,17 +286,14 @@ def obj_to_dict(
                                 internally. Thus, if we are adding an object, we don't want to set 
                                 these fields.
     """
-    # print("obj_to_dict(...)");
 
     if (attributes == None):
         attributes = get_attributes(obj);
 
-    # print("Attributes: {}".format(attributes))
 
     if (len(attributes) == 0):
         return {};
 
-    # print(attributes, end = ";\n\t");
 
     def pushObjToDict(element, ignore_default:bool):
         """
@@ -334,7 +328,7 @@ def obj_to_dict(
             for type_ in temporal_types:
                 if (type_ not in ignore_of_type) and isinstance(element, type_):
                     attributes_recursive_in:list = get_attributes(element);
-                    output:dict = obj_to_dict(
+                    output = obj_to_dict(
                         element, 
                         attributes=attributes_recursive_in, 
                         ignore_default=ignore_default, 
