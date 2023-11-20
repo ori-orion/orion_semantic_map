@@ -458,11 +458,15 @@ class DetectToObserve:
             # obj_id_returned = service_output.obj_id;
 
         self.transform_broadcaster.sendTransform(tf_list);
-        if self.num_items[0] > 0 and self.num_items[1] > 0:
+        if self.num_items[0] > 0 or self.num_items[1] > 0:
             print("Average times:");
             print("\tAvg over:", self.num_items)
-            print("\tGetting global pose: ", self.tf_transformation_av_time[0]/self.num_items[0], self.tf_transformation_av_time[1]/self.num_items[1]);
-            print("\tAdding to collection:", self.add_to_collection_av_time[0]/self.num_items[0], self.add_to_collection_av_time[1]/self.num_items[1]);
+            if self.num_items[0] > 0:
+                print("\tGetting global pose (obj): ", self.tf_transformation_av_time[0]/self.num_items[0])#, self.tf_transformation_av_time[1]/self.num_items[1]);
+                print("\tAdding to collection (obj):", self.add_to_collection_av_time[0]/self.num_items[0])#, self.add_to_collection_av_time[1]/self.num_items[1]);
+            if self.num_items[1] > 0:
+                print("\tGetting global pose (human): ", self.tf_transformation_av_time[1]/self.num_items[1]);
+                print("\tAdding to collection (human):", self.add_to_collection_av_time[1]/self.num_items[1]);
             print(printing + "--------------------------------")
         self.batch_num += 1;
 
